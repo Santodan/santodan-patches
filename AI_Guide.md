@@ -1,4 +1,4 @@
-# SantoDan Patches
+# Santodan Patches
 
 An independent patch bundle for **Morphe Desktop**, targeting Peafowl Theme Maker
 `GMS_27.5.1`, package `h7.hamzio.emuithemeotg`.

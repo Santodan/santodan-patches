@@ -1,6 +1,10 @@
 # santodan-patches
 Some patches made with AI for Morphe-Patches
 
+Add this repository URL as a patch source in Morphe:
+
+`https://github.com/Santodan/santodan-patches`
+
 List:
 | App | Package | Version |Patches |
 | -- | -- | -- | -- |

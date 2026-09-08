@@ -9,9 +9,12 @@ permissions:
 jobs:
   release:
     runs-on: windows-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -34,26 +37,53 @@ jobs:
       - name: Build patch bundle
         shell: pwsh
         run: |
-          ./build.ps1 -MorpheJar "$env:RUNNER_TEMP/morphe-desktop.jar" -JdkHome "$env:JAVA_HOME" -R8Jar "$env:RUNNER_TEMP/r8.jar"
+          ./build.ps1 `
+            -MorpheJar "$env:RUNNER_TEMP/morphe-desktop.jar" `
+            -JdkHome "$env:JAVA_HOME" `
+            -R8Jar "$env:RUNNER_TEMP/r8.jar"
 
-      - name: Validate source descriptor
+      - name: Validate metadata
         shell: pwsh
         run: |
           $metadata = Get-Content bundle.properties -Raw | ConvertFrom-StringData
-          $descriptor = Get-Content patches-bundle.json -Raw | ConvertFrom-Json
-          if ($descriptor.version -ne $metadata.version) {
+          $bundle = Get-Content patches-bundle.json -Raw | ConvertFrom-Json
+          $list = Get-Content patches-list.json -Raw | ConvertFrom-Json
+
+          if ($bundle.version -ne $metadata.version) {
             throw "patches-bundle.json version does not match bundle.properties"
           }
+
+          if ($list.version -ne $metadata.version) {
+            throw "patches-list.json version does not match bundle.properties"
+          }
+
           $expected = "santodan-patches-$($metadata.version).mpp"
+
           if (-not (Test-Path -LiteralPath "dist/$expected")) {
             throw "Missing built bundle: $expected"
+          }
+
+          "VERSION=$($metadata.version)" >> $env:GITHUB_ENV
+          "MPP_FILE=dist/$expected" >> $env:GITHUB_ENV
+
+      - name: Commit metadata
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add patches-bundle.json patches-list.json
+
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "chore: update patch metadata for v${{ env.VERSION }}"
+            git push
           }
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.0
-          name: v0.1.0
-          body: SantoDan patches for Morphe 0.1.0
-          files: dist/santodan-patches-0.1.0.mpp
+          tag_name: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          body: SantoDan patches for Morphe ${{ env.VERSION }}
+          files: ${{ env.MPP_FILE }}
           fail_on_unmatched_files: true

@@ -42,7 +42,7 @@ if ($TestDex) {
 $manifest = @(
     'Manifest-Version: 1.0',
     "Name: $($metadata.name)",
-    'Description: Peafowl local theme ownership patch for Morphe Desktop',
+    'Description: SantoDan app patches for Morphe Desktop',
     "Version: $($metadata.version)",
     "Author: $($metadata.author)",
     "Patcher-Version: $($metadata.patcherVersion)",

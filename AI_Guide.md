@@ -5,13 +5,13 @@ An independent patch bundle for **Morphe Desktop**, targeting Peafowl Theme Make
 
 Patch: **Peafowl - Unlock Theme Ownership (Experimental)**.
 
-Ready-to-use bundle: [santodan-patches-0.1.1.mpp](dist/santodan-patches-0.1.1.mpp).
-Download the binary file from GitHub, then import it into Morphe Desktop.
+Build the bundle with the official Morphe Gradle project, then import the generated
+`patches/build/libs/patches-<version>.mpp` into Morphe Desktop or Manager.
 
 ## Apply and test
 
-1. Disable/remove the old `0.1.0` source, then import `dist/santodan-patches-0.1.1.mpp`
-   as a local patch bundle in Morphe Desktop. Use the file under `dist`, not `build`.
+1. Disable/remove the old `0.1.0` source, then import the generated `.mpp`
+   under `patches/build/libs` as a local patch bundle in Morphe Desktop.
 2. Select the original Peafowl `GMS_27.5.1` APK and enable the patch above.
 3. If you also want the general Pro features, enable Nai64's **Unlock Premium**.
 4. Build and sign the APK with Morphe, then install it using your usual process.
@@ -29,27 +29,18 @@ An unsupported layout raises an error instead of silently succeeding.
 
 ## Build
 
-The build is offline and uses Java's Morphe API interop. It compiles against your
-Morphe Desktop all-in-one JAR, which already contains the patcher, Kotlin runtime,
-and dexlib dependencies. No Gradle, GitHub credentials, or Android SDK is required.
+The repository now follows the official Morphe Gradle template. Local dependency
+resolution requires GitHub credentials with access to Morphe's package registry.
 
-From this folder in PowerShell, using the existing sibling JDK and Morphe JAR:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -TestDex ..\Peafowl\classes.dex
-```
-
-For another installation, supply paths explicitly:
+From this folder in PowerShell:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -MorpheJar 'C:\Tools\morphe-desktop-all.jar' -JdkHome 'C:\Tools\jdk' -TestDex 'C:\APKs\Peafowl\classes.dex'
+.\gradlew.bat :patches:buildAndroid
+.\gradlew.bat :patches:generatePatchesList
 ```
 
-The execution-policy option applies only to that build process; it does not change
-your system's PowerShell policy. Use JDK 17 or newer, capable of reading your Morphe JAR's class version. This
-project was built with JDK 26.0.2 and Morphe Desktop 1.15.1-dev.4 / Patcher 1.9.0.
-The output is an MPP with JVM bytecode. **It is not an Android Morphe bundle**:
-on-device patch loading would additionally require a DEX build of the patch code.
+The Android-compatible MPP is written to `patches/build/libs`. Use Java 21, matching
+the release workflow. `patches-list.json` is generated from the compiled bundle.
 
 ## Scope and implementation
 
@@ -76,7 +67,7 @@ the complete download/apply flow works.
 
 ## Verification
 
-`build.ps1 -TestDex ...` checks the real input DEX for a unique match, rejects
+The verification programs under `patches/src/test/java` check a real input DEX for a unique match, reject
 unrelated/ambiguous/changed/already-patched input, verifies one equal-width
 replacement, and writes/reloads a patched DEX. The regression check interprets the
 actual classification instructions for both paid and free SKUs: both must skip

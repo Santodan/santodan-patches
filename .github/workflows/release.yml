@@ -1,89 +1,54 @@
-name: Release Morphe patch bundle
+name: Release
 
 on:
   workflow_dispatch:
-
-permissions:
-  contents: write
+  push:
 
 jobs:
   release:
-    runs-on: windows-latest
-
+    name: Release
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+      attestations: write
+    runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - name: Setup Java
+        uses: actions/setup-java@v6.0.0
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '21'
 
-      - name: Download Morphe Desktop
-        shell: pwsh
-        run: |
-          $url = 'https://github.com/MorpheApp/morphe-desktop/releases/download/v1.15.1-dev.4/morphe-desktop-1.15.1-dev.4-all.jar'
-          Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP/morphe-desktop.jar"
-
-      - name: Download Android DEX compiler
-        shell: pwsh
-        run: |
-          $url = 'https://dl.google.com/dl/android/maven2/com/android/tools/r8/8.6.17/r8-8.6.17.jar'
-          Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP/r8.jar"
-
-      - name: Build patch bundle
-        shell: pwsh
-        run: |
-          ./build.ps1 `
-            -MorpheJar "$env:RUNNER_TEMP/morphe-desktop.jar" `
-            -JdkHome "$env:JAVA_HOME" `
-            -R8Jar "$env:RUNNER_TEMP/r8.jar"
-
-      - name: Validate metadata
-        shell: pwsh
-        run: |
-          $metadata = Get-Content bundle.properties -Raw | ConvertFrom-StringData
-          $bundle = Get-Content patches-bundle.json -Raw | ConvertFrom-Json
-          $list = Get-Content patches-list.json -Raw | ConvertFrom-Json
-
-          if ($bundle.version -ne $metadata.version) {
-            throw "patches-bundle.json version does not match bundle.properties"
-          }
-
-          if ($list.version -ne $metadata.version) {
-            throw "patches-list.json version does not match bundle.properties"
-          }
-
-          $expected = "santodan-patches-$($metadata.version).mpp"
-
-          if (-not (Test-Path -LiteralPath "dist/$expected")) {
-            throw "Missing built bundle: $expected"
-          }
-
-          "VERSION=$($metadata.version)" >> $env:GITHUB_ENV
-          "MPP_FILE=dist/$expected" >> $env:GITHUB_ENV
-
-      - name: Commit metadata
-        shell: pwsh
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add patches-bundle.json patches-list.json
-
-          if (-not (git diff --cached --quiet)) {
-            git commit -m "chore: update patch metadata for v${{ env.VERSION }}"
-            git push
-          }
-
-      - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
         with:
-          tag_name: v${{ env.VERSION }}
-          name: v${{ env.VERSION }}
-          body: SantoDan patches for Morphe ${{ env.VERSION }}
-          files: ${{ env.MPP_FILE }}
-          fail_on_unmatched_files: true
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Release
+        uses: cycjimmy/semantic-release-action@v6
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Attest
+        if: steps.release.outputs.new_release_published == 'true'
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-name: 'SantoDan Patches ${{ steps.release.outputs.new_release_git_tag }}'
+          subject-path: patches/build/libs/patches-*.mpp
+
+      - name: Verify project compiles
+        if: steps.release.outputs.new_release_published != 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew :patches:buildAndroid clean --no-daemon

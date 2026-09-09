@@ -2,6 +2,9 @@ package santodan.patches;
 
 import app.morphe.patcher.patch.BytecodePatch;
 import app.morphe.patcher.patch.PatchKt;
+import app.morphe.patcher.patch.ApkFileType;
+import app.morphe.patcher.patch.AppTarget;
+import app.morphe.patcher.patch.Compatibility;
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod;
 import com.android.tools.smali.dexlib2.Opcode;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11n;
@@ -13,7 +16,6 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
 import com.android.tools.smali.dexlib2.iface.reference.StringReference;
 import java.util.*;
 import java.util.logging.Logger;
-import kotlin.Pair;
 import kotlin.Unit;
 
 /** Route theme initialization through the existing free-theme path, before billing. */
@@ -31,7 +33,16 @@ public final class PeafowlThemeOwnershipPatch {
         return PatchKt.bytecodePatch(NAME,
             "Use Peafowl's local free-theme path without the billing preflight. Experimental; server downloads are not guaranteed.",
             false, builder -> {
-                builder.compatibleWith(new Pair<>(PACKAGE, Collections.singleton(VERSION)));
+                builder.compatibleWith(new Compatibility(
+                    PACKAGE,
+                    "Peafowl Theme Maker for EMUI",
+                    null,
+                    ApkFileType.APK,
+                    null,
+                    null,
+                    Collections.singletonList(new AppTarget(VERSION, false, null)),
+                    false
+                ));
                 builder.execute(context -> {
                     if (!PACKAGE.equals(context.getPackageMetadata().getPackageName())
                         || !VERSION.equals(context.getPackageMetadata().getVersionName()))

@@ -2,6 +2,9 @@ package santodan.patches;
 
 import app.morphe.patcher.patch.BytecodePatch;
 import app.morphe.patcher.patch.PatchKt;
+import app.morphe.patcher.patch.ApkFileType;
+import app.morphe.patcher.patch.AppTarget;
+import app.morphe.patcher.patch.Compatibility;
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod;
 import com.android.tools.smali.dexlib2.Opcode;
 import com.android.tools.smali.dexlib2.builder.BuilderOffsetInstruction;
@@ -16,7 +19,6 @@ import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReferen
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference;
 import java.util.*;
 import java.util.logging.Logger;
-import kotlin.Pair;
 import kotlin.Unit;
 
 /** Make Pillo's light/banner alarm mode use fullscreen only while the device is locked. */
@@ -36,7 +38,16 @@ public final class PilloHybridNotificationPatch {
         return PatchKt.bytecodePatch(NAME,
             "Use fullscreen alarms while the phone is locked and banner notifications while it is unlocked. Select Pillo's Banner/Light notification mode.",
             false, builder -> {
-                builder.compatibleWith(new Pair<>(PACKAGE, Collections.singleton(VERSION)));
+                builder.compatibleWith(new Compatibility(
+                    PACKAGE,
+                    "Pillo",
+                    null,
+                    ApkFileType.APK,
+                    null,
+                    null,
+                    Collections.singletonList(new AppTarget(VERSION, false, null)),
+                    false
+                ));
                 builder.execute(context -> {
                     if (!PACKAGE.equals(context.getPackageMetadata().getPackageName())
                         || !VERSION.equals(context.getPackageMetadata().getVersionName()))

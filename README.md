@@ -11,7 +11,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v0.2.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.2.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;4 patches total
+> **[v0.2.2](https://github.com/Santodan/santodan-patches/releases/tag/v0.2.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;4 patches total
 <details open>
 <summary>📦 Peafowl Theme Maker for EMUI&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>

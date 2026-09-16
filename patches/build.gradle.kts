@@ -2,10 +2,10 @@ group = "software.santodan.patches"
 
 patches {
     about {
-        name = "SantoDan Patches"
+        name = "Santodan Patches"
         description = "Independent Morphe patches for Reddit, Pillo, and Peafowl"
         source = "https://github.com/Santodan/santodan-patches"
-        author = "SantoDan"
+        author = "Santodan"
         contact = "https://github.com/Santodan"
         website = "https://morphe.software/add-source?github=Santodan/santodan-patches"
         license = "GPLv3"

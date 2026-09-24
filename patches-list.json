@@ -56,7 +56,7 @@
     },
     {
       "name": "Reddit - Content filters (Experimental)",
-      "description": "Adds keyword and per-community flair filters under Morphe > Filters, including cached and joined-community posts.",
+      "description": "Adds keyword and per-community flair filters under Morphe > Filters. Home-feed flair filtering requires Show flairs in home feed, which is installed automatically.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [

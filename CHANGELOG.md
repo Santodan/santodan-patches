@@ -1,3 +1,9 @@
+## [0.3.2](https://github.com/Santodan/santodan-patches/compare/v0.3.1...v0.3.2) (2026-09-24)
+
+### 🐛 Bug Fixes
+
+* **reddit:** make home flair patch independent ([cace58c](https://github.com/Santodan/santodan-patches/commit/cace58ceded9cc7b9b693335d68f311e03a04aa8))
+
 ## [0.3.1](https://github.com/Santodan/santodan-patches/compare/v0.3.0...v0.3.1) (2026-09-24)
 
 ### 🐛 Bug Fixes

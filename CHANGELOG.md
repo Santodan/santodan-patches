@@ -1,3 +1,9 @@
+## [0.3.1](https://github.com/Santodan/santodan-patches/compare/v0.3.0...v0.3.1) (2026-09-24)
+
+### 🐛 Bug Fixes
+
+* **reddit:** show flairs consistently in home feed ([a4cad27](https://github.com/Santodan/santodan-patches/commit/a4cad273aa8a6200d309386d80003ddd79f719ea))
+
 ## [0.3.0](https://github.com/Santodan/santodan-patches/compare/v0.2.2...v0.3.0) (2026-09-22)
 
 ### 🐛 Bug Fixes

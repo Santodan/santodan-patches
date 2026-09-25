@@ -6,6 +6,10 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+* **nuviotv:** update remaining episode count and side-by-side installation for 1.1.0-beta.2
+
 ### New Features
 
 * **nuviotv:** add remaining episode counts to Continue Watching

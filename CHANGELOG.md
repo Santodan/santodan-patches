@@ -1,3 +1,9 @@
+## [0.4.0](https://github.com/Santodan/santodan-patches/compare/v0.3.2...v0.4.0) (2026-09-25)
+
+### ✨ New Features
+
+* **nuviotv:** publish remaining episode count patch ([99f6ea2](https://github.com/Santodan/santodan-patches/commit/99f6ea28a4b6c3974a662a8f21ac7790073d9eae))
+
 ## Unreleased
 
 ### New Features

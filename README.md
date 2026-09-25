@@ -11,9 +11,9 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v0.3.2](https://github.com/Santodan/santodan-patches/releases/tag/v0.3.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;6 patches total
+> **[v0.3.2](https://github.com/Santodan/santodan-patches/releases/tag/v0.3.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;7 patches total
 <details open>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -24,6 +24,7 @@ https://github.com/Santodan/santodan-patches
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default Continue Watching setting that displays aired, unwatched episode counts for every tracking integration. |  |
+| [NuvioTV - Side-by-side installation](#nuviotv-side-by-side-installation) | Installs the patched app as NuvioTV Patched beside the official NuvioTV app. |  |
 
 </details>
 
@@ -108,7 +109,7 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 
 | App | Package | Supported version | Patch |
 | --- | --- | --- | --- |
-| NuvioTV | `com.nuvio.tv` | `1.1.0-beta.1` | Remaining episodes in Continue Watching |
+| NuvioTV | `com.nuvio.tv` | `1.1.0-beta.1` | Remaining episodes in Continue Watching; Side-by-side installation |
 | Reddit | `com.reddit.frontpage` | `2026.37.0` | Content filters (Experimental); Show flairs in home feed (Experimental); Start as guest |
 | Peafowl Theme Maker for EMUI | `h7.hamzio.emuithemeotg` | `GMS_27.5.1` | Unlock Theme Ownership (Experimental) |
 | Pillo | `xyz.rtrvr.pillo` | `0.6.19` | Hybrid Lock-Screen Notifications |

@@ -1,3 +1,9 @@
+## [0.4.1](https://github.com/Santodan/santodan-patches/compare/v0.4.0...v0.4.1) (2026-09-25)
+
+### 🐛 Bug Fixes
+
+* **nuviotv:** support beta2 remaining count and side-by-side install ([b5976a1](https://github.com/Santodan/santodan-patches/commit/b5976a107bca80fab4f7860ff965b0b8caeb32a9))
+
 ## [0.4.0](https://github.com/Santodan/santodan-patches/compare/v0.3.2...v0.4.0) (2026-09-25)
 
 ### ✨ New Features

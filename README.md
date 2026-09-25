@@ -13,7 +13,7 @@ Recent NuvioTV additions include an optional remaining-episode counter for Conti
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v0.4.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.4.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;7 patches total
+> **[v0.4.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.4.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;7 patches total
 <details open>
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>

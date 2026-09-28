@@ -13,7 +13,7 @@ Recent NuvioTV additions include merged tracking progress, an optional remaining
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v0.4.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.4.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
+> **[v0.5.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.5.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;8 patches total
 <details open>
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;3 patches</summary>
 <br>
@@ -25,9 +25,9 @@ Recent NuvioTV additions include merged tracking progress, an optional remaining
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [NuvioTV - Merge tracking progress](#nuviotv-merge-tracking-progress) | Merges Nuvio Sync and connected tracking-provider progress using a selectable conflict strategy. |  |
+| [NuvioTV - Merge tracking progress](#nuviotv-merge-tracking-progress) | Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh. |  |
 | [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default Continue Watching setting that displays aired, unwatched episode counts for every tracking integration. |  |
-| [NuvioTV - Side-by-side installation](#nuviotv-side-by-side-installation) | Installs the patched app as NuvioTV Patched beside the official NuvioTV app. |  |
+| [NuvioTV - Side-by-side installation](#nuviotv-side-by-side-installation) | Installs a separately named NuvioTV clone using a configurable package name and app name. | • Package name<br>• App name |
 
 </details>
 

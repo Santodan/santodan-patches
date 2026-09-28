@@ -1,3 +1,14 @@
+## [0.5.0](https://github.com/Santodan/santodan-patches/compare/v0.4.1...v0.5.0) (2026-09-28)
+
+### 🐛 Bug Fixes
+
+* **nuviotv:** preserve and refresh merged progress ([3e7595b](https://github.com/Santodan/santodan-patches/commit/3e7595bc1a830c88136ec0e068dfeae9a203172a))
+
+### ✨ New Features
+
+* **nuviotv:** add merged tracking progress [skip ci] ([be772fe](https://github.com/Santodan/santodan-patches/commit/be772fe379f73156595e1f4def5546e83525b417))
+* **nuviotv:** configure side-by-side installation ([1cfc77e](https://github.com/Santodan/santodan-patches/commit/1cfc77e21814eed47a5035053d096950227622cf))
+
 ## [0.4.1](https://github.com/Santodan/santodan-patches/compare/v0.4.0...v0.4.1) (2026-09-25)
 
 ### 🐛 Bug Fixes

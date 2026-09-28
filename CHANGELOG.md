@@ -12,14 +12,9 @@
 
 ## Unreleased
 
-### Bug Fixes
-
-* **nuviotv:** update remaining episode count and side-by-side installation for 1.1.0-beta.2
-
 ### New Features
 
-* **nuviotv:** add remaining episode counts to Continue Watching
-* **nuviotv:** support side-by-side installation with the official app
+* **nuviotv:** add selectable merged tracking progress for Continue Watching
 
 ## [0.3.2](https://github.com/Santodan/santodan-patches/compare/v0.3.1...v0.3.2) (2026-09-24)
 

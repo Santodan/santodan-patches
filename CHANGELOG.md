@@ -17,6 +17,10 @@
 * **nuviotv:** add selectable merged tracking progress for Continue Watching
 * **nuviotv:** make the side-by-side package and app names configurable for multiple test installations
 
+### Bug Fixes
+
+* **nuviotv:** preserve merged Continue Watching during startup and refresh providers before publishing updates
+
 ## [0.3.2](https://github.com/Santodan/santodan-patches/compare/v0.3.1...v0.3.2) (2026-09-24)
 
 ### 🐛 Bug Fixes

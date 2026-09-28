@@ -9,12 +9,22 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import java.util.ArrayList
+import java.util.HashSet
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.runBlocking
+import org.json.JSONArray
+import org.json.JSONObject
 
 /** Runtime bridge for the optional merged watch-progress snapshot. */
 object NuvioMergedProgress {
@@ -23,6 +33,7 @@ object NuvioMergedProgress {
     private const val ENABLED = "enabled"
     private const val STRATEGY = "strategy"
     private const val RECENT = "recent"
+    private const val SNAPSHOT = "snapshot"
     private val merging = AtomicBoolean(false)
     @Volatile private var repository: Any? = null
     @Volatile private var allProgressMethod = "q"
@@ -30,6 +41,7 @@ object NuvioMergedProgress {
     @Volatile private var providerProxy: Any? = null
     private val mergedProgress = MutableStateFlow<List<Any>>(emptyList())
     private val mergedNextUpSeeds = MutableStateFlow<List<Any>>(emptyList())
+    private val mergedSnapshotReady = MutableStateFlow(false)
     private val authenticated = MutableStateFlow(true)
     private val originByContent = ConcurrentHashMap<String, String>()
     private val providerBySource = ConcurrentHashMap<String, Any>()
@@ -40,6 +52,7 @@ object NuvioMergedProgress {
         // list-backed flow.
         allProgressMethod = "q"
         if (enabled()) {
+            restoreSnapshot(value.javaClass.classLoader)
             mergeAsync()
         }
     }
@@ -53,7 +66,13 @@ object NuvioMergedProgress {
         synchronized(this) {
             providerProxy?.takeIf { proxyRepository === repo }?.let { return it }
             val providerInterface = repo.javaClass.classLoader.loadClass("ca.a0")
-            val delegate = firstProvider(repo)
+            // Keep Nuvio's currently selected provider visible until the first
+            // merged refresh is ready. Starting these flows at empty makes Home
+            // briefly remove every Continue Watching card on each app launch.
+            val delegate = nativeProvider ?: firstProvider(repo)
+            seedFromNativeProvider(delegate)
+            val progressFlow = retainedFlow(delegate, allProgressMethod, mergedProgress)
+            val nextUpFlow = retainedFlow(delegate, "f", mergedNextUpSeeds)
             val created = Proxy.newProxyInstance(repo.javaClass.classLoader, arrayOf(providerInterface)) { proxy, method, args ->
                 when {
                     method.declaringClass == Any::class.java && method.name == "toString" -> "SantodanMergedProgressProvider"
@@ -65,8 +84,8 @@ object NuvioMergedProgress {
                     // f() remains nextUpSeeds. These must remain
                     // separate: completed history records are valid progress but
                     // must never be published wholesale as Continue Watching seeds.
-                    method.parameterCount == 0 && method.name == allProgressMethod -> mergedProgress
-                    method.parameterCount == 0 && method.name == "f" -> mergedNextUpSeeds
+                    method.parameterCount == 0 && method.name == allProgressMethod -> progressFlow
+                    method.parameterCount == 0 && method.name == "f" -> nextUpFlow
                     method.parameterCount == 0 && method.name == "b" -> authenticated
                     // Route provider-specific reconciliation back to the provider
                     // that supplied this show's winning Continue Watching seed.
@@ -194,6 +213,11 @@ object NuvioMergedProgress {
         for (provider in providers) {
             val authenticated = (findMethod(provider.javaClass, "b", 0).invoke(provider) as Flow<Any>).first() as? Boolean ?: false
             if (!authenticated) continue
+            // Nuvio's provider implementations attach their remote Continue
+            // Watching synchronization to nextUpSeeds.onStart. Collect this
+            // before allProgress so a launch merge does not publish the stale
+            // pre-refresh progress snapshot.
+            val seeds = (findMethod(provider.javaClass, "f", 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
             val items = (findMethod(provider.javaClass, allProgressMethod, 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
             if (items != null) {
                 val source = provider.javaClass.simpleName
@@ -201,7 +225,6 @@ object NuvioMergedProgress {
                 sourceCounts.add("$source=${items.size}")
                 sourceItems[source] = items
                 candidates.addAll(items)
-                val seeds = (findMethod(provider.javaClass, "f", 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
                 sourceSeeds[source] = seeds.orEmpty()
             }
         }
@@ -256,7 +279,9 @@ object NuvioMergedProgress {
         Handler(Looper.getMainLooper()).post {
             mergedProgress.value = published
             mergedNextUpSeeds.value = publishedSeeds
+            mergedSnapshotReady.value = true
         }
+        persistSnapshot(published, publishedSeeds, origins)
         Log.d(TAG, "Sources: ${sourceCounts.joinToString()}")
         Log.d(TAG, "Published ${merged.size} progress entries and ${publishedSeeds.size} next-up seeds for ${histories.size} shows from ${candidates.size} provider records")
     }
@@ -300,14 +325,12 @@ object NuvioMergedProgress {
 
     @JvmStatic fun adjustNextUpSeedDecision(progress: Any, nativeDecision: Boolean): Boolean {
         if (!enabled()) return nativeDecision
-        val provider = providerForProgress(progress) ?: return nativeDecision
-        return runCatching {
-            findMethod(provider.javaClass, "i", 2)
-                .invoke(provider, progress, System.currentTimeMillis()) as Boolean
-        }.getOrElse { error ->
-            Log.e(TAG, "Unable to apply origin provider seed policy", error)
-            nativeDecision
-        }
+        // Every item in mergedNextUpSeeds has already passed its origin
+        // provider's policy. Re-running that policy through an obfuscated method
+        // name is both redundant and unsafe because each implementation can be
+        // optimized to a different method name.
+        val progressKey = key(progress)
+        return mergedNextUpSeeds.value.any { key(it) == progressKey } || nativeDecision
     }
 
     private fun providerForContent(contentId: String?): Any? =
@@ -332,6 +355,145 @@ object NuvioMergedProgress {
 
     private fun number(item: Any, name: String): Double =
         (runCatching { findMethod(item.javaClass, name, 0).invoke(item) }.getOrNull() as? Number)?.toDouble() ?: 0.0
+
+    @Suppress("UNCHECKED_CAST")
+    private fun seedFromNativeProvider(provider: Any?) {
+        if (provider == null) return
+        runCatching {
+            val progress = cachedCollection(provider, allProgressMethod)
+            val seeds = cachedCollection(provider, "f")
+            if (mergedProgress.value.isEmpty() && progress.isNotEmpty()) {
+                mergedProgress.value = ArrayList(progress)
+            }
+            if (mergedNextUpSeeds.value.isEmpty() && seeds.isNotEmpty()) {
+                mergedNextUpSeeds.value = ArrayList(seeds)
+            }
+            Log.d(TAG, "Preserved native snapshot: progress=${progress.size}, next-up=${seeds.size}")
+        }.onFailure { error ->
+            // A missing cache must not prevent the normal background merge.
+            Log.w(TAG, "Unable to preserve native snapshot", error)
+        }
+    }
+
+    private fun cachedCollection(provider: Any, methodName: String): Collection<Any> {
+        val flow = findMethod(provider.javaClass, methodName, 0).invoke(provider)
+        val cached = (flow as? StateFlow<*>)?.value
+        return (cached as? Collection<*>)?.filterNotNull().orEmpty()
+    }
+
+    private fun persistSnapshot(progress: List<Any>, seeds: List<Any>, origins: Map<String, String>) {
+        runCatching {
+            val root = JSONObject()
+                .put("progress", encodeItems(progress))
+                .put("seeds", encodeItems(seeds))
+            val encodedOrigins = JSONObject()
+            origins.forEach(encodedOrigins::put)
+            root.put("origins", encodedOrigins)
+            preferences().edit().putString(SNAPSHOT, root.toString()).apply()
+        }.onFailure { error -> Log.w(TAG, "Unable to persist merged snapshot", error) }
+    }
+
+    private fun restoreSnapshot(loader: ClassLoader?) {
+        if (mergedSnapshotReady.value) return
+        runCatching {
+            val encoded = preferences().getString(SNAPSHOT, null) ?: return
+            val root = JSONObject(encoded)
+            val model = requireNotNull(loader).loadClass("com.nuvio.tv.domain.model.WatchProgress")
+            val progress = decodeItems(root.optJSONArray("progress"), model)
+            val seeds = decodeItems(root.optJSONArray("seeds"), model)
+            if (progress.isEmpty() && seeds.isEmpty()) return
+            mergedProgress.value = progress
+            mergedNextUpSeeds.value = seeds
+            val encodedOrigins = root.optJSONObject("origins")
+            if (encodedOrigins != null) {
+                val restoredOrigins = HashMap<String, String>()
+                encodedOrigins.keys().forEach { key -> restoredOrigins[key] = encodedOrigins.getString(key) }
+                originByContent.putAll(restoredOrigins)
+            }
+            mergedSnapshotReady.value = true
+            Log.d(TAG, "Restored merged snapshot: progress=${progress.size}, next-up=${seeds.size}")
+        }.onFailure { error ->
+            preferences().edit().remove(SNAPSHOT).apply()
+            Log.w(TAG, "Unable to restore merged snapshot", error)
+        }
+    }
+
+    private fun encodeItems(items: List<Any>): JSONArray = JSONArray().also { array ->
+        items.forEach { item ->
+            val json = JSONObject()
+            SNAPSHOT_GETTERS.forEach { (key, getter) ->
+                val value = runCatching { findMethod(item.javaClass, getter, 0).invoke(item) }.getOrNull()
+                json.put(key, value ?: JSONObject.NULL)
+            }
+            val excluded = runCatching {
+                findMethod(item.javaClass, "getExcludedNextUpSeasons", 0).invoke(item) as? Collection<*>
+            }.getOrNull().orEmpty()
+            json.put("excludedNextUpSeasons", JSONArray(excluded))
+            array.put(json)
+        }
+    }
+
+    private fun decodeItems(array: JSONArray?, model: Class<*>): ArrayList<Any> {
+        val result = ArrayList<Any>()
+        if (array == null) return result
+        val constructor = model.declaredConstructors.single { it.parameterCount == 26 }.apply { isAccessible = true }
+        for (index in 0 until array.length()) {
+            val json = array.getJSONObject(index)
+            val excluded = HashSet<Int>()
+            json.optJSONArray("excludedNextUpSeasons")?.let { values ->
+                for (item in 0 until values.length()) excluded.add(values.getInt(item))
+            }
+            val restored = constructor.newInstance(
+                json.requiredString("contentId"), json.requiredString("contentType"),
+                json.requiredString("name"), json.nullableString("poster"),
+                json.nullableString("backdrop"), json.nullableString("logo"),
+                json.requiredString("videoId"), json.nullableInt("season"),
+                json.nullableInt("episode"), json.nullableString("episodeTitle"),
+                json.getLong("position"), json.getLong("duration"), json.getLong("lastWatched"),
+                json.nullableString("addonBaseUrl"), json.nullableFloat("progressPercent"),
+                json.requiredString("source"), json.nullableLong("traktPlaybackId"),
+                json.nullableInt("traktMovieId"), json.nullableInt("traktShowId"),
+                json.nullableInt("traktEpisodeId"), json.nullableLong("simklPlaybackId"),
+                json.nullableString("trackingProviderId"), json.nullableString("trackingProviderItemId"),
+                json.nullableString("trackingSourceUrl"), json.nullableFloat("completionThresholdOverride"),
+                excluded,
+            )
+            result.add(restored)
+        }
+        return result
+    }
+
+    private fun JSONObject.requiredString(key: String): String = getString(key)
+    private fun JSONObject.nullableString(key: String): String? = if (isNull(key)) null else getString(key)
+    private fun JSONObject.nullableInt(key: String): Int? = if (isNull(key)) null else getInt(key)
+    private fun JSONObject.nullableLong(key: String): Long? = if (isNull(key)) null else getLong(key)
+    private fun JSONObject.nullableFloat(key: String): Float? = if (isNull(key)) null else getDouble(key).toFloat()
+
+    @Suppress("UNCHECKED_CAST")
+    private fun retainedFlow(
+        provider: Any?,
+        methodName: String,
+        merged: StateFlow<List<Any>>,
+    ): Flow<List<Any>> {
+        val native = runCatching {
+            if (provider == null) null
+            else findMethod(provider.javaClass, methodName, 0).invoke(provider) as? Flow<Any>
+        }.getOrNull()
+        if (native == null) return merged
+        return flow {
+            // Do not forward the provider's startup empty value. Nuvio keeps its
+            // existing Home state until a provider has a real update; mirror that
+            // behavior, then hand the stream over to the merged snapshot.
+            val initial = merged.value.takeIf { it.isNotEmpty() } ?: merge(
+                native.mapNotNull { value ->
+                    (value as? Collection<*>)?.filterNotNull()?.takeIf { it.isNotEmpty() }
+                },
+                mergedSnapshotReady.filter { it }.map { merged.value },
+            ).first()
+            emit(initial)
+            emitAll(merged)
+        }
+    }
 
     private fun firstProvider(repo: Any): Any? = runCatching {
         val registry = field(repo, "k").get(repo)
@@ -384,4 +546,18 @@ object NuvioMergedProgress {
     private fun application(): Application = Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as Application
     private fun field(owner: Any, name: String): Field = owner.javaClass.getDeclaredField(name).apply { isAccessible = true }
     private fun findMethod(owner: Class<*>, name: String, count: Int): Method = owner.declaredMethods.single { it.name == name && it.parameterCount == count }.apply { isAccessible = true }
+
+    private val SNAPSHOT_GETTERS = linkedMapOf(
+        "contentId" to "getContentId", "contentType" to "getContentType", "name" to "getName",
+        "poster" to "getPoster", "backdrop" to "getBackdrop", "logo" to "getLogo",
+        "videoId" to "getVideoId", "season" to "getSeason", "episode" to "getEpisode",
+        "episodeTitle" to "getEpisodeTitle", "position" to "getPosition", "duration" to "getDuration",
+        "lastWatched" to "getLastWatched", "addonBaseUrl" to "getAddonBaseUrl",
+        "progressPercent" to "getProgressPercent", "source" to "getSource",
+        "traktPlaybackId" to "getTraktPlaybackId", "traktMovieId" to "getTraktMovieId",
+        "traktShowId" to "getTraktShowId", "traktEpisodeId" to "getTraktEpisodeId",
+        "simklPlaybackId" to "getSimklPlaybackId", "trackingProviderId" to "getTrackingProviderId",
+        "trackingProviderItemId" to "getTrackingProviderItemId", "trackingSourceUrl" to "getTrackingSourceUrl",
+        "completionThresholdOverride" to "getCompletionThresholdOverride",
+    )
 }

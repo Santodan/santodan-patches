@@ -22,7 +22,7 @@ public final class NuvioMergedProgressPatch {
     @SuppressWarnings({"unchecked", "deprecation"})
     public static BytecodePatch getNuvioMergedProgressPatch() {
         return PatchKt.bytecodePatch(NAME,
-            "Merges Nuvio Sync and connected tracking-provider progress using a selectable conflict strategy.",
+            "Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility("com.nuvio.tv", "NuvioTV", null, ApkFileType.APK,
                     null, null, List.of(new AppTarget("1.1.0-beta.2", false, null)), false));

@@ -8,7 +8,7 @@ Independent patches for the [Morphe](https://morphe.software/) patcher.
 https://github.com/Santodan/santodan-patches
 ```
 
-Recent NuvioTV additions include merged tracking progress, an optional remaining-episode counter for Continue Watching, and side-by-side installation with the official app. The side-by-side patch lets you choose a unique Android package name and launcher app name, so multiple patched test installations can coexist on the same device.
+Recent NuvioTV additions include merged tracking progress, an optional remaining-episode counter for Continue Watching, and side-by-side installation with the official app. Merged progress preserves the last successful Continue Watching snapshot during startup and replaces it after connected providers refresh. The side-by-side patch lets you choose a unique Android package name and launcher app name, so multiple patched test installations can coexist on the same device.
 
 ## Patches
 

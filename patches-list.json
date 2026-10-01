@@ -211,6 +211,13 @@
           "signatures": null,
           "targets": [
             {
+              "version": "0.6.20",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
               "version": "0.6.19",
               "versionCodes": null,
               "isExperimental": false,

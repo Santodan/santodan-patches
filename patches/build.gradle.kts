@@ -49,6 +49,14 @@ tasks {
         args(fileTree("../../.inspect-reddit") { include("classes*.dex") }.files.sorted().map { it.absolutePath })
     }
 
+    register<JavaExec>("verifyPilloPatch") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyPilloPatch")
+        val input = file("../../.inspect-pillo-620/classes15.dex")
+        args(input.absolutePath, file("${layout.buildDirectory.get()}/verification/pillo-classes15.dex").absolutePath)
+    }
+
     register<JavaExec>("generatePatchesList") {
         description = "Build patch with patch list"
 

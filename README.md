@@ -12,6 +12,8 @@ MEO 5.7.0 patches provide a separately installable clone and compatibility handl
 
 Recent NuvioTV additions include merged tracking progress, an optional remaining-episode counter for Continue Watching, and side-by-side installation with the official app. Merged progress preserves the last successful Continue Watching snapshot during startup and replaces it after connected providers refresh. The side-by-side patch lets you choose a unique Android package name and launcher app name, so multiple patched test installations can coexist on the same device.
 
+Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Banner/Light mode, it keeps fullscreen alarms while the device is locked and uses banner notifications while the device is unlocked.
+
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
@@ -70,8 +72,8 @@ Recent NuvioTV additions include merged tracking progress, an optional remaining
 
 **🎯 Supported versions:**
 
-| 0.6.19 |
-| :---: |
+| 0.6.20 | 0.6.19 |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
@@ -134,6 +136,6 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 | NuvioTV | `com.nuvio.tv` | `1.1.0-beta.2` | Merge tracking progress; Remaining episodes in Continue Watching; Side-by-side installation |
 | Reddit | `com.reddit.frontpage` | `2026.37.0` | Content filters (Experimental); Show flairs in home feed (Experimental); Start as guest |
 | Peafowl Theme Maker for EMUI | `h7.hamzio.emuithemeotg` | `GMS_27.5.1` | Unlock Theme Ownership (Experimental) |
-| Pillo | `xyz.rtrvr.pillo` | `0.6.19` | Hybrid Lock-Screen Notifications |
+| Pillo | `xyz.rtrvr.pillo` | `0.6.19`, `0.6.20` | Hybrid Lock-Screen Notifications |
 
 See [AI_Guide.md](AI_Guide.md) for implementation details and device-testing notes.

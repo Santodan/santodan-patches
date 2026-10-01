@@ -30,6 +30,10 @@
 * **nuviotv:** add selectable merged tracking progress for Continue Watching
 * **nuviotv:** make the side-by-side package and app names configurable for multiple test installations
 
+### Updated App Support
+
+* **pillo:** support version 0.6.20 while retaining 0.6.19 compatibility
+
 ### Bug Fixes
 
 * **meo:** rename the app-owned permission, task affinity, and all provider authorities, including the bare package authority

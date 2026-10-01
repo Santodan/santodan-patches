@@ -1,12 +1,37 @@
 # Santodan Patches
 
-An independent patch bundle for **Morphe Desktop**, targeting Peafowl Theme Maker
-`GMS_27.5.1`, package `h7.hamzio.emuithemeotg`.
-
-Patch: **Peafowl - Unlock Theme Ownership (Experimental)**.
+An independent patch bundle for **Morphe Desktop**, targeting MEO Android TV,
+NuvioTV, Reddit, Pillo, and Peafowl Theme Maker.
 
 Build the bundle with the official Morphe Gradle project, then import the generated
 `patches/build/libs/patches-<version>.mpp` into Morphe Desktop or Manager.
+
+## MEO Android TV 5.7.0
+
+Use the original `com.alticelabs.meo.androidtv` 5.7.0 APKM. Enable both patches:
+
+1. **MEO - Side-by-side installation** changes the manifest package and launcher
+   label. It also renames the application task affinity, the app-defined dynamic
+   receiver permission and its matching `uses-permission`, and every content-provider
+   authority. This includes the search provider whose original authority is exactly
+   `com.alticelabs.meo.androidtv`, not merely a package-prefixed suffix.
+2. **MEO - Spoof supported device** changes the provisioning payload's manufacturer
+   and model to `Sagemcom` and `DIW3930`. MEO can still return the non-fatal
+   `WARNCODE_DEVICE_NOT_CERTIFIED_INFO_MODEL_INVALID_VALUE` warning after evaluating
+   the remaining hardware fields server-side, so the patch also disables that one
+   equipment-warning route. This is equivalent to the app remembering the user's
+   **Watch TV** choice. Fatal provisioning and authentication failures are untouched.
+
+The side-by-side defaults are package `com.alticelabs.meo.androidtv.santodan` and
+label `MEO Patched`; both are configurable. Always rebuild from the original APKM.
+If replacing an existing patched clone, use the same package name and signing key.
+
+Verification must include applying both patches to the real APKM, DEX and cross-DEX
+verification, APK signature verification, and inspection of all resulting manifest
+authorities. No resulting authority or app-owned permission may equal one from the
+official installation. Device testing is still required for server-side behavior.
+
+## Peafowl Theme Maker
 
 ## Apply and test
 

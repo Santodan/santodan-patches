@@ -12,12 +12,16 @@ MEO 5.7.0 patches provide a separately installable clone and compatibility handl
 
 Recent NuvioTV additions include merged tracking progress, an optional remaining-episode counter for Continue Watching, and side-by-side installation with the official app. Merged progress preserves the last successful Continue Watching snapshot during startup and replaces it after connected providers refresh. The side-by-side patch lets you choose a unique Android package name and launcher app name, so multiple patched test installations can coexist on the same device.
 
+On NuvioTV **1.1.0-beta.4**, the independent **Keep airing series in Upcoming** patch adds a disabled-by-default setting under Continue Watching. Enable **Show unaired next up episodes**, select **Separate Upcoming Row**, then enable **Keep airing series in Upcoming**. Series with future scheduled episodes stay in Upcoming until the latest known episode airs, retaining labels such as New Season. Poster, Card, and Wide displays show the scheduled finale date as a bottom-center blue badge with white text in `dd-MMM` format. The badge overlays card captions. Dates come from Nuvio's catalog; an unknown finale is not estimated.
+
+The beta4 Remaining Episodes patch also correctly reads aired episodes instead of provider aliases, fixing counts that changed to `6` after synchronization.
+
 Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Banner/Light mode, it keeps fullscreen alarms while the device is locked and uses banner notifications while the device is unlocked.
 
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v0.6.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.6.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;10 patches total
+> **[v0.6.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.6.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;11 patches total
 <details open>
 <summary>📦 MEO (Android TV)&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -35,16 +39,17 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 </details>
 
 <details open>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;3 patches</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>
 
 **🎯 Supported versions:**
 
-| 1.1.0-beta.2 |
+| 1.1.0-beta.4 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
+| [NuvioTV - Keep airing series in Upcoming](#nuviotv-keep-airing-series-in-upcoming) | Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale. |  |
 | [NuvioTV - Merge tracking progress](#nuviotv-merge-tracking-progress) | Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh. |  |
 | [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default Continue Watching setting that displays aired, unwatched episode counts for every tracking integration. |  |
 | [NuvioTV - Side-by-side installation](#nuviotv-side-by-side-installation) | Installs a separately named NuvioTV clone using a configurable package name and app name. | • Package name<br>• App name |

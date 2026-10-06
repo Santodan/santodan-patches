@@ -4,6 +4,7 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableClass;
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile;
 import com.android.tools.smali.dexlib2.Opcodes;
 import com.android.tools.smali.dexlib2.iface.*;
+import com.android.tools.smali.dexlib2.iface.instruction.Instruction;
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction;
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
 import software.santodan.extension.nuviomerged.NuvioProviderLayout;
@@ -102,8 +103,21 @@ public final class VerifyNuvioLayout {
         for (String type : List.of(newer ? "Lva/x0;" : "Lib/x0;",
                 newer ? "Lx5/i2;" : "Lx5/k2;", newer ? "Lva/l0;" : "Lib/l0;",
                 newer ? "Lba/d3;" : "Lpa/g1;", "Lw1/n;", "Ld2/g0;")) owner(type);
+        if (newer) {
+            field("Lw1/b;", "h", "Lw1/i;");
+            method("Le0/v;", "a", 2);
+            field("Le0/v;", "a", "Le0/v;");
+        }
         System.out.println("PASS: reflection contracts for " + version);
-
+        if (newer) {
+            method("Lw1/v;", "<init>", 1);
+            method("Lw1/q;", "d", 1);
+            boolean zIndex = false;
+            for (Method m : owner("Lw1/v;").getMethods()) if ("toString".equals(m.getName()))
+                for (var i : m.getImplementation().getInstructions()) if (i instanceof ReferenceInstruction
+                    && ((ReferenceInstruction)i).getReference().toString().contains("ZIndexElement(zIndex=")) zIndex = true;
+            if (!zIndex) throw new AssertionError("Badge overlay modifier is not ZIndexElement");
+        }
         hook("hookRepository", owner(repository));
         if (newer) {
             hook("hookInlinedCutoff", owner("Lla/h5;"));
@@ -122,11 +136,21 @@ public final class VerifyNuvioLayout {
         NuvioRemainingEpisodesPatch.hookNextUpModel(owner(model));
         NuvioRemainingEpisodesPatch.hookEpisodeSets(owner(NuvioLayout.type(version, "Lza/z4;")),
             newer ? "Lla/z3;" : "Lza/k3;");
+        if (newer) verifyRemainingAiredMap(owner("Lla/t5;"));
         NuvioRemainingEpisodesPatch.hookSettings(owner(newer ? "Lsa/o3;" : "Lfb/t6;"),
             newer ? 0x7f1106c1 : 0x7f1106a7);
         NuvioRemainingEpisodesPatch.hookCard(owner(newer ? "Lba/e2;" : "Lpa/q0;"),
             newer ? "Lc7/a;" : "Lfb/jk;");
         System.out.println("PASS: remaining-episode hooks");
+        if (newer) {
+            NuvioAiringSeriesPatch.hookNextUpModel(owner(model));
+            NuvioAiringSeriesPatch.hookSettings(owner("Lsa/o3;"), 0x7f1106c1);
+            NuvioAiringSeriesPatch.hookUpcomingSplit(owner("Lla/t5;"));
+            verifyAiringSplitCall(owner("Lla/t5;"));
+            NuvioAiringSeriesPatch.hookCard(owner("Lba/e2;"), "Lc7/a;");
+            NuvioAiringSeriesPatch.hookWide(owner("Lba/d3;"));
+            System.out.println("PASS: standalone airing-series hooks");
+        }
 
         File output = new File(args[2]);
         output.getParentFile().mkdirs();
@@ -137,4 +161,40 @@ public final class VerifyNuvioLayout {
         }
         System.out.println("PASS: modified DEX writes and reloads");
     }
+
+    private static void verifyAiringSplitCall(MutableClass owner) {
+        for (Method method : owner.getMethods()) {
+            if (!"E".equals(method.getName()) || method.getParameterTypes().size() != 2) continue;
+            for (var instruction : method.getImplementation().getInstructions()) {
+                if (!(instruction instanceof com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction)
+                    || !(instruction instanceof ReferenceInstruction)) continue;
+                Object reference = ((ReferenceInstruction) instruction).getReference();
+                if (!(reference instanceof com.android.tools.smali.dexlib2.iface.reference.MethodReference)) continue;
+                var called = (com.android.tools.smali.dexlib2.iface.reference.MethodReference) reference;
+                if (!called.getDefiningClass().contains("NuvioAiringSeries") || !"effectiveHasAired".equals(called.getName())) continue;
+                var invoke = (com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction) instruction;
+                if (called.getParameterTypes().size() != 1
+                    || !"Ljava/lang/Object;".contentEquals(called.getParameterTypes().get(0)))
+                    throw new AssertionError("Airing split bridge descriptor has unsafe register types");
+                System.out.println("PASS: airing split bridge consumes the model before v"
+                    + invoke.getRegisterC() + " is overwritten with the boolean result");
+                return;
+            }
+        }
+        throw new AssertionError("Airing split bridge call not found");
+    }
+
+    private static void verifyRemainingAiredMap(MutableClass owner) {
+        for (Method method : owner.getMethods()) {
+            if (!"g".equals(method.getName()) || method.getParameterTypes().size() != 2) continue;
+            Instruction first = method.getImplementation().getInstructions().iterator().next();
+            if (first instanceof ReferenceInstruction) {
+                Object reference = ((ReferenceInstruction) first).getReference();
+                if (reference instanceof FieldReference && "Lla/z3;".equals(((FieldReference) reference).getDefiningClass())
+                    && "T0".equals(((FieldReference) reference).getName())) return;
+            }
+        }
+        throw new AssertionError("Remaining hook does not read beta4's aired-episode map T0");
+    }
+
 }

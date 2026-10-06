@@ -1,13 +1,13 @@
 package santodan.patches;
 
 import app.morphe.patcher.patch.ApkFileType;
+import app.morphe.patcher.patch.AppTarget;
 import app.morphe.patcher.patch.BytecodePatch;
 import app.morphe.patcher.patch.Compatibility;
 import app.morphe.patcher.patch.PatchKt;
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass;
 import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod;
 import com.android.tools.smali.dexlib2.Opcode;
-import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction22c;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction3rc;
 import com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction35c;
 import com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction;
@@ -15,9 +15,9 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction;
 import com.android.tools.smali.dexlib2.iface.instruction.NarrowLiteralInstruction;
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction;
 import com.android.tools.smali.dexlib2.iface.instruction.RegisterRangeInstruction;
+import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction;
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
 import com.android.tools.smali.dexlib2.iface.reference.MethodReference;
-import com.android.tools.smali.dexlib2.immutable.reference.ImmutableFieldReference;
 import com.android.tools.smali.dexlib2.immutable.reference.ImmutableMethodReference;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,44 +32,62 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import kotlin.Unit;
 
-/** Adds an opt-in aired/unwatched episode count to Nuvio's Continue Watching cards. */
-public final class NuvioRemainingEpisodesPatch {
-    public static final String NAME = "NuvioTV - Remaining episodes in Continue Watching";
+/** Keeps currently-airing library series in Nuvio's separate Upcoming row. */
+public final class NuvioAiringSeriesPatch {
+    public static final String NAME = "NuvioTV - Keep airing series in Upcoming";
     static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = "1.1.0-beta.2";
-    static final String EXTENSION = "Lsoftware/santodan/extension/nuvioremaining/NuvioRemainingEpisodes;";
+    static final String VERSION = NuvioLayout.BETA4;
+    static final String EXTENSION = "Lsoftware/santodan/extension/nuvioairing/NuvioAiringSeries;";
 
-    private NuvioRemainingEpisodesPatch() {}
+    private NuvioAiringSeriesPatch() {}
 
     @SuppressWarnings({"unchecked", "deprecation"})
-    public static BytecodePatch getNuvioRemainingEpisodesPatch() {
+    public static BytecodePatch getNuvioAiringSeriesPatch() {
         return PatchKt.bytecodePatch(NAME,
-            "Adds a disabled-by-default Continue Watching setting that displays aired, unwatched episode counts for every tracking integration.",
+            "Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility(PACKAGE, "NuvioTV", null, ApkFileType.APK,
-                    null, null, NuvioLayout.targets(), false));
-                builder.extendWith(NuvioRemainingEpisodesPatch::extensionStream);
+                    null, null, List.of(new AppTarget(VERSION, false, null)), false));
+                builder.extendWith(NuvioAiringSeriesPatch::extensionStream);
                 builder.execute(context -> {
                     String version = context.getPackageMetadata().getVersionName();
-                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName())
-                        || !(VERSION.equals(version) || NuvioLayout.BETA4.equals(version)))
+                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !VERSION.equals(version))
                         throw unsupported("Expected " + PACKAGE + " " + VERSION);
-                    boolean beta4 = NuvioLayout.beta4(version);
-                    String state = beta4 ? "Lla/z3;" : "Lza/k3;";
-                    hookNextUpModel(context.mutableClassDefBy(beta4 ? "Lla/aa;" : "Lza/s8;"));
-                    hookEpisodeSets(context.mutableClassDefBy(beta4 ? "Lla/t5;" : "Lza/z4;"), state);
-                    hookSettings(context.mutableClassDefBy(beta4 ? "Lsa/o3;" : "Lfb/t6;"),
-                        beta4 ? 0x7f1106c1 : 0x7f1106a7);
-                    hookCard(context.mutableClassDefBy(beta4 ? "Lba/e2;" : "Lpa/q0;"),
-                        beta4 ? "Lc7/a;" : "Lfb/jk;");
+                    hookNextUpModel(context.mutableClassDefBy("Lla/aa;"));
+                    hookSettings(context.mutableClassDefBy("Lsa/o3;"), 0x7f1106c1);
+                    hookUpcomingSplit(context.mutableClassDefBy("Lla/t5;"));
+                    hookCard(context.mutableClassDefBy("Lba/e2;"), "Lc7/a;");
+                    hookWide(context.mutableClassDefBy("Lba/d3;"));
                     return Unit.INSTANCE;
                 });
                 return Unit.INSTANCE;
             });
     }
 
+    static void hookUpcomingSplit(MutableClass owner) {
+        MutableMethod target = unique(owner, "E", 2);
+        List<Instruction> ins = instructions(target);
+        int match = -1, value = -1, model = -1;
+        for (int i = 0; i < ins.size(); i++) {
+            Instruction instruction = ins.get(i);
+            if (!(instruction instanceof ReferenceInstruction) || !(instruction instanceof TwoRegisterInstruction)) continue;
+            Object reference = ((ReferenceInstruction) instruction).getReference();
+            if (!(reference instanceof FieldReference)) continue;
+            FieldReference field = (FieldReference) reference;
+            if (!"Lla/aa;".equals(field.getDefiningClass()) || !"n".equals(field.getName()) || !"Z".equals(field.getType())) continue;
+            if (match >= 0) throw unsupported("Multiple Upcoming split predicates found");
+            match = i; value = ((TwoRegisterInstruction) instruction).getRegisterA();
+            model = ((TwoRegisterInstruction) instruction).getRegisterB();
+        }
+        if (match < 0 || value > 15 || model > 15) throw unsupported("Upcoming split predicate changed");
+        target.getImplementation().replaceInstruction(match, new BuilderInstruction35c(Opcode.INVOKE_STATIC,
+            1, model, 0, 0, 0, 0, method(EXTENSION, "effectiveHasAired", List.of("Ljava/lang/Object;"), "Z")));
+        target.getImplementation().addInstruction(match + 1,
+            new com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction11x(Opcode.MOVE_RESULT, value));
+    }
+
     static void hookNextUpModel(MutableClass owner) {
-        MutableMethod target = unique(owner, "<init>", "Lla/aa;".equals(owner.getType()) ? 27 : 26);
+        MutableMethod target = unique(owner, "<init>", 27);
         List<Instruction> ins = instructions(target);
         int instance = parameterStart(target);
         if (instance < 0 || instance > 15)
@@ -82,18 +100,6 @@ public final class NuvioRemainingEpisodesPatch {
             returns++;
         }
         if (returns != 1) throw unsupported("NextUpInfo constructor layout changed");
-    }
-
-    static void hookEpisodeSets(MutableClass owner, String stateType) {
-        MutableMethod target = unique(owner, "g", 2);
-        if (target.getImplementation().getRegisterCount() != 13)
-            throw unsupported("Aired/watched reconciliation register layout changed");
-        target.getImplementation().addInstruction(0,
-            new BuilderInstruction22c(Opcode.IGET_OBJECT, 0, 11,
-                new ImmutableFieldReference(stateType, "Lla/z3;".equals(stateType) ? "T0" : "M0", "Ljava/util/Map;")));
-        target.getImplementation().addInstruction(1,
-            new BuilderInstruction35c(Opcode.INVOKE_STATIC, 2, 0, 12, 0, 0, 0,
-                method(EXTENSION, "update", List.of("Ljava/util/Map;", "Ljava/util/Map;"), "V")));
     }
 
     static void hookSettings(MutableClass owner, int showUnairedSub) {
@@ -148,8 +154,29 @@ public final class NuvioRemainingEpisodesPatch {
                 method(EXTENSION, "prepareBadge", Collections.singletonList("Ljava/lang/Object;"), "V")));
         target.getImplementation().addInstruction(imageCall + 2,
             new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, composer, 1,
-                method(EXTENSION, "renderPreparedBadge",
-                    Collections.singletonList("Ljava/lang/Object;"), "V")));
+                method(EXTENSION, "renderPreparedBadge", Collections.singletonList("Ljava/lang/Object;"), "V")));
+    }
+
+    static void hookWide(MutableClass owner) {
+        MutableMethod target = unique(owner, "e", 22);
+        if (target.getImplementation().getRegisterCount() != 64)
+            throw unsupported("Wide card register layout changed");
+        List<Instruction> ins = instructions(target);
+        int imageCall = -1;
+        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "Lc7/a;", "b")) {
+            if (imageCall >= 0) throw unsupported("Multiple Wide image anchors found");
+            imageCall = i;
+        }
+        if (imageCall < 0 || !(ins.get(imageCall) instanceof RegisterRangeInstruction))
+            throw unsupported("Wide image anchor changed");
+        int composer = ((RegisterRangeInstruction) ins.get(imageCall)).getStartRegister() + 11;
+        // Wide's image content description is its title parameter, v42.
+        target.getImplementation().addInstruction(imageCall + 1,
+            new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 42, 1,
+                method(EXTENSION, "prepareTitle", List.of("Ljava/lang/String;"), "V")));
+        target.getImplementation().addInstruction(imageCall + 2,
+            new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, composer, 1,
+                method(EXTENSION, "renderPreparedBadge", List.of("Ljava/lang/Object;"), "V")));
     }
 
     static MutableMethod unique(MutableClass owner, String name, int parameters) {
@@ -198,15 +225,15 @@ public final class NuvioRemainingEpisodesPatch {
 
     static IllegalStateException unsupported(String reason) {
         return new IllegalStateException("Unsupported NuvioTV bytecode: " + reason
-            + ". No fallback was applied. Use an original NuvioTV 1.1.0-beta.2 or 1.1.0-beta.4 APK.");
+            + ". No fallback was applied. Use an original NuvioTV 1.1.0-beta.4 APK.");
     }
 
     static InputStream extensionStream() {
-        String path = "extensions/nuvio-remaining-episodes.mpe";
-        InputStream resource = NuvioRemainingEpisodesPatch.class.getClassLoader().getResourceAsStream(path);
+        String path = "extensions/nuvio-airing-series.mpe";
+        InputStream resource = NuvioAiringSeriesPatch.class.getClassLoader().getResourceAsStream(path);
         if (resource != null) return resource;
         try {
-            URI source = NuvioRemainingEpisodesPatch.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+            URI source = NuvioAiringSeriesPatch.class.getProtectionDomain().getCodeSource().getLocation().toURI();
             try (ZipFile zip = new ZipFile(new File(source))) {
                 ZipEntry entry = zip.getEntry(path);
                 if (entry == null) throw new FileNotFoundException(path);
@@ -222,3 +249,5 @@ public final class NuvioRemainingEpisodesPatch {
         }
     }
 }
+
+

@@ -133,7 +133,7 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 | App | Package | Supported version | Patch |
 | --- | --- | --- | --- |
 | MEO (Android TV) | `com.alticelabs.meo.androidtv` | `5.7.0` | Side-by-side installation; Spoof supported device |
-| NuvioTV | `com.nuvio.tv` | `1.1.0-beta.2` | Merge tracking progress; Remaining episodes in Continue Watching; Side-by-side installation |
+| NuvioTV | `com.nuvio.tv` | `1.1.0-beta.2`, `1.1.0-beta.4` | Merge tracking progress; Remaining episodes in Continue Watching; Side-by-side installation |
 | Reddit | `com.reddit.frontpage` | `2026.37.0` | Content filters (Experimental); Show flairs in home feed (Experimental); Start as guest |
 | Peafowl Theme Maker for EMUI | `h7.hamzio.emuithemeotg` | `GMS_27.5.1` | Unlock Theme Ownership (Experimental) |
 | Pillo | `xyz.rtrvr.pillo` | `0.6.19`, `0.6.20` | Hybrid Lock-Screen Notifications |

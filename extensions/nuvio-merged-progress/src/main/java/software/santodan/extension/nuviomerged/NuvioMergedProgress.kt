@@ -5,6 +5,10 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
+import kotlin.coroutines.suspendCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
@@ -46,6 +50,100 @@ object NuvioMergedProgress {
     private val authenticated = MutableStateFlow(true)
     private val originByContent = ConcurrentHashMap<String, String>()
     private val providerBySource = ConcurrentHashMap<String, Any>()
+
+    @Volatile private var menuRevision: Any? = null
+    private val configuring = AtomicBoolean(false)
+
+    @JvmStatic fun registerSettingsStore(value: Any) { NuvioSettingsStoreResolver.registerStore(value) }
+    @JvmStatic fun registerSettingsComponent(value: Any) { NuvioSettingsStoreResolver.registerComponent(value) }
+
+    /** Uses the same native persistence route as Watch Progress, from the Layout submenu. */
+    @JvmStatic fun renderSettings(composer: Any) {
+        try {
+            val loader = composer.javaClass.classLoader
+            var revision = menuRevision
+            if (revision == null) {
+                revision = findMethod(loader.loadClass("g1.j"), "r", 1).invoke(null, 0)
+                menuRevision = revision
+            }
+            findMethod(revision!!.javaClass, "getValue", 0).invoke(revision)
+            renderMenuToggle(composer, "Merge tracking progress",
+                "Combine Nuvio Sync and connected tracking providers.", enabled()) {
+                configureMerge(!enabled(), preferences().getString(STRATEGY, "highest") ?: "highest")
+            }
+            renderMenuToggle(composer, "Prefer most recently updated progress",
+                "When merging, use the latest update instead of the highest progress.",
+                preferences().getString(STRATEGY, "highest") == RECENT) {
+                configureMerge(enabled(), if (preferences().getString(STRATEGY, "highest") == RECENT) "highest" else RECENT)
+            }
+        } catch (error: Throwable) { Log.e(TAG, "Merged settings rendering failed", error) }
+    }
+
+    private fun renderMenuToggle(composer: Any, title: String, description: String, checked: Boolean, action: () -> Unit) {
+        val loader = composer.javaClass.classLoader
+        val function = loader.loadClass("kotlin.jvm.functions.Function0")
+        fun callback(block: () -> Unit): Any = Proxy.newProxyInstance(loader, arrayOf(function)) { proxy, method, args ->
+            when (method.name) {
+                "invoke" -> { block(); Unit }
+                "hashCode" -> System.identityHashCode(proxy)
+                "equals" -> proxy === args?.firstOrNull()
+                else -> "SantodanMergedSettingsCallback"
+            }
+        }
+        findMethod(loader.loadClass("sa.eb"), "m", 13).invoke(null,
+            title, description, checked, callback(action), null, callback {}, false, null, 0L, false, composer, 0, 1008)
+    }
+
+    private fun configureMerge(mergeEnabled: Boolean, strategy: String) {
+        if (!configuring.compareAndSet(false, true)) return
+        Thread({
+            val wasEnabled = enabled()
+            val oldStrategy = preferences().getString(STRATEGY, "highest") ?: "highest"
+            try {
+                if (!mergeEnabled && !wasEnabled) {
+                    preferences().edit().putString(STRATEGY, strategy).commit()
+                } else {
+                    val store = NuvioSettingsStoreResolver.resolve()
+                    val current = (field(store, "k").get(store) as StateFlow<*>).value as Enum<*>
+                    val profile = field(store, "j").get(store)
+                    val profileId = (field(profile, "f").get(profile) as StateFlow<*>).value
+                    val previousKey = "previous_source_$profileId"
+                    if (mergeEnabled && !wasEnabled)
+                        preferences().edit().putString(previousKey, current.name).commit()
+                    val wanted = if (mergeEnabled) {
+                        if (strategy == RECENT) "MERGED_RECENT" else "MERGED_HIGHEST"
+                    } else preferences().getString(previousKey, current.name) ?: current.name
+                    val requested = current.javaClass.enumConstants.first { (it as Enum<*>).name == wanted }
+                    val carrier = selectSource(requested)
+                    runBlocking {
+                        suspendCoroutine<Any?> { completion ->
+                            val result = findMethod(store.javaClass, "f", 2).invoke(store, carrier,
+                                NuvioSourceContinuation(completion))
+                            if (result !== COROUTINE_SUSPENDED) completion.resume(result)
+                        }
+                    }
+                    if (mergeEnabled) mergeAsync()
+                }
+            } catch (error: Throwable) {
+                preferences().edit().putBoolean(ENABLED, wasEnabled).putString(STRATEGY, oldStrategy).commit()
+                Log.e(TAG, "Merged settings update failed", error)
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(application(), "Could not update merged progress settings", Toast.LENGTH_SHORT).show()
+                }
+            } finally {
+                configuring.set(false)
+                refreshMenu()
+            }
+        }, "SantodanMergedSettings").apply { isDaemon = true }.start()
+    }
+
+    private fun refreshMenu() {
+        Handler(Looper.getMainLooper()).post {
+            val state = menuRevision ?: return@post
+            val value = (findMethod(state.javaClass, "getValue", 0).invoke(state) as Number).toInt()
+            findMethod(state.javaClass, "setValue", 1).invoke(state, value + 1)
+        }
+    }
 
     @JvmStatic fun registerRepository(value: Any) {
         repository = value
@@ -131,6 +229,7 @@ object NuvioMergedProgress {
             .putString(STRATEGY, if (name == "MERGED_RECENT") RECENT else "highest")
             .commit()
         Log.d(TAG, "selected source=$name merged=$merged")
+        refreshMenu()
         if (merged) {
             mergeAsync()
         }

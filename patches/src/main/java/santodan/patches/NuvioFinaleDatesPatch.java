@@ -48,12 +48,12 @@ public final class NuvioFinaleDatesPatch {
             false, builder -> {
                 builder.compatibleWith(new Compatibility(PACKAGE, "NuvioTV", null, ApkFileType.APK,
                     null, null, List.of(new AppTarget(VERSION, false, null)), false));
+                builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(NuvioFinaleDatesPatch::extensionStream);
                 builder.execute(context -> {
                     String version = context.getPackageMetadata().getVersionName();
                     if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !VERSION.equals(version))
                         throw unsupported("Expected " + PACKAGE + " " + VERSION);
-                    hookSettings(context.mutableClassDefBy("Lsa/o3;"), 0x7f1106c1);
                     hookItems(context.mutableClassDefBy("Lba/i1;"));
                     hookCard(context.mutableClassDefBy("Lba/n3;"));
                     hookCard(context.mutableClassDefBy("Lba/q1;"));

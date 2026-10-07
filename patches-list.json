@@ -77,7 +77,9 @@
       "name": "NuvioTV - Finale dates in library and collections",
       "description": "Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters.",
       "default": false,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.nuvio.tv",
@@ -103,7 +105,9 @@
       "name": "NuvioTV - Keep airing series in Upcoming",
       "description": "Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale.",
       "default": false,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.nuvio.tv",
@@ -129,7 +133,9 @@
       "name": "NuvioTV - Merge tracking progress",
       "description": "Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh.",
       "default": false,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.nuvio.tv",
@@ -160,9 +166,11 @@
     },
     {
       "name": "NuvioTV - Remaining episodes in Continue Watching",
-      "description": "Adds a disabled-by-default Continue Watching setting that displays aired, unwatched episode counts for every tracking integration.",
+      "description": "Adds a disabled-by-default setting that displays aired, unwatched episode counts for every tracking integration. Controlled by Layout > Santodan-Patches on beta4.",
       "default": false,
-      "dependencies": [],
+      "dependencies": [
+        "BytecodePatch"
+      ],
       "compatiblePackages": [
         {
           "packageName": "com.nuvio.tv",

@@ -70,7 +70,7 @@ Its preferences and runtime bridge are independent of the remaining-episodes pat
 Use `SantodanAiring:D` for diagnostics.
 
 **NuvioTV - Finale dates in library and collections** adds independent opt-in switches
-under Continue Watching settings. It reuses the Upcoming badge style and latest known
+under Layout > Santodan-Patches (beta4). It reuses the Upcoming badge style and latest known
 catalog episode date, including past dates, with `dd-MMM-yy` formatting and its own
 preferences and runtime.
 Library uses `ba.n3.m`; collection row cards use `ba.q1.o`, both MetaPreview fields.
@@ -80,9 +80,32 @@ Only poster images are hooked; collection logos are excluded. Unknown/non-IMDb I
 and movies are skipped. Dates refresh asynchronously with a six-hour persistent cache.
 Use `SantodanFinale:D` for diagnostics. Verify both switches independently on device.
 
+Beta4 runtime patches share an unnamed settings-menu dependency. It inserts one keyed
+lazy item in Layout's native section list, rendered with `sa.kc.a` as **Santodan-Patches**.
+The menu discovers installed runtime bridges independently and uses their existing
+preferences and Compose controls. Old beta4 injected settings rows and merged picker
+choices are removed; beta2 retains its original UI. Merged controls register `o9.a1`
+and capture the initialized `p8.e` component. If the coordinator has not been created,
+they resolve its native `w3` provider on demand; Layout must work before opening the
+native tracking settings page. They use its native `f` persistence route with a ContinuationImpl adapter, retaining the
+previous native source per profile when enabling merging. `SantodanSettings:D` diagnoses
+menu failures. Run `:patches:verifyNuvioSettingsMenuRuntime` for expansion/collapse,
+partial patch selections, and coroutine completion checks. Run
+`:patches:verifyNuvioSettingsStoreRuntime` for lazy coordinator resolution and reuse.
+Verify TV focus/scrolling,
+each patch alone, and saved choices on device.
+
 Beta4's remaining-episode hook reads `la.z3.T0`, the aired-episode map. `W0` is the
 provider-alias map and must never be used to count episodes: it produced six aliases
 per title and overwrote correct counts with `6` after synchronization.
+
+Remaining counts also follow native `publishBadgeUpdate`: watched-count coverage
+(`watched.size >= aired.size`) means zero aired episodes remain, even if provider and
+addon episode keys differ. Otherwise count exact unmatched aired keys, preserving
+watch-history gaps. Do not subtract raw totals for partially watched shows. Unaired
+episodes remain excluded. Cached counts use `count_v3_` to discard earlier incorrect
+values. Run `:patches:verifyNuvioRemainingCounts` for the Bleach regression (414 aired,
+418 watched, 41 exact matches), partial progress, gaps, specials, and empty sets.
 
 The progress and remaining-episode patches may be enabled independently. The
 side-by-side patch affects installation identity only. Rebuild from the original APK,

@@ -26,6 +26,7 @@ public final class NuvioMergedProgressPatch {
             false, builder -> {
                 builder.compatibleWith(new Compatibility("com.nuvio.tv", "NuvioTV", null, ApkFileType.APK,
                     null, null, NuvioLayout.targets(), false));
+                builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(NuvioMergedProgressPatch::extensionStream);
                 builder.execute(context -> {
                     String version = context.getPackageMetadata().getVersionName();
@@ -42,13 +43,47 @@ public final class NuvioMergedProgressPatch {
                     hookMergedProvider(context.mutableClassDefBy(NuvioLayout.type(version, "Lja/cc;")));
                     hookEffectiveSource(context.mutableClassDefBy(NuvioLayout.type(version, "La/a;")));
                     hookWatchProgressEnum(context.mutableClassDefBy(NuvioLayout.type(version, "Lcom/nuvio/tv/data/local/rb;")));
-                    hookWatchProgressPicker(context.mutableClassDefBy(NuvioLayout.type(version, "Lfb/h3;")), NuvioLayout.beta4(version) ? "g1" : "W0", NuvioLayout.type(version, "Lfb/sj;"));
+                    if (!NuvioLayout.beta4(version)) hookWatchProgressPicker(context.mutableClassDefBy("Lfb/h3;"), "W0", "Lfb/sj;");
+                    else {
+                        hookSettingsStore(context.mutableClassDefBy("Lo9/a1;"));
+                        hookSettingsComponent(context.mutableClassDefBy("Lp8/e;"));
+                    }
                     hookWatchProgressSelection(context.mutableClassDefBy(NuvioLayout.type(version, "Lfb/c2;")));
                     hookWatchProgressSummary(context.mutableClassDefBy(NuvioLayout.type(version, "Lfb/lj;")), NuvioLayout.beta4(version) ? "g1" : "W0");
                     return Unit.INSTANCE;
                 });
                 return Unit.INSTANCE;
             });
+    }
+
+    static void hookSettingsStore(MutableClass owner) {
+        MutableMethod constructor = unique(owner, "<init>", 10);
+        List<Instruction> instructions = instructions(constructor);
+        int returns = 0;
+        for (int i = instructions.size() - 1; i >= 0; i--) {
+            if (instructions.get(i).getOpcode() != Opcode.RETURN_VOID) continue;
+            constructor.getImplementation().addInstruction(i,
+                new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
+                    constructor.getImplementation().getRegisterCount() - 11, 1,
+                    method(EXT, "registerSettingsStore", List.of("Ljava/lang/Object;"), "V")));
+            returns++;
+        }
+        if (returns != 1) throw unsupported("Watch progress settings store constructor changed");
+    }
+
+    /** The coordinator is lazy: Layout must be able to resolve its native provider. */
+    static void hookSettingsComponent(MutableClass owner) {
+        MutableMethod constructor = unique(owner, "<init>", 1);
+        List<Instruction> ins = instructions(constructor);
+        int returns = 0;
+        for (int i = ins.size() - 1; i >= 0; i--) {
+            if (ins.get(i).getOpcode() != Opcode.RETURN_VOID) continue;
+            constructor.getImplementation().addInstruction(i, new BuilderInstruction3rc(
+                Opcode.INVOKE_STATIC_RANGE, parameterStart(constructor), 1,
+                method(EXT, "registerSettingsComponent", List.of("Ljava/lang/Object;"), "V")));
+            returns++;
+        }
+        if (returns != 1) throw unsupported("Settings component constructor changed");
     }
 
     /** Beta4 inlines the selected provider's cutoff into two Home coroutines. */

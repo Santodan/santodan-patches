@@ -45,7 +45,8 @@
 
 ### New Features
 
-* **nuviotv:** add the independent beta.4 Finale dates in library and collections patch, with separate disabled-by-default switches under Continue Watching settings
+* **nuviotv:** group beta.4 runtime patch settings under the expandable Layout > Santodan-Patches menu, including merged progress and its strategy; preserve existing preferences and show only installed patches
+* **nuviotv:** add the independent beta.4 Finale dates in library and collections patch, with separate disabled-by-default switches under Layout > Santodan-Patches
 * **nuviotv:** display the latest known catalog episode date on library and collection series posters as a blue `dd-MMM-yy` badge, including past dates; retain each location during recomposition and skip movies, unknown dates, and unrelated catalog rows
 * **nuviotv:** add an independent beta4 setting to keep airing library series in Upcoming until their latest scheduled episode airs, preserving native labels
 * **nuviotv:** show scheduled finale dates in Poster, Card, and Wide displays using a blue bottom-center badge with white `dd-MMM` text above captions
@@ -60,6 +61,8 @@
 
 ### Bug Fixes
 
+* **nuviotv:** match Nuvio's watched-count coverage rule for remaining episodes when tracking providers and catalogs use different episode numbering, fixing caught-up anime such as Bleach showing hundreds of unwatched episodes; invalidate previous cached counts
+* **nuviotv:** resolve the lazy watch-progress coordinator from the Santodan-Patches menu, fixing merged-progress settings failing before the native tracking settings page is opened
 * **nuviotv:** count beta4 aired episodes instead of provider aliases, preventing remaining counts from changing to `6` after synchronization
 * **meo:** rename the app-owned permission, task affinity, and all provider authorities, including the bare package authority
 * **nuviotv:** preserve merged Continue Watching during startup and refresh providers before publishing updates

@@ -95,6 +95,35 @@ partial patch selections, and coroutine completion checks. Run
 Verify TV focus/scrolling,
 each patch alone, and saved choices on device.
 
+Merged watched badges must follow the same per-show provider winner as progress.
+The proxy's `g(Continuation)` supplies the coherent bulk watched episode map;
+`d()` supplies watched items. Alternate catalog IDs come from `v(Continuation)`
+on beta2 or `w(Continuation)` on beta4. These must not fall through to the carrier
+provider, which omits shows watched only on other connected providers. Resolve
+local watched items from repository `e` / store `h`, and retain one provider's
+episode numbering per show. Bulk requests immediately return cached watched
+projection instead of publishing a partial carrier map. Interface default accessors
+(such as Trakt's empty `d()`) need inherited-method reflection fallback.
+Run `:patches:verifyNuvioWatchedHistory` for source selection and alternate-ID checks.
+Cache `snapshot_v2_<profileId>` contains progress, seeds, origins, watched items, episode maps, and aliases. Restore it off the UI thread. Every merged getter emits immediately, including on first launch without a cache. Background refresh runs every two minutes and checks for profile changes every second; discard results when the active profile changes. Reflection members are cached, seeds are indexed by show, and badge publication uses one reusable worker.
+`SantodanMergedProgress` logs provider-read and total merge times, per-provider totals, and published
+badge totals. Capture live logs before reproducing, rather than using only `logcat -d`.
+
+Beta4 badge metadata runs in `la.e5`. Its unchanged-ID gate (`la.z3.V0`) can skip
+unresolved metadata after a cancelled batch; bypass that gate while merging is on.
+`la.t5.i` resolves metadata groups. Hook the loop after `hasNext`'s result to publish
+already-resolved metadata through native `la.t5.g` after each group, debounced off the
+UI thread. The live Home receiver is the same register used for `la.z3.T0`, not the
+original constructor argument. This avoids waiting for thousands of titles before
+library/collection labels update. New log lines are `Retrying badge metadata` and
+`Badge validation progress` (cached metadata, watched IDs, and label totals).
+Once per changed watched-history snapshot, before the key comparison, discard in-memory validation deadlines for IDs lacking
+episode metadata; a persisted "fresh" deadline alone cannot validate the new merged
+history. Preserve deadlines for cached metadata and keep existing labels until native
+validation decides their state. `Badge validation pending` reports missing metadata.
+Keep `__ambiguous__` sibling markers as markers; never create a title ID or cross-show
+alias group from them. The real beta4 DEX check verifies both badge-loader anchors.
+
 Beta4's remaining-episode hook reads `la.z3.T0`, the aired-episode map. `W0` is the
 provider-alias map and must never be used to count episodes: it produced six aliases
 per title and overwrote correct counts with `6` after synchronization.

@@ -37,11 +37,18 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
 // Exercise the exact Android runtime accessor table against original app DEX files.
 tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioProviderLayout.java"))
+    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioWatchedHistory.java"))
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioSettingsStoreResolver.java"))
     source(file("../extensions/nuvio-remaining-episodes/src/main/java/software/santodan/extension/nuvioremaining/NuvioEpisodeCounts.java"))
 }
 
 tasks {
+    register<JavaExec>("verifyNuvioWatchedHistory") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyNuvioWatchedHistory")
+    }
+
     register<JavaExec>("verifyNuvioRemainingCounts") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath

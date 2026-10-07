@@ -91,6 +91,21 @@ public final class VerifyNuvioLayout {
         for (Field f : owner(repository).getFields()) if (f.getName().equals("a")) localStore = f.getType();
         field(localStore, "q", "Lkotlinx/coroutines/flow/Flow;");
         for (String accessor : List.of("a", "b", "f", "q")) method(provider, accessor, 0);
+        for (String accessor : List.of("d", "j")) method(provider, accessor, 0);
+        method(provider, "g", 1);
+        method(provider, runtime.siblingsMethod, 1);
+        String watchedStore = null;
+        for (Field f : owner(repository).getFields()) if (f.getName().equals("e")) watchedStore = f.getType();
+        field(watchedStore, runtime.localWatchedField, "Lkotlinx/coroutines/flow/Flow;");
+        String profileType = null;
+        for (Field f : owner(repository).getFields()) if (f.getName().equals("j")) profileType = f.getType();
+        field(profileType, "f", "Lkotlinx/coroutines/flow/StateFlow;");
+        String watchedModel = "Lcom/nuvio/tv/domain/model/WatchedItem;";
+        method(watchedModel, "<init>", 11);
+        for (String getter : List.of("getContentId", "getContentType", "getTitle", "getSeason",
+            "getEpisode", "getWatchedAt", "getPoster", "getReleaseInfo", "getTrackingProviderId",
+            "getTrackingProviderItemId", "getTrackingSourceUrl")) method(watchedModel, getter, 0);
+        System.out.println("PASS: profile cache key and watched-item serialization contracts");
         method(registry, "b", 0);
         String model = newer ? "Lla/aa;" : "Lza/s8;";
         for (String name : List.of("a", "c")) field(model, name, "Ljava/lang/String;");
@@ -122,6 +137,13 @@ public final class VerifyNuvioLayout {
         if (newer) {
             hook("hookInlinedCutoff", owner("Lla/h5;"));
             hook("hookInlinedCutoff", owner("Lla/w1;"));
+            NuvioMergedProgressPatch.hookBadgeCacheHit(owner("Lla/e5;"));
+            NuvioMergedProgressPatch.hookBadgeGroupProgress(owner("Lla/t5;"));
+            field("Lla/z3;", "V0", "Ljava/util/Set;");
+            field("Lla/z3;", "u", "Lcom/nuvio/tv/data/local/vc;");
+            field("Lcom/nuvio/tv/data/local/vc;", "f", "Lkotlinx/coroutines/flow/StateFlow;");
+            field("Lcom/nuvio/tv/data/local/vc;", "g", "Ljava/util/Map;");
+            System.out.println("PASS: unchanged-ID badge retry and incremental metadata publication hooks");
         } else hook("hookMergedProviderPolicies", owner(repository));
         hook("hookInlinedNextUpSeedPolicy", owner(NuvioLayout.type(version, "Lza/z4;")));
         hook("hookMergedProvider", owner(NuvioLayout.type(version, "Lja/cc;")));

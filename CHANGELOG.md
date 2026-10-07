@@ -43,6 +43,12 @@
 
 ## Unreleased
 
+### Improvements
+
+* **nuviotv:** open Home without waiting for merged tracking refresh; restore per-profile cached progress, watched items, episode history, and catalog aliases in the background, then refresh connected providers every two minutes
+* **nuviotv:** cache reflection lookups, index next-up seeds by show, and reuse a single worker for incremental Watched badge updates; log provider-read and total merge times
+* **nuviotv:** emulator validation reduced fully drawn startup from approximately 17 seconds to 2.725 seconds while merged synchronization completed in the background
+
 ### New Features
 
 * **nuviotv:** group beta.4 runtime patch settings under the expandable Layout > Santodan-Patches menu, including merged progress and its strategy; preserve existing preferences and show only installed patches
@@ -61,6 +67,8 @@
 
 ### Bug Fixes
 
+* **nuviotv:** retry beta.4 merged badge metadata after interrupted batches and publish Watched labels incrementally instead of waiting for all shows; preserve ambiguous sibling markers without treating them as title IDs
+* **nuviotv:** publish merged watched-show history and alternate catalog IDs to the shared badge pipeline, fixing library and collection Watched labels depending on the carrier provider until opening show details
 * **nuviotv:** match Nuvio's watched-count coverage rule for remaining episodes when tracking providers and catalogs use different episode numbering, fixing caught-up anime such as Bleach showing hundreds of unwatched episodes; invalidate previous cached counts
 * **nuviotv:** resolve the lazy watch-progress coordinator from the Santodan-Patches menu, fixing merged-progress settings failing before the native tracking settings page is opened
 * **nuviotv:** count beta4 aired episodes instead of provider aliases, preventing remaining counts from changing to `6` after synchronization

@@ -36,6 +36,8 @@ public final class NuvioMergedProgressPatch {
                     if (NuvioLayout.beta4(version)) {
                         hookInlinedCutoff(context.mutableClassDefBy("Lla/h5;"));
                         hookInlinedCutoff(context.mutableClassDefBy("Lla/w1;"));
+                        hookBadgeCacheHit(context.mutableClassDefBy("Lla/e5;"));
+                        hookBadgeGroupProgress(context.mutableClassDefBy("Lla/t5;"));
                     } else {
                         hookMergedProviderPolicies(repository);
                     }
@@ -69,6 +71,56 @@ public final class NuvioMergedProgressPatch {
             returns++;
         }
         if (returns != 1) throw unsupported("Watch progress settings store constructor changed");
+    }
+
+    /** A cancelled metadata batch must not make unchanged watched IDs skip retries. */
+    static void hookBadgeCacheHit(MutableClass owner) {
+        MutableMethod target = unique(owner, "invokeSuspend", 1);
+        List<Instruction> ins = instructions(target);
+        int anchor = -1;
+        for (int i = 0; i + 2 < ins.size(); i++) {
+            if (ins.get(i).getOpcode() != Opcode.IGET_OBJECT || !(ins.get(i) instanceof ReferenceInstruction) || !((ReferenceInstruction) ins.get(i)).getReference()
+                .toString().equals("Lla/z3;->V0:Ljava/util/Set;")) continue;
+            if (anchor >= 0 || !calls(ins.get(i + 1), "Lkotlin/jvm/internal/Intrinsics;", "areEqual")
+                || ins.get(i + 2).getOpcode() != Opcode.MOVE_RESULT)
+                throw unsupported("Badge ID cache comparison changed");
+            anchor = i + 3;
+        }
+        if (anchor < 0) throw unsupported("Badge ID cache comparison missing");
+        int result = ((OneRegisterInstruction) ins.get(anchor - 1)).getRegisterA();
+        target.getImplementation().addInstruction(anchor, new BuilderInstruction3rc(
+            Opcode.INVOKE_STATIC_RANGE, result, 1, method(EXT, "allowBadgeCacheHit", List.of("Z"), "Z")));
+        target.getImplementation().addInstruction(anchor + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT, result));
+        int home = ((TwoRegisterInstruction) ins.get(anchor - 3)).getRegisterB();
+        target.getImplementation().addInstruction(anchor - 3, new BuilderInstruction3rc(
+            Opcode.INVOKE_STATIC_RANGE, home, 1,
+            method(EXT, "prepareBadgeValidation", List.of("Ljava/lang/Object;"), "V")));
+    }
+
+    /** Publish each completed metadata group before the entire bulk batch finishes. */
+    static void hookBadgeGroupProgress(MutableClass owner) {
+        MutableMethod target = unique(owner, "i", 3);
+        List<Instruction> ins = instructions(target);
+        int home = -1;
+        int anchor = -1;
+        for (int i = 0; i < ins.size(); i++) {
+            Instruction instruction = ins.get(i);
+            if (instruction instanceof ReferenceInstruction && ((ReferenceInstruction) instruction).getReference()
+                .toString().equals("Lla/z3;->T0:Ljava/util/Map;")) {
+                int receiver = ((TwoRegisterInstruction) instruction).getRegisterB();
+                if (home >= 0 && home != receiver) throw unsupported("Badge group Home register changed");
+                home = receiver;
+            }
+            if (calls(instruction, "Ljava/util/Iterator;", "hasNext")) {
+                if (anchor >= 0 || ins.get(i + 1).getOpcode() != Opcode.MOVE_RESULT)
+                    throw unsupported("Badge group loop changed");
+                anchor = i + 2;
+            }
+        }
+        if (home < 0 || anchor < 0) throw unsupported("Badge group progress anchors missing");
+        target.getImplementation().addInstruction(anchor, new BuilderInstruction3rc(
+            Opcode.INVOKE_STATIC_RANGE, home, 1,
+            method(EXT, "publishCachedWatchedBadges", List.of("Ljava/lang/Object;"), "V")));
     }
 
     /** The coordinator is lazy: Layout must be able to resolve its native provider. */

@@ -1,3 +1,14 @@
+## [0.8.0](https://github.com/Santodan/santodan-patches/compare/v0.7.0...v0.8.0) (2026-10-07)
+
+### 🐛 Bug Fixes
+
+* **nuvio:** restore merged watched badges without delaying startup ([f53abfa](https://github.com/Santodan/santodan-patches/commit/f53abfa9271461759f9bd6d7c80f7ba6a0c51462))
+
+### ✨ New Features
+
+* **nuvio:** add finale dates in library and collections [skip ci] ([66233a7](https://github.com/Santodan/santodan-patches/commit/66233a7b0253662e7c05c7a78b7964b49708b7b4))
+* **nuvio:** group patch settings under Layout menu [skip ci] ([744d480](https://github.com/Santodan/santodan-patches/commit/744d4807083f494a10ebcbbb56cdc1ac6dec7d6e))
+
 ## [0.7.0](https://github.com/Santodan/santodan-patches/compare/v0.6.0...v0.7.0) (2026-10-06)
 
 ### 🐛 Bug Fixes

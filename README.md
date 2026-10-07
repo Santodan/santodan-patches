@@ -14,6 +14,8 @@ Recent NuvioTV additions include merged tracking progress, an optional remaining
 
 On NuvioTV **1.1.0-beta.4**, the independent **Keep airing series in Upcoming** patch adds a disabled-by-default setting under Continue Watching. Enable **Show unaired next up episodes**, select **Separate Upcoming Row**, then enable **Keep airing series in Upcoming**. Series with future scheduled episodes stay in Upcoming until the latest known episode airs, retaining labels such as New Season. Poster, Card, and Wide displays show the scheduled finale date as a bottom-center blue badge with white text in `dd-MMM` format. The badge overlays card captions. Dates come from Nuvio's catalog; an unknown finale is not estimated.
 
+The separate beta.4 **Finale dates in library and collections** patch adds two switches under Continue Watching settings: **Show finale dates in library** and **Show finale dates in collections**. Both are off by default. Series posters use a blue `dd-MMM-yy` badge and the same Nuvio catalog date source as the Upcoming patch, including dates that have already passed. Movies and titles without a known episode date have no badge. This patch works independently of Keep airing series in Upcoming. Dates refresh asynchronously and are cached for six hours. For diagnostics, use `adb logcat SantodanFinale:D "*:S"`.
+
 The beta4 Remaining Episodes patch also correctly reads aired episodes instead of provider aliases, fixing counts that changed to `6` after synchronization.
 
 Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Banner/Light mode, it keeps fullscreen alarms while the device is locked and uses banner notifications while the device is unlocked.
@@ -21,7 +23,7 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 ## Patches
 
 <!-- PATCHES_START EXPANDED -->
-> **[v0.7.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.7.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;11 patches total
+> **[v0.7.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.7.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;12 patches total
 <details open>
 <summary>📦 MEO (Android TV)&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -39,7 +41,7 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 </details>
 
 <details open>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;5 patches</summary>
 <br>
 
 **🎯 Supported versions:**
@@ -49,6 +51,7 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
+| [NuvioTV - Finale dates in library and collections](#nuviotv-finale-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters. |  |
 | [NuvioTV - Keep airing series in Upcoming](#nuviotv-keep-airing-series-in-upcoming) | Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale. |  |
 | [NuvioTV - Merge tracking progress](#nuviotv-merge-tracking-progress) | Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh. |  |
 | [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default Continue Watching setting that displays aired, unwatched episode counts for every tracking integration. |  |
@@ -139,6 +142,7 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 | --- | --- | --- | --- |
 | MEO (Android TV) | `com.alticelabs.meo.androidtv` | `5.7.0` | Side-by-side installation; Spoof supported device |
 | NuvioTV | `com.nuvio.tv` | `1.1.0-beta.2`, `1.1.0-beta.4` | Merge tracking progress; Remaining episodes in Continue Watching; Side-by-side installation |
+| NuvioTV | `com.nuvio.tv` | `1.1.0-beta.4` | Keep airing series in Upcoming; Finale dates in library and collections |
 | Reddit | `com.reddit.frontpage` | `2026.37.0` | Content filters (Experimental); Show flairs in home feed (Experimental); Start as guest |
 | Peafowl Theme Maker for EMUI | `h7.hamzio.emuithemeotg` | `GMS_27.5.1` | Unlock Theme Ownership (Experimental) |
 | Pillo | `xyz.rtrvr.pillo` | `0.6.19`, `0.6.20` | Hybrid Lock-Screen Notifications |

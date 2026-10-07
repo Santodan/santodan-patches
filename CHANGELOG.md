@@ -45,6 +45,8 @@
 
 ### New Features
 
+* **nuviotv:** add the independent beta.4 Finale dates in library and collections patch, with separate disabled-by-default switches under Continue Watching settings
+* **nuviotv:** display the latest known catalog episode date on library and collection series posters as a blue `dd-MMM-yy` badge, including past dates; retain each location during recomposition and skip movies, unknown dates, and unrelated catalog rows
 * **nuviotv:** add an independent beta4 setting to keep airing library series in Upcoming until their latest scheduled episode airs, preserving native labels
 * **nuviotv:** show scheduled finale dates in Poster, Card, and Wide displays using a blue bottom-center badge with white `dd-MMM` text above captions
 * **meo:** add configurable side-by-side installation for MEO Android TV 5.7.0

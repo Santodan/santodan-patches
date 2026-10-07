@@ -150,6 +150,17 @@ public final class VerifyNuvioLayout {
             NuvioAiringSeriesPatch.hookCard(owner("Lba/e2;"), "Lc7/a;");
             NuvioAiringSeriesPatch.hookWide(owner("Lba/d3;"));
             System.out.println("PASS: standalone airing-series hooks");
+            field("Lba/n3;", "m", "Lcom/nuvio/tv/domain/model/MetaPreview;");
+            field("Lba/q1;", "o", "Lcom/nuvio/tv/domain/model/MetaPreview;");
+            for (String getter : List.of("getApiType", "getImdbId", "getId"))
+                method("Lcom/nuvio/tv/domain/model/MetaPreview;", getter, 0);
+            NuvioFinaleDatesPatch.hookSettings(owner("Lsa/o3;"), 0x7f1106c1);
+            NuvioFinaleDatesPatch.hookItems(owner("Lba/i1;"));
+            NuvioFinaleDatesPatch.hookCard(owner("Lba/n3;"));
+            NuvioFinaleDatesPatch.hookCard(owner("Lba/q1;"));
+            for (String type : List.of("Lba/n3;", "Lba/q1;", "Lba/o3;", "Lba/s1;"))
+                NuvioFinaleDatesPatch.hookContext(owner(type));
+            System.out.println("PASS: library and collection finale-date hooks");
         }
 
         File output = new File(args[2]);

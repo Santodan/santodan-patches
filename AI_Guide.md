@@ -46,7 +46,7 @@ notification mode for the hybrid routing to apply.
 
 ## NuvioTV 1.1.0-beta.2 and 1.1.0-beta.4
 
-Four patches target package `com.nuvio.tv` (the airing-series patch supports beta4 only):
+Five patches target package `com.nuvio.tv` (airing-series and finale-date patches support beta4 only):
 
 1. **NuvioTV - Merge tracking progress** combines Nuvio Sync and connected-provider
    progress for Continue Watching. It retains the last successful snapshot while the
@@ -68,6 +68,17 @@ alignment, with a higher z-index to draw above captions. Finale dates use the la
 known scheduled release from Nuvio's catalog; unknown dates are not estimated.
 Its preferences and runtime bridge are independent of the remaining-episodes patch.
 Use `SantodanAiring:D` for diagnostics.
+
+**NuvioTV - Finale dates in library and collections** adds independent opt-in switches
+under Continue Watching settings. It reuses the Upcoming badge style and latest known
+catalog episode date, including past dates, with `dd-MMM-yy` formatting and its own
+preferences and runtime.
+Library uses `ba.n3.m`; collection row cards use `ba.q1.o`, both MetaPreview fields.
+`ba.i1` scopes the library/collection calls. Card and restart lambdas capture that
+scope so recomposition retains the right setting and other catalog rows stay unaffected.
+Only poster images are hooked; collection logos are excluded. Unknown/non-IMDb IDs
+and movies are skipped. Dates refresh asynchronously with a six-hour persistent cache.
+Use `SantodanFinale:D` for diagnostics. Verify both switches independently on device.
 
 Beta4's remaining-episode hook reads `la.z3.T0`, the aired-episode map. `W0` is the
 provider-alias map and must never be used to count episodes: it produced six aliases
@@ -91,7 +102,7 @@ Provider origins use stable enum identities rather than obfuscated class names.
 Run `:patches:verifyNuvioBeta2` and `:patches:verifyNuvioBeta4` with original DEX files
 under the workspace's `.inspect-nuvio-beta2` and `.inspect-nuvio-beta4` directories.
 These checks exercise every bytecode hook, validate runtime reflection contracts,
-and write/reload the modified classes. Apply all four patches to the original beta4
+and write/reload the modified classes. Apply all five patches to the original beta4
 APK and run SDK DEX verification before distributing a build. Device testing must
 check provider refresh, both merged selection modes, and the optional episode badge.
 

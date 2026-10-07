@@ -8,27 +8,15 @@ Independent patches for the [Morphe](https://morphe.software/) patcher.
 https://github.com/Santodan/santodan-patches
 ```
 
-MEO 5.7.0 patches provide a separately installable clone and compatibility handling for unverified Android TV hardware. The side-by-side patch renames the package, launcher label, task affinity, app-owned permission, and every provider authority. The device patch reports a Sagemcom DIW3930 during provisioning and skips only MEO's non-fatal equipment-verification warning; authentication and fatal provisioning errors remain unchanged.
-
-Recent NuvioTV additions include merged tracking progress, an optional remaining-episode counter for Continue Watching, and side-by-side installation with the official app. Merged progress preserves the last successful Continue Watching snapshot during startup and replaces it after connected providers refresh. The side-by-side patch lets you choose a unique Android package name and launcher app name, so multiple patched test installations can coexist on the same device.
-
-On NuvioTV **1.1.0-beta.4**, the independent **Keep airing series in Upcoming** patch adds a disabled-by-default setting under **Layout > Santodan-Patches**. Enable **Show unaired next up episodes**, select **Separate Upcoming Row**, then enable **Keep airing series in Upcoming**. Series with future scheduled episodes stay in Upcoming until the latest known episode airs, retaining labels such as New Season. Poster, Card, and Wide displays show the scheduled finale date as a bottom-center blue badge with white text in `dd-MMM` format. The badge overlays card captions. Dates come from Nuvio's catalog; an unknown finale is not estimated.
-
-The separate beta.4 **Finale dates in library and collections** patch adds two switches under **Layout > Santodan-Patches**: **Show finale dates in library** and **Show finale dates in collections**. Both are off by default. Series posters use a blue `dd-MMM-yy` badge and the same Nuvio catalog date source as the Upcoming patch, including dates that have already passed. Movies and titles without a known episode date have no badge. This patch works independently of Keep airing series in Upcoming. Dates refresh asynchronously and are cached for six hours. For diagnostics, use `adb logcat SantodanFinale:D "*:S"`.
-
-On beta.4, all runtime patch settings are grouped in the expandable **Layout > Santodan-Patches** section: merged progress and its strategy, remaining episodes, Upcoming series, and the two finale-date switches. Only installed patches appear, and existing selections are retained. Merged progress is enabled here; the normal Watch Progress picker keeps its native provider choices. For menu diagnostics, use `adb logcat SantodanSettings:D "*:S"`. Beta.2 retains its existing settings locations. Installation package and launcher-name options are configured when patching the APK.
-
-The beta4 Remaining Episodes patch also correctly reads aired episodes instead of provider aliases, fixing counts that changed to `6` after synchronization.
-
-Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Banner/Light mode, it keeps fullscreen alarms while the device is locked and uses banner notifications while the device is unlocked.
-
 ## Patches
 
-<!-- PATCHES_START EXPANDED -->
+<!-- PATCHES_START -->
 > **[v0.7.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.7.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;12 patches total
-<details open>
+<details>
 <summary>📦 MEO (Android TV)&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
+
+MEO 5.7.0 patches provide a separately installable clone and compatibility handling for unverified Android TV hardware. The side-by-side patch renames the package, launcher label, task affinity, app-owned permission, and every provider authority. The device patch reports a Sagemcom DIW3930 during provisioning and skips only MEO's non-fatal equipment-verification warning; authentication and fatal provisioning errors remain unchanged.
 
 **🎯 Supported versions:**
 
@@ -42,9 +30,28 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 
 </details>
 
-<details open>
+<details>
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;5 patches</summary>
 <br>
+
+These are the available patches for NuvioTV:
+
+- **Finale dates in library and collections**: Adds separate settings to show the latest scheduled episode date on library and collection posters in `dd-MMM-yy` format.
+
+| Collections | Library |
+| -- | -- |
+| <img src="images/NuvioTVDateCollection.png" width="400" alt="Collections"> | <img src="images/NuvioTVDateLibrary.png" width="400" alt="Library"> |
+
+- **Keep airing series in Upcoming**: Adds a setting to keep series in the separate Upcoming row until their latest scheduled episode airs, with a finale-date badge.
+![Upcoming](images/NuvioTVUpcoming.png)
+- **Merge tracking progress**: Combines Nuvio Sync and connected tracking-provider progress, with a choice between highest progress and the most recent update.
+- **Remaining episodes in Continue Watching**: Adds a setting to show the number of aired, unwatched episodes on Continue Watching cards.
+![Remaining](images/NuvioTVRemainingCount.png)
+- **Side-by-side installation**: Lets you choose a different package name and launcher name so the patched app can coexist with the official app.
+
+On NuvioTV **1.1.0-beta.4**, patch settings are under **Layout > Santodan-Patches**. The two finale-date patches require beta.4; the other patches also support beta.2. Package and launcher names are configured when patching the APK.
+
+<img src="images/NuvioTVMenu.png" width="800" alt="Santodan-Patches menu">
 
 **🎯 Supported versions:**
 
@@ -61,7 +68,7 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 
 </details>
 
-<details open>
+<details>
 <summary>📦 Peafowl Theme Maker for EMUI&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
 
@@ -76,9 +83,11 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 
 </details>
 
-<details open>
+<details>
 <summary>📦 Pillo&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
+
+Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Banner/Light mode, it keeps fullscreen alarms while the device is locked and uses banner notifications while the device is unlocked.
 
 **🎯 Supported versions:**
 
@@ -91,7 +100,7 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 
 </details>
 
-<details open>
+<details>
 <summary>📦 Reddit&nbsp;&nbsp;•&nbsp;&nbsp;3 patches</summary>
 <br>
 
@@ -136,7 +145,7 @@ On Linux or macOS:
 ./gradlew :patches:generatePatchesList
 ```
 
-The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `patches-list.json`, `patches-bundle.json`, and the generated section of this README are release-owned files and should not be edited manually.
+The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `patches-list.json`, `patches-bundle.json`, and the generated section of this README are release-owned files and should not be edited manually. App introductions are maintained in `.github/readme-apps/<packageName>.md` and included inside the collapsed app sections by the README generator.
 
 ## Patch targets
 

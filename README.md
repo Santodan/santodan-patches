@@ -43,31 +43,27 @@ These are the available patches for NuvioTV:
 | <img src="images/NuvioTVDateCollection.png" width="400" alt="Collections"> | <img src="images/NuvioTVDateLibrary.png" width="400" alt="Library"> |
 
 - **Keep airing series in Upcoming**: Adds a setting to keep series in the separate Upcoming row until their latest scheduled episode airs, with a finale-date badge.
-
 ![Upcoming](images/NuvioTVUpcoming.png)
-
 - **Merge tracking progress**: Combines Nuvio Sync and connected tracking-provider progress and watched-show history, with a choice between highest progress and the most recent update. Library and collection Watched labels follow the selected provider for each show. Cached progress and watched history load without waiting for provider refresh; synchronization continues in the background.
 - **Remaining episodes in Continue Watching**: Adds a setting to show the number of aired, unwatched episodes on Continue Watching cards.
-
 ![Remaining](images/NuvioTVRemainingCount.png)
-
 - **Side-by-side installation**: Lets you choose a different package name and launcher name so the patched app can coexist with the official app.
 
-On NuvioTV **1.1.0-beta.4**, patch settings are under **Layout > Santodan-Patches**. The two finale-date patches require beta.4; the other patches also support beta.2. Package and launcher names are configured when patching the APK.
+On NuvioTV **1.1.0-beta.4 and beta.5**, patch settings are under **Layout > Santodan-Patches**. The two finale-date patches support beta.4 and beta.5; the other patches also support beta.2. Package and launcher names are configured when patching the APK.
 
 <img src="images/NuvioTVMenu.png" width="800" alt="Santodan-Patches menu">
 
 **🎯 Supported versions:**
 
-| 1.1.0-beta.4 |
-| :---: |
+| 1.1.0-beta.4 | 1.1.0-beta.5 |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [NuvioTV - Finale dates in library and collections](#nuviotv-finale-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters. |  |
 | [NuvioTV - Keep airing series in Upcoming](#nuviotv-keep-airing-series-in-upcoming) | Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale. |  |
 | [NuvioTV - Merge tracking progress](#nuviotv-merge-tracking-progress) | Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh. |  |
-| [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default setting that displays aired, unwatched episode counts for every tracking integration. Controlled by Layout > Santodan-Patches on beta4. |  |
+| [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default setting that displays aired, unwatched episode counts for every tracking integration. Controlled by Layout > Santodan-Patches on beta4 and beta5. |  |
 | [NuvioTV - Side-by-side installation](#nuviotv-side-by-side-installation) | Installs a separately named NuvioTV clone using a configurable package name and app name. | • Package name<br>• App name |
 
 </details>
@@ -156,8 +152,8 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 | App | Package | Supported version | Patch |
 | --- | --- | --- | --- |
 | MEO (Android TV) | `com.alticelabs.meo.androidtv` | `5.7.0` | Side-by-side installation; Spoof supported device |
-| NuvioTV | `com.nuvio.tv` | `1.1.0-beta.2`, `1.1.0-beta.4` | Merge tracking progress; Remaining episodes in Continue Watching; Side-by-side installation |
-| NuvioTV | `com.nuvio.tv` | `1.1.0-beta.4` | Keep airing series in Upcoming; Finale dates in library and collections |
+| NuvioTV | `com.nuvio.tv` | `1.1.0-beta.2`, `1.1.0-beta.4`, `1.1.0-beta.5` | Merge tracking progress; Remaining episodes in Continue Watching; Side-by-side installation |
+| NuvioTV | `com.nuvio.tv` | `1.1.0-beta.4`, `1.1.0-beta.5` | Keep airing series in Upcoming; Finale dates in library and collections |
 | Reddit | `com.reddit.frontpage` | `2026.37.0` | Content filters (Experimental); Show flairs in home feed (Experimental); Start as guest |
 | Peafowl Theme Maker for EMUI | `h7.hamzio.emuithemeotg` | `GMS_27.5.1` | Unlock Theme Ownership (Experimental) |
 | Pillo | `xyz.rtrvr.pillo` | `0.6.19`, `0.6.20` | Hybrid Lock-Screen Notifications |

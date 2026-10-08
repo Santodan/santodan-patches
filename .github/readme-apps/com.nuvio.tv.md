@@ -13,6 +13,6 @@ These are the available patches for NuvioTV:
 ![Remaining](images/NuvioTVRemainingCount.png)
 - **Side-by-side installation**: Lets you choose a different package name and launcher name so the patched app can coexist with the official app.
 
-On NuvioTV **1.1.0-beta.4**, patch settings are under **Layout > Santodan-Patches**. The two finale-date patches require beta.4; the other patches also support beta.2. Package and launcher names are configured when patching the APK.
+On NuvioTV **1.1.0-beta.4 and beta.5**, patch settings are under **Layout > Santodan-Patches**. The two finale-date patches support beta.4 and beta.5; the other patches also support beta.2. Package and launcher names are configured when patching the APK.
 
 <img src="images/NuvioTVMenu.png" width="800" alt="Santodan-Patches menu">

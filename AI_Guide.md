@@ -44,9 +44,9 @@ mutation scope, rejection cases, and DEX write/reload. Full release verification
 also patch and rebuild the original app bundle. Users must select Pillo's Banner/Light
 notification mode for the hybrid routing to apply.
 
-## NuvioTV 1.1.0-beta.2 and 1.1.0-beta.4
+## NuvioTV 1.1.0-beta.2, 1.1.0-beta.4, and 1.1.0-beta.5
 
-Five patches target package `com.nuvio.tv` (airing-series and finale-date patches support beta4 only):
+Five patches target package `com.nuvio.tv` (airing-series and finale-date patches support beta4 and beta5):
 
 1. **NuvioTV - Merge tracking progress** combines Nuvio Sync and connected-provider
    progress for Continue Watching. It retains the last successful snapshot while the
@@ -58,7 +58,7 @@ Five patches target package `com.nuvio.tv` (airing-series and finale-date patche
    the patched build can coexist with the official app. Both values are configurable;
    use a unique valid Android package name for each clone.
 
-**NuvioTV - Keep airing series in Upcoming** is a separate beta.4-only patch. Its
+**NuvioTV - Keep airing series in Upcoming** is a separate beta.4/beta.5 patch. Its
 disabled-by-default setting keeps library series with future scheduled episodes in
 the Separate Upcoming Row, preserves native labels such as New Season, and adds the
 scheduled finale date to Poster, Card, and Wide displays in `dd-MMM` format.
@@ -70,7 +70,7 @@ Its preferences and runtime bridge are independent of the remaining-episodes pat
 Use `SantodanAiring:D` for diagnostics.
 
 **NuvioTV - Finale dates in library and collections** adds independent opt-in switches
-under Layout > Santodan-Patches (beta4). It reuses the Upcoming badge style and latest known
+under Layout > Santodan-Patches (beta4/beta5). It reuses the Upcoming badge style and latest known
 catalog episode date, including past dates, with `dd-MMM-yy` formatting and its own
 preferences and runtime.
 Library uses `ba.n3.m`; collection row cards use `ba.q1.o`, both MetaPreview fields.
@@ -151,8 +151,8 @@ carries progress lists. `NuvioProviderLayout` is shared by the runtime and regre
 checks; using the Boolean flow for progress caused an `ArrayList`/`Boolean` crash.
 Provider origins use stable enum identities rather than obfuscated class names.
 
-Run `:patches:verifyNuvioBeta2` and `:patches:verifyNuvioBeta4` with original DEX files
-under the workspace's `.inspect-nuvio-beta2` and `.inspect-nuvio-beta4` directories.
+Run `:patches:verifyNuvioBeta2`, `:patches:verifyNuvioBeta4`, and `:patches:verifyNuvioBeta5` with original DEX files
+under the workspace's `.inspect-nuvio-beta2`, `.inspect-nuvio-beta4`, and `.inspect-nuvio-beta5` directories.
 These checks exercise every bytecode hook, validate runtime reflection contracts,
 and write/reload the modified classes. Apply all five patches to the original beta4
 APK and run SDK DEX verification before distributing a build. Device testing must
@@ -162,6 +162,13 @@ The original beta4 APK triggers 36 cross-DEX missing-class reports for optional
 third-party dependencies. The patched APK has the same reports and no new ones;
 all six final DEX files pass dexdump/D8 checks. Compare hierarchy reports against
 the original APK rather than treating its existing reports as patch regressions.
+
+Beta5 retains the provider interface, repositories, flow accessors, model fields,
+and settings coordinator contracts. Its Home classes, card renderers, Layout section
+lambda, and toggle renderer have different obfuscated names. `NuvioLayout` selects
+an explicit per-thread mapping during each patch execution; runtime extensions select
+reflection names using the installed APK version. The Watch Progress summary helper
+is `sa.p3.h1` on beta5 (`sa.o3.g1` on beta4). Keep all three original-DEX checks passing.
 
 ## Reddit 2026.37.0
 

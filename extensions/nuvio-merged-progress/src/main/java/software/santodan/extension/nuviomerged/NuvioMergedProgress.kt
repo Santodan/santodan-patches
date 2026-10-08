@@ -110,7 +110,7 @@ object NuvioMergedProgress {
                 else -> "SantodanMergedSettingsCallback"
             }
         }
-        findMethod(loader.loadClass("sa.eb"), "m", 13).invoke(null,
+        findMethod(loader.loadClass(NuvioRuntimeLayout.name("sa.eb")), "m", 13).invoke(null,
             title, description, checked, callback(action), null, callback {}, false, null, 0L, false, composer, 0, 1008)
     }
 
@@ -383,7 +383,7 @@ object NuvioMergedProgress {
               try {
                 if (!enabled()) return@execute
                 val cache = field(home, "T0").get(home) as Map<*, *>
-                findMethod(home.javaClass.classLoader.loadClass("la.t5"), "g", 2)
+                findMethod(home.javaClass.classLoader.loadClass(NuvioRuntimeLayout.name("la.t5")), "g", 2)
                     .invoke(null, home, mergedWatchedHistory)
                 val holder = field(home, "u").get(home)
                 val labels = (field(holder, "f").get(holder) as StateFlow<*>).value as Set<*>

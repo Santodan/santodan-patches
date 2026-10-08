@@ -86,6 +86,14 @@ tasks {
             file("${layout.buildDirectory.get()}/verification/nuvio-beta4.dex").absolutePath)
     }
 
+    register<JavaExec>("verifyNuvioBeta5") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyNuvioLayout")
+        args("1.1.0-beta.5", file("../../.inspect-nuvio-beta5").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/nuvio-beta5.dex").absolutePath)
+    }
+
     register<JavaExec>("verifyRedditContentFilter") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath

@@ -53,7 +53,7 @@ public final class NuvioRemainingEpisodes {
             Application app = (Application) Class.forName("android.app.ActivityThread")
                 .getMethod("currentApplication").invoke(null);
             if (app == null) throw new IllegalStateException("Application is unavailable");
-            cached = "1.1.0-beta.4".equals(app.getPackageManager()
+            cached = !"1.1.0-beta.2".equals(app.getPackageManager()
                 .getPackageInfo(app.getPackageName(), 0).versionName);
             newerLayout = cached;
         }
@@ -121,7 +121,7 @@ public final class NuvioRemainingEpisodes {
                 "invoke".equals(method.getName()) ? kotlinUnit(loader) : objectMethod(proxy, method, args));
             String description = "Show aired, unwatched episode counts for Local, Trakt, Simkl, and other tracking sources.";
             if (beta4()) {
-                Method row = findStatic(Class.forName("sa.eb", false, loader), "m", 13);
+                Method row = findStatic(Class.forName(NuvioRuntimeLayout.name("sa.eb"), false, loader), "m", 13);
                 row.invoke(null, "Show remaining episodes", description, stateValue(state), toggle,
                     null, noop, false, null, 0L, false, composer, 0, 1008);
             } else {
@@ -201,7 +201,7 @@ public final class NuvioRemainingEpisodes {
         Object modifier = staticField(modifierOwner, "b").get(null);
         modifier = findStatic(Class.forName("e0.b", false, loader), "u", 2)
             .invoke(null, modifier, Float.valueOf(horizontal));
-        Object shape = staticField(Class.forName(beta4() ? "ba.d3" : "pa.g1", false, loader), "a").get(null);
+        Object shape = staticField(Class.forName(beta4() ? NuvioRuntimeLayout.name("ba.d3") : "pa.g1", false, loader), "a").get(null);
         modifier = findStatic(Class.forName("a2.j", false, loader), "b", 2)
             .invoke(null, modifier, shape);
         Object rectangle = staticField(Class.forName("d2.g0", false, loader), "b").get(null);

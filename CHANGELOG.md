@@ -54,6 +54,14 @@
 
 ## Unreleased
 
+### Bug Fixes
+
+* **nuviotv:** allow beta.5 through the remaining-episode patch execution guard, matching advertised compatibility; verify supported and rejected targets alongside real APK hooks
+
+### Updated App Support
+
+* **nuviotv:** support 1.1.0-beta.5 across all five patches, including the shared Santodan-Patches menu, merged progress and Watched badges, remaining counts, Upcoming finale dates, library/collection finale dates, and side-by-side installation; retain beta.2/beta.4 support
+
 ### Improvements
 
 * **nuviotv:** open Home without waiting for merged tracking refresh; restore per-profile cached progress, watched items, episode history, and catalog aliases in the background, then refresh connected providers every two minutes

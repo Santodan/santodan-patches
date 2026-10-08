@@ -166,7 +166,7 @@ public final class NuvioAiringSeries {
         String badge = PREPARED_BADGE.get();
         PREPARED_BADGE.remove();
         if (composer == null) return;
-        try {
+        try (NuvioBadgeComposition group = NuvioBadgeComposition.begin(composer, 1403088898)) {
             ClassLoader loader = composer.getClass().getClassLoader();
             Object revision = revisionState(loader);
             findMethod(revision.getClass(), "getValue", 0).invoke(revision);

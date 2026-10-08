@@ -132,6 +132,10 @@ public final class VerifyNuvioLayout {
             method("Le0/v;", "a", 2);
             field("Le0/v;", "a", "Le0/v;");
         }
+        String composerType = newer ? "Lg1/m0;" : "Lg1/k0;";
+        method(composerType, "d0", 1);
+        method(composerType, "p", 1);
+        System.out.println("PASS: isolated badge composition group start/end contracts");
         System.out.println("PASS: reflection contracts for " + version);
         if (newer) {
             method("Lw1/v;", "<init>", 1);

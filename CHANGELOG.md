@@ -56,6 +56,12 @@
 
 ### Bug Fixes
 
+* **nuviotv:** isolate remaining-count and finale-date badge composition in dedicated groups to prevent remembered-slot type collisions and Compose start/end imbalance crashes
+
+* **nuviotv:** publish incremental merged Watched badges only for changed cached metadata, preserve full history for remaining counts, bound unchanged-history retries to two minutes, and limit badge progress logs to once every 30 seconds
+
+* **nuviotv:** limit Remaining Episodes work to recently rendered Continue Watching cards, skip counting while disabled, calculate off the rendering thread, persist only changed counts, and bound fallback fetches with retry backoff
+
 * **nuviotv:** allow beta.5 through the remaining-episode patch execution guard, matching advertised compatibility; verify supported and rejected targets alongside real APK hooks
 
 ### Updated App Support

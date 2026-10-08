@@ -130,7 +130,7 @@ public final class NuvioFinaleDates {
         String badge = PREPARED_BADGE.get();
         PREPARED_BADGE.remove();
         if (composer == null) return;
-        try {
+        try (NuvioBadgeComposition group = NuvioBadgeComposition.begin(composer, 1403088899)) {
             ClassLoader loader = composer.getClass().getClassLoader();
             Object revision = revisionState(loader);
             findMethod(revision.getClass(), "getValue", 0).invoke(revision);

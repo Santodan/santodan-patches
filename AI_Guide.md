@@ -110,13 +110,12 @@ Cache `snapshot_v2_<profileId>` contains progress, seeds, origins, watched items
 badge totals. Capture live logs before reproducing, rather than using only `logcat -d`.
 
 Beta4 badge metadata runs in `la.e5`. Its unchanged-ID gate (`la.z3.V0`) can skip
-unresolved metadata after a cancelled batch; bypass that gate while merging is on.
+unresolved metadata after a cancelled batch; bypass it on history changes and at most once every two minutes for retries.
 `la.t5.i` resolves metadata groups. Hook the loop after `hasNext`'s result to publish
-already-resolved metadata through native `la.t5.g` after each group, debounced off the
+changed cached metadata through native `la.t5.g` after each group, debounced off the
 UI thread. The live Home receiver is the same register used for `la.z3.T0`, not the
 original constructor argument. This avoids waiting for thousands of titles before
-library/collection labels update. New log lines are `Retrying badge metadata` and
-`Badge validation progress` (cached metadata, watched IDs, and label totals).
+library/collection labels update. `Badge validation progress` reports changed IDs, cached metadata, and label totals at most every 30 seconds.
 Once per changed watched-history snapshot, before the key comparison, discard in-memory validation deadlines for IDs lacking
 episode metadata; a persisted "fresh" deadline alone cannot validate the new merged
 history. Preserve deadlines for cached metadata and keep existing labels until native
@@ -284,3 +283,29 @@ Pushing `dev` also runs `.github/workflows/open_pull_request.yml`, which opens o
 a pull request into `main`. A direct push to another branch runs the release workflow,
 but the repository's branch and semantic-release configuration determine whether that
 branch publishes a stable or prerelease version.
+
+Remaining Episodes performance: constructor registration retains seed/title data only.
+`prepareBadge` marks recently composed Continue Watching cards; the native bulk-update
+hook retains episode maps and queues counting only for those cards. Never enumerate
+all watched-history IDs or persist unchanged counts. Keep counting off composition,
+coalesce updates, skip disabled work, and limit fallback metadata to one worker with
+60-second retry backoff (10 minutes after success). Validate with
+`patches/src/test/python/verify_nuvio_remaining_work.py <org.json-jar>` using JAVA_HOME;
+it compiles the production bridge against host fixtures with 1,000 unrelated titles.
+
+Merged badge performance: `NuvioBadgeDelta` compares only entries in the bounded
+native metadata cache and sends changed entries to native badge publication, which
+preserves existing labels. Remaining Episodes resolves `completeWatchedHistory`
+to retain the full watched map when that publication invokes its bulk-update hook.
+Keep native unchanged-key skipping, retry incomplete validation no more than once
+per two minutes, and throttle incremental progress logs to 30 seconds. Run
+`:patches:verifyNuvioBadgeDelta` for changed metadata, unchanged state, watch updates,
+and cache-eviction regression coverage.
+
+All injected badge renderers must open their own replace group with composer `d0`
+and close it with `p(false)` (beta2 `g1.k0`, beta4/beta5 `g1.m0`). Native text has a
+restart group but the badge's placement can still collide with the host's remembered
+slots without this wrapper. Use stable distinct keys for the three extensions and
+close groups on early returns. `q()` ends defaults; do not use it for this wrapper.
+Run `:patches:verifyNuvioBadgeComposition` for all three production wrappers, alongside
+the beta2/beta4/beta5 DEX checks for the start/end contracts.

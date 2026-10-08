@@ -202,6 +202,7 @@ public final class VerifyNuvioLayout {
             method("Lg0/i;", "q", 4);
             method("Lq1/s;", "<init>", 3);
             method("Lsa/kc;", "a", 11);
+            method("Lsa/kc;", "e", 6);
             field("Lo9/a1;", "k", "Lkotlinx/coroutines/flow/StateFlow;");
             field("Lo9/a1;", "j", "Le9/f;");
             field("Le9/f;", "f", "Lkotlinx/coroutines/flow/StateFlow;");

@@ -83,7 +83,11 @@ Use `SantodanFinale:D` for diagnostics. Verify both switches independently on de
 Beta4 runtime patches share an unnamed settings-menu dependency. It inserts one keyed
 lazy item in Layout's native section list, rendered with `sa.kc.a` as **Santodan-Patches**.
 The menu discovers installed runtime bridges independently and uses their existing
-preferences and Compose controls. Old beta4 injected settings rows and merged picker
+preferences and Compose controls. Native non-focusable section labels (`sa.kc.e`)
+group merged progress, its strategy, remaining episodes, and airing-series settings
+under **Continue Watching**, and library/collection finale-date switches under **UI**.
+Empty groups are omitted. The menu runtime check covers all 16 bridge selections.
+Old beta4 injected settings rows and merged picker
 choices are removed; beta2 retains its original UI. Merged controls register `o9.a1`
 and capture the initialized `p8.e` component. If the coordinator has not been created,
 they resolve its native `w3` provider on demand; Layout must work before opening the

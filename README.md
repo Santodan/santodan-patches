@@ -51,6 +51,8 @@ These are the available patches for NuvioTV:
 
 On NuvioTV **1.1.0-beta.4 and beta.5**, patch settings are under **Layout > Santodan-Patches**. The two finale-date patches support beta.4 and beta.5; the other patches also support beta.2. Package and launcher names are configured when patching the APK.
 
+Inside the menu, **Continue Watching** groups Merge tracking progress, Prefer most recently updated progress, Show remaining episodes, and Keep airing series in Upcoming. **UI** groups the library and collection finale-date switches. Labels appear only when their group has an installed patch.
+
 <img src="images/NuvioTVMenu.png" width="800" alt="Santodan-Patches menu">
 
 **🎯 Supported versions:**

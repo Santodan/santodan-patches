@@ -70,6 +70,7 @@
 
 ### Improvements
 
+* **nuviotv:** add native Continue Watching and UI labels inside Layout > Santodan-Patches on beta.4/beta.5; group the existing switches and omit labels for uninstalled patch groups
 * **nuviotv:** open Home without waiting for merged tracking refresh; restore per-profile cached progress, watched items, episode history, and catalog aliases in the background, then refresh connected providers every two minutes
 * **nuviotv:** cache reflection lookups, index next-up seeds by show, and reuse a single worker for incremental Watched badge updates; log provider-read and total merge times
 * **nuviotv:** emulator validation reduced fully drawn startup from approximately 17 seconds to 2.725 seconds while merged synchronization completed in the background

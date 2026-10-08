@@ -19,6 +19,11 @@ val patchListGeneratorClasspath = configurations.create("patchListGeneratorClass
 dependencies {
     compileOnly(libs.gson)
     patchListGeneratorClasspath(libs.gson)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+}
+
+kotlin.sourceSets.named("test") {
+    kotlin.srcDir("../extensions/nuvio-stream-preload/src/main/java")
 }
 
 // The Morphe patch runtime targets Java 11. Pin Java sources explicitly so
@@ -47,6 +52,16 @@ tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
 }
 
 tasks {
+    register<JavaExec>("verifyNuvioStreamPreload") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyNuvioStreamPreloadKt")
+    }
+    register<JavaExec>("verifyNuvioStreamPreloadRuntime") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyNuvioStreamPreloadRuntimeKt")
+    }
     register<JavaExec>("verifyNuvioBadgeComposition") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath

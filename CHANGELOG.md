@@ -70,6 +70,7 @@
 
 ### Improvements
 
+* **nuviotv:** log stream preload starts, completion times, source counts, skipped targets, cancellations, and timeouts under SantodanStreams without repeating composition hits or exposing stream URLs
 * **nuviotv:** add native Continue Watching and UI labels inside Layout > Santodan-Patches on beta.4/beta.5; group the existing switches and omit labels for uninstalled patch groups
 * **nuviotv:** open Home without waiting for merged tracking refresh; restore per-profile cached progress, watched items, episode history, and catalog aliases in the background, then refresh connected providers every two minutes
 * **nuviotv:** cache reflection lookups, index next-up seeds by show, and reuse a single worker for incremental Watched badge updates; log provider-read and total merge times
@@ -77,6 +78,7 @@
 
 ### New Features
 
+* **nuviotv:** add independent opt-in Continue Watching and detail-page stream preloading patches for beta.4/beta.5, grouped under Streams; reuse native profile/configuration-aware source searches with bounded background work
 * **nuviotv:** group beta.4 runtime patch settings under the expandable Layout > Santodan-Patches menu, including merged progress and its strategy; preserve existing preferences and show only installed patches
 * **nuviotv:** add the independent beta.4 Finale dates in library and collections patch, with separate disabled-by-default switches under Layout > Santodan-Patches
 * **nuviotv:** display the latest known catalog episode date on library and collection series posters as a blue `dd-MMM-yy` badge, including past dates; retain each location during recomposition and skip movies, unknown dates, and unrelated catalog rows

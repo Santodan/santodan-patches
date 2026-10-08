@@ -46,7 +46,7 @@ notification mode for the hybrid routing to apply.
 
 ## NuvioTV 1.1.0-beta.2, 1.1.0-beta.4, and 1.1.0-beta.5
 
-Five patches target package `com.nuvio.tv` (airing-series and finale-date patches support beta4 and beta5):
+Seven patches target package `com.nuvio.tv` (airing-series, finale-date, and stream-preloading patches support beta4 and beta5):
 
 1. **NuvioTV - Merge tracking progress** combines Nuvio Sync and connected-provider
    progress for Continue Watching. It retains the last successful snapshot while the
@@ -86,7 +86,8 @@ The menu discovers installed runtime bridges independently and uses their existi
 preferences and Compose controls. Native non-focusable section labels (`sa.kc.e`)
 group merged progress, its strategy, remaining episodes, and airing-series settings
 under **Continue Watching**, and library/collection finale-date switches under **UI**.
-Empty groups are omitted. The menu runtime check covers all 16 bridge selections.
+The two stream-preloading switches appear under **Streams**. Empty groups are omitted.
+The menu runtime check covers all 64 bridge selections.
 Old beta4 injected settings rows and merged picker
 choices are removed; beta2 retains its original UI. Merged controls register `o9.a1`
 and capture the initialized `p8.e` component. If the coordinator has not been created,
@@ -98,6 +99,42 @@ partial patch selections, and coroutine completion checks. Run
 `:patches:verifyNuvioSettingsStoreRuntime` for lazy coordinator resolution and reuse.
 Verify TV focus/scrolling,
 each patch alone, and saved choices on device.
+
+**NuvioTV - Preload streams in Continue Watching** and **NuvioTV - Preload streams on detail page**
+are independent opt-in beta4/beta5 patches. Their shared unnamed dependency captures
+the initialized `p8.e` component. Its scoped `K2` provider lazily supplies the native
+stream repository (`v9.i4` on beta4, `v9.h4` on beta5), whose `j(type, videoId, season,
+episode, false)` flow warms the same native sessions as playback. Do not cache stream
+links separately or force refresh: native sessions include the profile and source
+configuration, expire after 15 minutes, and are bounded to 12 entries.
+
+Continue Watching hooks the card lambda (`ba.e2`/`ba.f2`) and reads its `x` WatchProgress
+or `y.a` NextUpInfo. Use the exact native video ID and season/episode; skip unaired
+NextUp entries. Detail preloading observes `ka.l9.u()`/`ka.n9.u()`, the final UI StateFlow
+including shuffle selection, and reads `b` Meta and `h` NextToWatch. Its observer stops
+at `onCleared`. Use native `ka.d1.C`/`ka.e1.C` to resolve the hero Play video from Meta,
+NextToWatch, and the current season's episodes, including resume and default-video
+fallbacks. Movie IDs without a hero video come from Meta. Repeated composition and
+state emissions deduplicate requests; queued detail targets are replaced when Play changes.
+
+The shared queue has two background consumers, at most eight queued targets, detail
+priority, 15-second queue freshness, a 45-second consumer timeout, and bounded
+60-second success / 15-second failure cooldowns. Recheck preferences, active profile,
+and native playback pause state before starting a search. Native session producers
+retain their own lifecycle when a preload consumer stops. Run
+`:patches:verifyNuvioStreamPreload` and `:patches:verifyNuvioStreamPreloadRuntime` for
+target selection, bounded work, profile isolation, lazy repository resolution,
+off-UI-thread searches, playback reuse, and detail observer disposal; keep beta2/4/5
+DEX checks passing. Device verification must check both settings independently,
+movie/resume/next-up/shuffle targets, source changes, and actual cached playback.
+Use `SantodanStreams` for diagnostics.
+Debug messages report runtime registration, setting changes, each accepted search's
+start and terminal status, elapsed milliseconds, addon-group count, and stream-source
+count. Recomposition duplicates and cooldown hits stay silent. Custom video IDs are
+redacted; stream URLs and credentials are never included in these debug messages.
+The native cache does not expose cache-hit provenance, so elapsed time alone must
+not be labelled as proof of a cache hit. Timeouts stop the preload consumer; native
+search-session producers retain their own lifecycle.
 
 Merged watched badges must follow the same per-show provider winner as progress.
 The proxy's `g(Continuation)` supplies the coherent bulk watched episode map;
@@ -157,7 +194,7 @@ Provider origins use stable enum identities rather than obfuscated class names.
 Run `:patches:verifyNuvioBeta2`, `:patches:verifyNuvioBeta4`, and `:patches:verifyNuvioBeta5` with original DEX files
 under the workspace's `.inspect-nuvio-beta2`, `.inspect-nuvio-beta4`, and `.inspect-nuvio-beta5` directories.
 These checks exercise every bytecode hook, validate runtime reflection contracts,
-and write/reload the modified classes. Apply all five patches to the original beta4
+and write/reload the modified classes. Apply all seven patches to the original beta4
 APK and run SDK DEX verification before distributing a build. Device testing must
 check provider refresh, both merged selection modes, and the optional episode badge.
 

@@ -20,9 +20,11 @@ public final class VerifyNuvioSettingsMenuRuntime {
             "software.santodan.extension.nuviomerged.NuvioMergedProgress",
             "software.santodan.extension.nuvioremaining.NuvioRemainingEpisodes",
             "software.santodan.extension.nuvioairing.NuvioAiringSeries",
-            "software.santodan.extension.nuviofinale.NuvioFinaleDates"
+            "software.santodan.extension.nuviofinale.NuvioFinaleDates",
+            "software.santodan.extension.nuviocwstreams.NuvioContinueWatchingStreams",
+            "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams"
         };
-        for (int selection = 0; selection < 16; selection++) {
+        for (int selection = 0; selection < 64; selection++) {
             int installed = Integer.bitCount(selection);
             Path directory = Path.of(args[2], "selection-" + selection);
             Files.createDirectories(directory);
@@ -37,6 +39,7 @@ public final class VerifyNuvioSettingsMenuRuntime {
                 "public static java.util.List<String> events=new java.util.ArrayList<>(); public static void e(int flags,int defaults,Object composer,String text,String description,w1.n modifier){if(defaults!=4)throw new AssertionError();events.add(text);} public static boolean expanded;"));
             List<String> expected = new ArrayList<>();
             boolean continueWatching = false;
+            boolean streams = false;
             for (int index = 0; index < bridges.length; index++) {
                 if ((selection & (1 << index)) == 0) continue;
                 if (index < 3 && !continueWatching) {
@@ -44,6 +47,10 @@ public final class VerifyNuvioSettingsMenuRuntime {
                     continueWatching = true;
                 }
                 if (index == 3) expected.add("UI");
+                if (index >= 4 && !streams) {
+                    expected.add("Streams");
+                    streams = true;
+                }
                 String bridge = bridges[index];
                 expected.add(bridge);
                 int dot = bridge.lastIndexOf('.');

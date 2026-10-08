@@ -203,6 +203,37 @@ public final class VerifyNuvioLayout {
             method("Lq1/s;", "<init>", 3);
             method("Lsa/kc;", "a", 11);
             method("Lsa/kc;", "e", 6);
+            String streamRepository = NuvioLayout.current("Lv9/i4;");
+            method(streamRepository, "j", 5);
+            field(streamRepository, "e", "Le9/f;");
+            field(streamRepository, "k", "Lkotlinx/coroutines/flow/MutableStateFlow;");
+            field("Lp8/e;", "K2", "Lnb/c;");
+            field("Lp8/e;", "y", "Lnb/c;");
+            field("Le9/f;", "f", "Lkotlinx/coroutines/flow/StateFlow;");
+            field("La9/n;", "a", "Ljava/lang/Object;");
+            method("Lcom/nuvio/tv/domain/model/AddonStreams;", "getStreams", 0);
+            String detailModel = NuvioLayout.current("Lka/l9;");
+            method(detailModel, "u", 0);
+            field(detailModel, "F", "Lkotlinx/coroutines/flow/StateFlow;");
+            String detailState = NuvioLayout.current("Lka/t7;");
+            field(detailState, "b", "Lcom/nuvio/tv/domain/model/Meta;");
+            field(detailState, "h", "Lcom/nuvio/tv/domain/model/NextToWatch;");
+            field(detailState, "f", "Ljava/util/List;");
+            method(NuvioLayout.current("Lka/d1;"), "C", 3);
+            for (String getter : List.of("getNextVideoId", "getNextSeason", "getNextEpisode", "getWatchProgress"))
+                method("Lcom/nuvio/tv/domain/model/NextToWatch;", getter, 0);
+            for (String getter : List.of("getId", "getSeason", "getEpisode"))
+                method("Lcom/nuvio/tv/domain/model/Video;", getter, 0);
+            field(NuvioLayout.current("Lba/e2;"), "x", "Lcom/nuvio/tv/domain/model/WatchProgress;");
+            field(NuvioLayout.current("Lba/e2;"), "y", NuvioLayout.BETA5.equals(version) ? "Lla/g0;" : "Lla/f0;");
+            NuvioStreamPreloadPatch.hookComponent(owner("Lp8/e;"));
+            NuvioStreamPreloadPatch.hookContinueWatching(owner(NuvioLayout.current("Lba/e2;")));
+            NuvioStreamPreloadPatch.hookDetails(owner(detailModel));
+            boolean duplicateStreamHookRejected = false;
+            try { NuvioStreamPreloadPatch.hookContinueWatching(owner(NuvioLayout.current("Lba/e2;"))); }
+            catch (IllegalStateException expected) { duplicateStreamHookRejected = true; }
+            if (!duplicateStreamHookRejected) throw new AssertionError("Duplicate stream hook accepted");
+            System.out.println("PASS: stream preload hooks, native cache/profile contracts, and duplicate rejection");
             field("Lo9/a1;", "k", "Lkotlinx/coroutines/flow/StateFlow;");
             field("Lo9/a1;", "j", "Le9/f;");
             field("Le9/f;", "f", "Lkotlinx/coroutines/flow/StateFlow;");

@@ -186,6 +186,76 @@
       "options": []
     },
     {
+      "name": "NuvioTV - Preload streams in Continue Watching",
+      "description": "Adds an opt-in Streams setting to search sources in the background for visible Continue Watching episodes and movies, reusing Nuvio's native search cache.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nuvio.tv",
+          "name": "NuvioTV",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.0-beta.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "1.1.0-beta.5",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "NuvioTV - Preload streams on detail page",
+      "description": "Adds an opt-in Streams setting to search sources for the detail page's Play or Resume episode or movie, reusing Nuvio's native search cache.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nuvio.tv",
+          "name": "NuvioTV",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.0-beta.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "1.1.0-beta.5",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "NuvioTV - Remaining episodes in Continue Watching",
       "description": "Adds a disabled-by-default setting that displays aired, unwatched episode counts for every tracking integration. Controlled by Layout > Santodan-Patches on beta4 and beta5.",
       "default": false,

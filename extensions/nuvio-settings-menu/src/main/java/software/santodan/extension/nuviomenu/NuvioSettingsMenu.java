@@ -12,7 +12,9 @@ public final class NuvioSettingsMenu {
         "software.santodan.extension.nuviomerged.NuvioMergedProgress",
         "software.santodan.extension.nuvioremaining.NuvioRemainingEpisodes",
         "software.santodan.extension.nuvioairing.NuvioAiringSeries",
-        "software.santodan.extension.nuviofinale.NuvioFinaleDates"
+        "software.santodan.extension.nuviofinale.NuvioFinaleDates",
+        "software.santodan.extension.nuviocwstreams.NuvioContinueWatchingStreams",
+        "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams"
     };
     private static volatile Object expandedState;
     private NuvioSettingsMenu() {}
@@ -57,6 +59,7 @@ public final class NuvioSettingsMenu {
         ClassLoader loader = composer.getClass().getClassLoader();
         renderGroup(composer, loader, "Continue Watching", 0, 3);
         renderGroup(composer, loader, "UI", 3, 4);
+        renderGroup(composer, loader, "Streams", 4, 6);
     }
 
     private static void renderGroup(Object composer, ClassLoader loader, String label, int start, int end) {

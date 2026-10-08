@@ -12,7 +12,13 @@ These are the available patches for NuvioTV:
 - **Remaining episodes in Continue Watching**: Adds a setting to show the number of aired, unwatched episodes on Continue Watching cards. Counting runs in the background for recently displayed cards and stops when disabled.
 ![Remaining](images/NuvioTVRemainingCount.png)
 - **Side-by-side installation**: Lets you choose a different package name and launcher name so the patched app can coexist with the official app.
+- **Preload streams in Continue Watching**: Searches sources in the background for visible, playable episodes and movies, so opening playback can reuse the search results.
+- **Preload streams on detail page**: Searches sources for the current Play or Resume movie or episode, following changes to the next episode on the detail page.
 
-On NuvioTV **1.1.0-beta.4 and beta.5**, patch settings are under **Layout > Santodan-Patches**. The two finale-date patches support beta.4 and beta.5; the other patches also support beta.2. Package and launcher names are configured when patching the APK.
+On NuvioTV **1.1.0-beta.4 and beta.5**, patch settings are under **Layout > Santodan-Patches**, grouped under **Continue Watching**, **UI**, and **Streams** labels. Labels appear only for installed patch groups. Airing-series, finale-date, and stream-preloading patches support beta.4 and beta.5; merged progress, remaining episodes, and side-by-side installation also support beta.2. Package and launcher names are configured when patching the APK.
+
+The two **Streams** switches are independent and disabled by default. Preloading uses Nuvio's native search cache and installed addons/plugins, with bounded background work. It pauses new preloads while native playback pauses source searches. Source results retain Nuvio's profile/configuration checks and cache expiration; media playback begins when you press Play.
+
+Include `"SantodanStreams:V"` in your logcat filters to see preload starts, completion times, source counts, and timeout/cancellation events. Repeated composition hits stay silent, and diagnostics omit stream URLs and redact custom video IDs.
 
 <img src="images/NuvioTVMenu.png" width="800" alt="Santodan-Patches menu">

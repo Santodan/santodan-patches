@@ -1,3 +1,19 @@
+## [0.9.0](https://github.com/Santodan/santodan-patches/compare/v0.8.0...v0.9.0) (2026-10-08)
+
+### 🐛 Bug Fixes
+
+* **nuviotv:** reduce badge work and isolate badge composition [skip ci] ([8bcfc45](https://github.com/Santodan/santodan-patches/commit/8bcfc45cbfbd3984371a578dd296fea7cb16a6ee))
+
+### ✨ New Features
+
+* **nuvio:** label patch settings groups [skip ci] ([c434e81](https://github.com/Santodan/santodan-patches/commit/c434e81f568db2d2fbe19588dcfd3d0800111956))
+* **nuvio:** preload stream sources with diagnostics [skip ci] ([c645e4f](https://github.com/Santodan/santodan-patches/commit/c645e4fa65b743424a75908be15b2e07cc63a484))
+* **nuvio:** show upcoming movie dates in library and collections ([f8d6bd1](https://github.com/Santodan/santodan-patches/commit/f8d6bd1915a4412e0731a9ecb1aed805d9b6aa3f))
+
+### 🚀 Updated App Support
+
+* **nuviotv:** support 1.1.0-beta.5 across all patches [skip ci] ([dd7a8f4](https://github.com/Santodan/santodan-patches/commit/dd7a8f4b08fa71cf9b167e7c67f9e27dfa4bea41))
+
 ## [0.8.0](https://github.com/Santodan/santodan-patches/compare/v0.7.0...v0.8.0) (2026-10-07)
 
 ### 🐛 Bug Fixes

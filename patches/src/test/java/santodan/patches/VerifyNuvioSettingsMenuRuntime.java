@@ -21,13 +21,15 @@ public final class VerifyNuvioSettingsMenuRuntime {
             "software.santodan.extension.nuvioremaining.NuvioRemainingEpisodes",
             "software.santodan.extension.nuvioairing.NuvioAiringSeries",
             "software.santodan.extension.nuviofinale.NuvioFinaleDates",
+        "software.santodan.extension.nuviomovierelease.NuvioMovieReleaseDates",
             "software.santodan.extension.nuviocwstreams.NuvioContinueWatchingStreams",
             "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams"
         };
-        for (int selection = 0; selection < 64; selection++) {
+        for (int selection = 0; selection < 128; selection++) {
             int installed = Integer.bitCount(selection);
-            Path directory = Path.of(args[2], "selection-" + selection);
-            Files.createDirectories(directory);
+            Path root = Path.of(args[2]);
+            Files.createDirectories(root);
+            Path directory = Files.createTempDirectory(root, "selection-" + selection + "-");
             Map<String, String> sources = new LinkedHashMap<>();
             sources.put("android.util.Log", "package android.util; public class Log { public static int e(String tag,String message,Throwable cause) { throw new AssertionError(message,cause); } }");
             sources.put("q1.s", "package q1; public class s { public final Object content; public s(int key,Object content,boolean tracked) { this.content=content; } }");
@@ -40,14 +42,15 @@ public final class VerifyNuvioSettingsMenuRuntime {
             List<String> expected = new ArrayList<>();
             boolean continueWatching = false;
             boolean streams = false;
+            boolean ui = false;
             for (int index = 0; index < bridges.length; index++) {
                 if ((selection & (1 << index)) == 0) continue;
                 if (index < 3 && !continueWatching) {
                     expected.add("Continue Watching");
                     continueWatching = true;
                 }
-                if (index == 3) expected.add("UI");
-                if (index >= 4 && !streams) {
+                if (index >= 3 && index < 5 && !ui) { expected.add("UI"); ui = true; }
+                if (index >= 5 && !streams) {
                     expected.add("Streams");
                     streams = true;
                 }

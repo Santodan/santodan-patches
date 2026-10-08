@@ -191,7 +191,7 @@ public final class VerifyNuvioLayout {
             System.out.println("PASS: standalone airing-series hooks");
             field(NuvioLayout.current("Lba/n3;"), "m", "Lcom/nuvio/tv/domain/model/MetaPreview;");
             field("Lba/q1;", "o", "Lcom/nuvio/tv/domain/model/MetaPreview;");
-            for (String getter : List.of("getApiType", "getImdbId", "getId"))
+            for (String getter : List.of("getApiType", "getImdbId", "getId", "getReleased", "getReleaseInfo"))
                 method("Lcom/nuvio/tv/domain/model/MetaPreview;", getter, 0);
             NuvioFinaleDatesPatch.hookItems(owner(NuvioLayout.current("Lba/i1;")));
             NuvioFinaleDatesPatch.hookCard(owner(NuvioLayout.current("Lba/n3;")));
@@ -199,6 +199,12 @@ public final class VerifyNuvioLayout {
             for (String type : List.of(NuvioLayout.current("Lba/n3;"), "Lba/q1;", NuvioLayout.current("Lba/o3;"), "Lba/s1;"))
                 NuvioFinaleDatesPatch.hookContext(owner(type));
             System.out.println("PASS: library and collection finale-date hooks");
+            NuvioFinaleDatesPatch.hookItems(owner(NuvioLayout.current("Lba/i1;")), NuvioMovieReleaseDatesPatch.EXTENSION);
+            NuvioFinaleDatesPatch.hookCard(owner(NuvioLayout.current("Lba/n3;")), NuvioMovieReleaseDatesPatch.EXTENSION);
+            NuvioFinaleDatesPatch.hookCard(owner("Lba/q1;"), NuvioMovieReleaseDatesPatch.EXTENSION);
+            for (String type : List.of(NuvioLayout.current("Lba/n3;"), "Lba/q1;", NuvioLayout.current("Lba/o3;"), "Lba/s1;"))
+                NuvioFinaleDatesPatch.hookContext(owner(type), NuvioMovieReleaseDatesPatch.EXTENSION);
+            System.out.println("PASS: movie release hooks coexist with series finale hooks");
             method("Lg0/i;", "q", 4);
             method("Lq1/s;", "<init>", 3);
             method("Lsa/kc;", "a", 11);

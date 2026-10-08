@@ -8,7 +8,7 @@ public final class VerifyNuvioBadgeComposition {
  }
  public static void main(String[] args)throws Exception {
   Composer composer=new Composer();
-  for(String bridge: List.of("nuvioremaining","nuvioairing","nuviofinale")) {
+  for(String bridge: List.of("nuvioremaining","nuvioairing","nuviofinale","nuviomovierelease")) {
    Class<?> type=Class.forName("software.santodan.extension."+bridge+".NuvioBadgeComposition");
    var begin=type.getMethod("begin",Object.class,int.class);
    for(int i=0;i<3;i++) {
@@ -19,7 +19,7 @@ public final class VerifyNuvioBadgeComposition {
     if(composer.depth!=0)throw new AssertionError("Badge left group open");
    }
   }
-  if(composer.keys.size()!=9)throw new AssertionError("Missing group entries");
-  System.out.println("PASS: all three production badge wrappers balance groups on normal, empty, and failed renders");
+  if(composer.keys.size()!=12)throw new AssertionError("Missing group entries");
+  System.out.println("PASS: all four production badge wrappers balance groups on normal, empty, and failed renders");
  }
 }

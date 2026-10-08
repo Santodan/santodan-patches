@@ -46,7 +46,7 @@ notification mode for the hybrid routing to apply.
 
 ## NuvioTV 1.1.0-beta.2, 1.1.0-beta.4, and 1.1.0-beta.5
 
-Seven patches target package `com.nuvio.tv` (airing-series, finale-date, and stream-preloading patches support beta4 and beta5):
+Eight patches target package `com.nuvio.tv` (airing-series, finale-date, and stream-preloading patches support beta4 and beta5):
 
 1. **NuvioTV - Merge tracking progress** combines Nuvio Sync and connected-provider
    progress for Continue Watching. It retains the last successful snapshot while the
@@ -87,7 +87,7 @@ preferences and Compose controls. Native non-focusable section labels (`sa.kc.e`
 group merged progress, its strategy, remaining episodes, and airing-series settings
 under **Continue Watching**, and library/collection finale-date switches under **UI**.
 The two stream-preloading switches appear under **Streams**. Empty groups are omitted.
-The menu runtime check covers all 64 bridge selections.
+The menu runtime check covers all 128 bridge selections.
 Old beta4 injected settings rows and merged picker
 choices are removed; beta2 retains its original UI. Merged controls register `o9.a1`
 and capture the initialized `p8.e` component. If the coordinator has not been created,
@@ -350,3 +350,22 @@ slots without this wrapper. Use stable distinct keys for the three extensions an
 close groups on early returns. `q()` ends defaults; do not use it for this wrapper.
 Run `:patches:verifyNuvioBadgeComposition` for all three production wrappers, alongside
 the beta2/beta4/beta5 DEX checks for the start/end contracts.
+
+**NuvioTV - Upcoming movie dates in library and collections** is independent of the
+series finale patch and supports beta4/beta5. Two disabled-by-default switches appear
+under UI. It reuses the verified poster/scope hooks with a distinct extension and
+Compose group key, and skips series and released movies. Exact preview `released`
+then `releaseInfo` values take precedence; year-only data never invents a date.
+Missing dates can use the movie catalog for IMDb IDs, with one background worker,
+a bounded queue, request timeouts, and a six-hour persistent cache. Other IDs can
+show their exact preview dates without a catalog lookup. Date-only releases use UTC
+midnight, zoned releases use their exact instant, and timestamp badges use the local
+date, matching Nuvio's native release rules. `verifyNuvioMovieReleaseDates` checks
+these rules; beta4/beta5 DEX checks exercise both movie and series hooks together.
+Use `SantodanMovieRelease:V` for diagnostics. Release dates describe metadata releases,
+not a guarantee that a streaming source exists.
+
+Movie-date lookup optimization: a plain past release year skips catalog requests;
+current/future years and ambiguous year ranges still require exact dates. Exact
+preview dates retain precedence. Setting-change diagnostics include the scope,
+while normal settings rendering stays silent. Runtime checks cover these rules.

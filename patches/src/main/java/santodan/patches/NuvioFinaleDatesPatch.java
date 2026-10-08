@@ -95,7 +95,9 @@ public final class NuvioFinaleDatesPatch {
                 method(EXTENSION, "renderSettings", Collections.singletonList("Ljava/lang/Object;"), "V")));
     }
 
-    static void hookItems(MutableClass owner) {
+    static void hookItems(MutableClass owner) { hookItems(owner, EXTENSION); }
+
+    static void hookItems(MutableClass owner, String extension) {
         MutableMethod target = unique(owner, "invoke", 4);
         List<Instruction> ins = instructions(target);
         int matches = 0;
@@ -106,15 +108,17 @@ public final class NuvioFinaleDatesPatch {
             if (!(ins.get(i) instanceof RegisterRangeInstruction)) throw unsupported("Item card invocation changed");
             int item = ((RegisterRangeInstruction) ins.get(i)).getStartRegister();
             target.getImplementation().addInstruction(i + 1, new BuilderInstruction35c(Opcode.INVOKE_STATIC,
-                0, 0, 0, 0, 0, 0, method(EXTENSION, "exitContext", List.of(), "V")));
+                0, 0, 0, 0, 0, 0, method(extension, "exitContext", List.of(), "V")));
             target.getImplementation().addInstruction(i, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
-                item, 1, method(EXTENSION, hook, List.of("Ljava/lang/Object;"), "V")));
+                item, 1, method(extension, hook, List.of("Ljava/lang/Object;"), "V")));
             matches++;
         }
         if (matches != 2) throw unsupported("Library/collection card anchors changed");
     }
 
-    static void hookContext(MutableClass owner) {
+    static void hookContext(MutableClass owner) { hookContext(owner, EXTENSION); }
+
+    static void hookContext(MutableClass owner, String extension) {
         int constructors = 0;
         boolean restart = NuvioLayout.current("Lba/o3;").equals(owner.getType()) || "Lba/s1;".equals(owner.getType());
         for (MutableMethod target : owner.getMethods()) {
@@ -130,20 +134,22 @@ public final class NuvioFinaleDatesPatch {
                 returns++;
                 target.getImplementation().addInstruction(i, constructor
                     ? new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, instance, 1,
-                        method(EXTENSION, "captureContext", List.of("Ljava/lang/Object;"), "V"))
+                        method(extension, "captureContext", List.of("Ljava/lang/Object;"), "V"))
                     : new BuilderInstruction35c(Opcode.INVOKE_STATIC, 0, 0, 0, 0, 0, 0,
-                        method(EXTENSION, "exitContext", List.of(), "V")));
+                        method(extension, "exitContext", List.of(), "V")));
             }
             if (returns != 1) throw unsupported("Context lambda return layout changed");
             if (constructor) constructors++;
             else target.getImplementation().addInstruction(0,
                 new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, instance, 1,
-                    method(EXTENSION, "enterContext", List.of("Ljava/lang/Object;"), "V")));
+                    method(extension, "enterContext", List.of("Ljava/lang/Object;"), "V")));
         }
         if (constructors != 1) throw unsupported("Context lambda constructor changed");
     }
 
-    static void hookCard(MutableClass owner) {
+    static void hookCard(MutableClass owner) { hookCard(owner, EXTENSION); }
+
+    static void hookCard(MutableClass owner, String extension) {
         boolean library = NuvioLayout.current("Lba/n3;").equals(owner.getType());
         MutableMethod target = unique(owner, "invoke", 3);
         if (target.getImplementation().getRegisterCount() != (library ? 34 : 58))
@@ -159,10 +165,10 @@ public final class NuvioFinaleDatesPatch {
             int composer = ((RegisterRangeInstruction) ins.get(index)).getStartRegister() + 11;
             target.getImplementation().addInstruction(index + 1,
                 new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, parameterStart(target), 1,
-                    method(EXTENSION, "prepareBadge", List.of("Ljava/lang/Object;"), "V")));
+                    method(extension, "prepareBadge", List.of("Ljava/lang/Object;"), "V")));
             target.getImplementation().addInstruction(index + 2,
                 new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, composer, 1,
-                    method(EXTENSION, "renderPreparedBadge", List.of("Ljava/lang/Object;"), "V")));
+                    method(extension, "renderPreparedBadge", List.of("Ljava/lang/Object;"), "V")));
         }
     }
 

@@ -137,6 +137,8 @@ not be labelled as proof of a cache hit. Timeouts stop the preload consumer; nat
 search-session producers retain their own lifecycle.
 
 Merged watched badges must follow the same per-show provider winner as progress.
+Prime each provider's Next Up flow before reading progress, then read Next Up again after watched-history and alias loading completes. Simkl may refresh its projection during the later getters; publishing the initial seed list can discard cached cards using a stale snapshot. `Provider snapshot` logs initial/refreshed seed counts; focused `Show seed` / `Show merge selection` logs diagnose the reported Rage of Bahamut / Virgin Soul entry without dumping the full library. Playback deferral checks also guard the final seed read.
+On beta4/beta5, the optional **Show merged progress provider** setting uses the persisted merge origins to draw a 24dp local provider icon at the bottom-right of Continue Watching posters. Read the card's `x` WatchProgress, or the concrete `y.a` NextUpInfo, by content type and ID; never match titles or infer provenance from the carrier provider. Unknown origins stay unbadged. The icon uses a separate Compose group, native Box alignment, and the existing Coil loader with bundled raw SVGs or the Nuvio launcher artwork. This adds no tracking-provider or artwork network calls. Run `:patches:verifyNuvioProviderBadge` and beta4/beta5 DEX checks, including coexistence with remaining-episode badges.
 The proxy's `g(Continuation)` supplies the coherent bulk watched episode map;
 `d()` supplies watched items. Alternate catalog IDs come from `v(Continuation)`
 on beta2 or `w(Continuation)` on beta4. These must not fall through to the carrier

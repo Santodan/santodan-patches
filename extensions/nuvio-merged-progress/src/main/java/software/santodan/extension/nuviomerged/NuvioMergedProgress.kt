@@ -37,6 +37,7 @@ object NuvioMergedProgress {
     private const val TAG = "SantodanMergedProgress"
     private const val PREFS = "santodan_nuvio_merged_progress"
     private const val ENABLED = "enabled"
+    private const val SHOW_PROVIDER = "show_provider"
     private const val STRATEGY = "strategy"
     private const val RECENT = "recent"
     private const val SNAPSHOT = "snapshot_v2"
@@ -78,6 +79,8 @@ object NuvioMergedProgress {
     private val authenticated = MutableStateFlow(true)
     private val originByContent = ConcurrentHashMap<String, String>()
     private val providerBySource = ConcurrentHashMap<String, Any>()
+    private val preparedProviderCard = ThreadLocal<Any>()
+    private val providerResources = ConcurrentHashMap<String, Int>()
 
     @Volatile private var menuRevision: Any? = null
     private val configuring = AtomicBoolean(false)
@@ -115,8 +118,61 @@ object NuvioMergedProgress {
                 preferences().getString(STRATEGY, "highest") == RECENT) {
                 configureMerge(enabled(), if (preferences().getString(STRATEGY, "highest") == RECENT) "highest" else RECENT)
             }
+            renderMenuToggle(composer, "Show merged progress provider",
+                "Show the selected provider's icon on Continue Watching cards.",
+                preferences().getBoolean(SHOW_PROVIDER, false)) {
+                preferences().edit().putBoolean(SHOW_PROVIDER, !preferences().getBoolean(SHOW_PROVIDER, false)).apply()
+                refreshMenu()
+            }
         } catch (error: Throwable) { Log.e(TAG, "Merged settings rendering failed", error) }
     }
+
+    @JvmStatic fun prepareProviderBadge(card: Any) { preparedProviderCard.set(card) }
+
+    /** Render with Nuvio's existing image loader and bundled artwork; no remote requests. */
+    @JvmStatic fun renderProviderBadge(composer: Any) {
+        val card = preparedProviderCard.get()
+        preparedProviderCard.remove()
+        try {
+            findMethod(composer.javaClass, "d0", 1).invoke(composer, 1403088901)
+            try {
+                val loader = composer.javaClass.classLoader
+                val revision = menuRevision ?: findMethod(loader.loadClass("g1.j"), "r", 1)
+                    .invoke(null, 0).also { menuRevision = it }
+                findMethod(revision.javaClass, "getValue", 0).invoke(revision)
+                if (!enabled() || !preferences().getBoolean(SHOW_PROVIDER, false)) return
+                val source = NuvioProviderBadge.source(card, originByContent) ?: return
+                val resource = NuvioProviderBadge.resource(source) ?: return
+                val app = application()
+                val resourceId = providerResources.getOrPut(resource) {
+                    val resourcePackage = app.resources.getResourcePackageName(app.applicationInfo.icon)
+                    app.resources.getIdentifier(resource.substringAfter('/'), resource.substringBefore('/'), resourcePackage)
+                }
+                if (resourceId == 0) return
+                val modifierType = loader.loadClass("w1.q")
+                var modifier = fieldStatic(loader.loadClass("w1.n"), "b")
+                val scope = fieldStatic(loader.loadClass("e0.v"), "a")
+                modifier = findMethod(scope.javaClass, "a", 2).invoke(scope, modifier,
+                    fieldStatic(loader.loadClass("w1.b"), "i"))
+                val layer = loader.loadClass("w1.v").getDeclaredConstructor(Float::class.javaPrimitiveType)
+                    .apply { isAccessible = true }.newInstance(10f)
+                modifier = modifierType.getMethod("d", modifierType).invoke(modifier, layer)
+                modifier = findMethod(loader.loadClass("e0.b"), "u", 2).invoke(null, modifier, 6f)
+                modifier = findMethod(loader.loadClass("y.l"), "g", 3).invoke(null, modifier,
+                    0xcc10101000000000UL.toLong(), fieldStatic(loader.loadClass("d2.g0"), "b"))
+                modifier = findMethod(loader.loadClass("e0.b"), "u", 2).invoke(null, modifier, 4f)
+                modifier = findMethod(loader.loadClass("androidx.compose.foundation.layout.b"), "m", 2)
+                    .invoke(null, modifier, 24f)
+                findMethod(loader.loadClass("c7.a"), "b", 15).invoke(null,
+                    "android.resource://${app.packageName}/$resourceId", "Progress from $source", modifier,
+                    null, null, null, null, null, fieldStatic(loader.loadClass("w1.b"), "e"),
+                    fieldStatic(loader.loadClass("u2.l"), "b"), 1f, composer, 0, 0, 2552)
+            } finally { findMethod(composer.javaClass, "p", 1).invoke(composer, false) }
+        } catch (error: Throwable) { Log.e(TAG, "Provider badge rendering failed", error) }
+    }
+
+    private fun fieldStatic(owner: Class<*>, name: String): Any =
+        fields.getOrPut(owner to name) { owner.getDeclaredField(name).apply { isAccessible = true } }.get(null)!!
 
     private fun renderMenuToggle(composer: Any, title: String, description: String, checked: Boolean, action: () -> Unit) {
         val loader = composer.javaClass.classLoader
@@ -503,7 +559,6 @@ object NuvioMergedProgress {
                 sourceCounts.add("$source=${items.size}")
                 sourceItems[source] = items
                 candidates.addAll(items)
-                sourceSeeds[source] = seeds.orEmpty()
                 sourceWatched[source] = invokeSuspending(provider, "g") as? Map<String, Set<Any>> ?: emptyMap()
                 if (deferred()) return
                 sourceWatchedItems[source] = (findMethod(provider.javaClass, "d", 0).invoke(provider) as Flow<Any>)
@@ -511,6 +566,17 @@ object NuvioMergedProgress {
                 if (deferred()) return
                 val aliases = invokeSuspending(provider, providerLayout.siblingsMethod) as? Map<String, Set<String>> ?: emptyMap()
                 if (deferred()) return
+                // Simkl's progress/history accessors can finish loading after the
+                // first nextUpSeeds read. Do not publish those pre-refresh seeds
+                // alongside the refreshed watched history and evict cached cards.
+                val refreshedSeeds = (findMethod(provider.javaClass, "f", 0).invoke(provider) as Flow<Any>)
+                    .first() as? Collection<Any>
+                if (deferred()) return
+                sourceSeeds[source] = refreshedSeeds.orEmpty()
+                Log.d(TAG, "Provider snapshot: source=$source progress=${items.size} initialSeeds=${seeds?.size ?: 0} refreshedSeeds=${refreshedSeeds?.size ?: 0}")
+                refreshedSeeds.orEmpty().filter(::diagnosticShow).forEach {
+                    Log.d(TAG, "Show seed: source=$source id=${showKey(it)} season=${number(it, "getSeason").toInt()} episode=${number(it, "getEpisode").toInt()}")
+                }
                 for ((id, related) in aliases) {
                     if ("__ambiguous__" in related) {
                         siblings.getOrPut(id) { LinkedHashSet() }.addAll(related)
@@ -560,6 +626,9 @@ object NuvioMergedProgress {
             }
             merged.addAll(coherent.values)
             val winningSeeds = seedIndex[winner.first]?.get(show).orEmpty()
+            if ((winningSeeds + winner.second).any(::diagnosticShow)) {
+                Log.d(TAG, "Show merge selection: id=$show source=${winner.first} choices=${choices.map { it.first }} progress=${coherent.size} seeds=${winningSeeds.size}")
+            }
             mergedSeeds.addAll(winningSeeds)
             origins[show] = sourceName(winner.first)
         }
@@ -590,6 +659,7 @@ object NuvioMergedProgress {
             mergedWatchedItems.value = watchedItems
             watchedSnapshotReady.value = true
             mergedSnapshotReady.value = true
+            refreshMenu()
         }
         persistSnapshot(published, publishedSeeds, origins, watchedItems, cacheKey)
         Log.d(TAG, "Merge total: ${(System.nanoTime() - started) / 1_000_000}ms")
@@ -606,6 +676,14 @@ object NuvioMergedProgress {
         val id = runCatching { findMethod(item.javaClass, "getContentId", 0).invoke(item) }.getOrNull()
         val type = runCatching { findMethod(item.javaClass, "getContentType", 0).invoke(item) }.getOrNull()
         return "$type|$id"
+    }
+
+    /** Focused diagnostics for the reported disappearing anime; no full library dump. */
+    private fun diagnosticShow(item: Any): Boolean {
+        val id = findMethod(item.javaClass, "getContentId", 0).invoke(item)?.toString()
+        if (id == "tt3981938") return true
+        val title = findMethod(item.javaClass, "getName", 0).invoke(item)?.toString().orEmpty()
+        return title.contains("bahamut", ignoreCase = true) || title.contains("virgin soul", ignoreCase = true)
     }
 
     private fun compareHistories(left: List<Any>, right: List<Any>, recent: Boolean): Int {
@@ -783,6 +861,7 @@ object NuvioMergedProgress {
             }
             mergedSnapshotReady.value = true
             Log.d(TAG, "Restored merged snapshot: progress=${progress.size}, next-up=${seeds.size}")
+            refreshMenu()
         }.onFailure { error ->
             preferences().edit().remove(snapshotKey()).apply()
             Log.w(TAG, "Unable to restore merged snapshot", error)

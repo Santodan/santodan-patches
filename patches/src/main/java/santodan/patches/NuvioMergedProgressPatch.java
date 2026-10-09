@@ -35,6 +35,8 @@ public final class NuvioMergedProgressPatch {
                     MutableClass repository = context.mutableClassDefBy(NuvioLayout.type(version, "Lja/md;"));
                     hookRepository(repository);
                     if (NuvioLayout.modern(version)) {
+                        NuvioRemainingEpisodesPatch.hookCard(context.mutableClassDefBy(NuvioLayout.current("Lba/e2;")),
+                            "Lc7/a;", EXT, "prepareProviderBadge", "renderProviderBadge");
                         hookPlaybackPause(context.mutableClassDefBy(NuvioLayout.current("Lv9/i4;")));
                         hookInlinedCutoff(context.mutableClassDefBy(NuvioLayout.current("Lla/h5;")));
                         hookInlinedCutoff(context.mutableClassDefBy(NuvioLayout.current("Lla/w1;")));

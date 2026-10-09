@@ -28,6 +28,7 @@ kotlin.sourceSets.named("test") {
     kotlin.srcDir("../extensions/nuvio-stream-preload/src/main/java")
 }
 
+sourceSets["test"].java.srcDir("../extensions/pillo-weight-import/src/main/java")
 sourceSets["test"].java.srcDir("../extensions/pillo-local-backup/src/main/java")
 
 // The Morphe patch runtime targets Java 11. Pin Java sources explicitly so
@@ -82,6 +83,32 @@ tasks {
             file("${layout.buildDirectory.get()}/verification/pillo-local-bundle").absolutePath)
     }
 
+    register<JavaExec>("verifyPilloWeightImportBundle") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyPilloWeightImportBundleKt")
+        maxHeapSize = "4g"
+        args(file("../../.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/pillo-import-bundle").absolutePath)
+    }
+
+    register<JavaExec>("verifyPilloWeightImport") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyPilloWeightImport")
+        args(file("../../.inspect-pillo-620").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/pillo-weight-import.dex").absolutePath)
+    }
+
+    register<JavaExec>("verifyPilloWeightImportRuntime") {
+        dependsOn("testClasses")
+        // Android's org.json classes are JVM stubs; use the real JSON library first.
+        classpath = sourceSets["test"].runtimeClasspath.filter { it.name != "android.jar" } +
+            files("../../SDK/platforms/android-36/android.jar")
+        mainClass.set("santodan.patches.VerifyPilloWeightImportRuntimeKt")
+        providers.gradleProperty("weightBackup").orNull?.let { args(it) }
+    }
     register<JavaExec>("verifyNuvioProviderBadge") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath

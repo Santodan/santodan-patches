@@ -64,6 +64,38 @@ corruption/path-traversal/duplicate rejection, interrupted transaction recovery,
 native DEX contracts/hooks, and packaged local-only/combined application to the
 original APK. See `docs/PilloLocalBackup.md` for usage and required phone checks.
 
+**Pillo - Import weight history from JSON** supports 0.6.20 and adds a file-picker
+button above Skip in the native weight-entry footer. It uses Skip's
+RoundedSurfaceClickable capsule, height, padding and semantic accent color, with
+the rounded Add icon and SpacedColumn components. The retained Fragment hosts the
+file picker. Open the Weight record screen and select the destination profile
+before importing. The runtime captures that profile when opening the picker,
+defaults to kilograms, and shows a date-range preview before saving. SWT `weights`
+entries use numeric `date` (epoch milliseconds) and `weight`. Conversion preserves
+the instant at second precision and stores pounds, matching `WeightTrackerRecord`.
+No backup data is embedded in the patch bundle.
+
+The extension uses `AppDatabaseManager`'s initialized native event repository,
+reads tracked weights with `FlowKt.first`, and inserts each extra record through
+`insertWithConstraint`, checking its returned ID. The native bulk method discards
+the null-trackerId group and must not be used for these records. Events have
+generated IDs, null tracker/alarm fields,
+the selected profile, WEIGHT type, and recordedAtEpochSec. Exact timestamp/float
+duplicates are skipped within the backup and against that profile's existing records.
+Different values at the same timestamp remain separate records. Parse and storage
+run on workers; native suspend functions are awaited through a Continuation proxy.
+The patch validates native method and model constructor signatures before mutation.
+
+Run `:patches:verifyPilloWeightImport` for real 0.6.20 DEX contracts and round-trip
+checks, `:patches:verifyPilloWeightImportRuntime` for conversion, duplicate handling,
+profile isolation and coroutine completion/failure checks, and
+`:patches:verifyPilloWeightImportBundle` to apply both Pillo patches from the built
+bundle to the original APK and verify the merged importer classes. Optionally pass
+`-PweightBackup=<local SWT JSON path>` to runtime verification for the user's 68-entry
+backup; this file stays outside the repository. Device testing confirmed import
+and the capsule button's final appearance. Remaining device checks cover chart
+dates/units, rotation, reimport and native editing/deletion of imported records.
+
 **Pillo - Hybrid Lock-Screen Notifications** supports both versions. The matcher
 locates the light-reminder foreground decision structurally and fails if the alarm
 dispatcher is missing, changed, ambiguous, or already patched. It replaces only the

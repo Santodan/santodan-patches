@@ -1,3 +1,5 @@
+import java.util.Properties
+
 group = "software.santodan.patches"
 
 patches {
@@ -16,12 +18,26 @@ patches {
 // generatePatchesList task but never bundled into the APK.
 val patchListGeneratorClasspath = configurations.create("patchListGeneratorClasspath")
 
+// Match Android's SDK lookup on developer machines and GitHub-hosted runners.
+// JVM verification sources reference Android types but must not bundle SDK stubs.
+val androidSdkDirectory = providers.provider {
+    val sdkProperties = Properties()
+    rootProject.file("local.properties").takeIf { it.isFile }?.inputStream()?.use {
+        sdkProperties.load(it)
+    }
+    sdkProperties.getProperty("sdk.dir")
+        ?: providers.environmentVariable("ANDROID_HOME")
+            .orElse(providers.environmentVariable("ANDROID_SDK_ROOT")).orNull
+        ?: throw GradleException("Android SDK not found: set sdk.dir in local.properties or ANDROID_HOME / ANDROID_SDK_ROOT")
+}
+val androidTestJar = androidSdkDirectory.map { file("$it/platforms/android-36/android.jar") }
+
 dependencies {
     compileOnly(libs.gson)
     patchListGeneratorClasspath(libs.gson)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     testImplementation("org.json:json:20240303")
-    testCompileOnly(files("../../SDK/platforms/android-36/android.jar"))
+    testCompileOnly(files(androidTestJar))
 }
 
 kotlin.sourceSets.named("test") {
@@ -116,7 +132,7 @@ tasks {
         dependsOn("testClasses")
         // Android's org.json classes are JVM stubs; use the real JSON library first.
         classpath = sourceSets["test"].runtimeClasspath.filter { it.name != "android.jar" } +
-            files("../../SDK/platforms/android-36/android.jar")
+            files(androidTestJar)
         mainClass.set("santodan.patches.VerifyPilloWeightImportRuntimeKt")
         providers.gradleProperty("weightBackup").orNull?.let { args(it) }
     }

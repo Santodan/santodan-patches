@@ -30,6 +30,7 @@ kotlin.sourceSets.named("test") {
 
 sourceSets["test"].java.srcDir("../extensions/pillo-weight-import/src/main/java")
 sourceSets["test"].java.srcDir("../extensions/pillo-local-backup/src/main/java")
+sourceSets["test"].java.srcDir("../extensions/pillo-weight-summary/src/main/java")
 
 // The Morphe patch runtime targets Java 11. Pin Java sources explicitly so
 // local builds remain reproducible even when Gradle runs on a newer JDK.
@@ -60,6 +61,16 @@ tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
 }
 
 tasks {
+    register<JavaExec>("verifyPilloWeightSummaryBundle") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyPilloWeightSummaryBundleKt")
+        maxHeapSize = "4g"
+        args(file("../../.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/pillo-summary-bundle").absolutePath,
+            file("../../Apps/Pillo/Pillo-0.6.20-patches-1.46.0.apk").absolutePath)
+    }
     register<JavaExec>("verifyPilloLocalArchive") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath

@@ -147,6 +147,7 @@ projection instead of publishing a partial carrier map. Interface default access
 (such as Trakt's empty `d()`) need inherited-method reflection fallback.
 Run `:patches:verifyNuvioWatchedHistory` for source selection and alternate-ID checks.
 Cache `snapshot_v2_<profileId>` contains progress, seeds, origins, watched items, episode maps, and aliases. Restore it off the UI thread. Every merged getter emits immediately, including on first launch without a cache. Background refresh runs every two minutes and checks for profile changes every second; discard results when the active profile changes. Reflection members are cached, seeds are indexed by show, and badge publication uses one reusable worker.
+On beta4/beta5, observe the native stream repository's Boolean playback pause setter (`v9.i4` / `v9.h4`, writing `k`). Defer merged refreshes, badge retries, and incremental badge publications while native source searches are paused for playback. Recheck between provider reads and before posting a snapshot; a playback revision prevents an older read from publishing after a playback transition. Resume deferred badges and refresh after leaving playback. Already-running native requests are allowed to finish; beta2 retains its existing behavior.
 `SantodanMergedProgress` logs provider-read and total merge times, per-provider totals, and published
 badge totals. Capture live logs before reproducing, rather than using only `logcat -d`.
 

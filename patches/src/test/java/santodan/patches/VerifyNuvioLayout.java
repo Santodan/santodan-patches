@@ -148,6 +148,7 @@ public final class VerifyNuvioLayout {
         }
         hook("hookRepository", owner(repository));
         if (newer) {
+            NuvioMergedProgressPatch.hookPlaybackPause(owner(NuvioLayout.current("Lv9/i4;")));
             hook("hookInlinedCutoff", owner(NuvioLayout.current("Lla/h5;")));
             hook("hookInlinedCutoff", owner(NuvioLayout.current("Lla/w1;")));
             NuvioMergedProgressPatch.hookBadgeCacheHit(owner(NuvioLayout.current("Lla/e5;")));

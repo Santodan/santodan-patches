@@ -46,6 +46,10 @@ object NuvioMergedProgress {
         Thread(task, "SantodanBadgeValidation").apply { isDaemon = true }
     }
     private val merging = AtomicBoolean(false)
+    @Volatile private var playbackPaused = false
+    private val playbackRevision = java.util.concurrent.atomic.AtomicLong()
+    private val refreshDeferred = AtomicBoolean(false)
+    private val deferredBadges = java.util.Collections.synchronizedMap(java.util.WeakHashMap<Any, Boolean>())
     @Volatile private var activeCacheKey: String? = null
     private val refreshWorker = java.util.concurrent.Executors.newSingleThreadScheduledExecutor { task ->
         Thread(task, "SantodanMergedRefresh").apply { isDaemon = true }
@@ -80,6 +84,17 @@ object NuvioMergedProgress {
 
     @JvmStatic fun registerSettingsStore(value: Any) { NuvioSettingsStoreResolver.registerStore(value) }
     @JvmStatic fun registerSettingsComponent(value: Any) { NuvioSettingsStoreResolver.registerComponent(value) }
+
+    /** Native source searches stay paused while the player owns playback. */
+    @JvmStatic fun setPlaybackPaused(value: Boolean) {
+        if (playbackPaused == value) return
+        playbackPaused = value
+        playbackRevision.incrementAndGet()
+        // Refresh after leaving the player, including any progress written during playback.
+        refreshDeferred.set(true)
+        Log.d(TAG, if (value) "Playback active: deferring merged refresh and badges"
+            else "Playback ended: merged refresh and badges may resume")
+    }
 
     /** Uses the same native persistence route as Watch Progress, from the Layout submenu. */
     @JvmStatic fun renderSettings(composer: Any) {
@@ -177,8 +192,11 @@ object NuvioMergedProgress {
         if (refreshStarted.compareAndSet(false, true)) {
             refreshWorker.scheduleWithFixedDelay({
                 runCatching {
-                    if (enabled() && (activeCacheKey != snapshotKey() ||
-                        System.nanoTime() - lastRefresh >= 120_000_000_000L)) mergeAsync()
+                    if (!enabled() || playbackPaused) return@runCatching
+                    val homes = synchronized(deferredBadges) { deferredBadges.keys.toList().also { deferredBadges.clear() } }
+                    homes.forEach(::publishCachedWatchedBadges)
+                    if (refreshDeferred.get() || activeCacheKey != snapshotKey() ||
+                        System.nanoTime() - lastRefresh >= 120_000_000_000L) mergeAsync()
                 }.onFailure { Log.w(TAG, "Background refresh check failed", it) }
             }, 1L, 1L, java.util.concurrent.TimeUnit.SECONDS)
         }
@@ -321,7 +339,9 @@ object NuvioMergedProgress {
         } else nativeLabel
 
     private fun mergeAsync() {
+        if (playbackPaused) { refreshDeferred.set(true); return }
         if (!enabled() || !merging.compareAndSet(false, true)) return
+        refreshDeferred.set(false)
         lastRefresh = System.nanoTime()
         Thread({
             try {
@@ -358,13 +378,14 @@ object NuvioMergedProgress {
     @JvmStatic fun allowBadgeCacheHit(nativeHit: Boolean): Boolean {
         val retry = retryBadgeCache.get() == true
         retryBadgeCache.remove()
-        return if (enabled() && retry) false else nativeHit
+        return if (enabled() && playbackPaused) true else if (enabled() && retry) false else nativeHit
     }
 
     /** A persisted deadline cannot replace missing in-memory episode metadata. */
     @JvmStatic fun prepareBadgeValidation(home: Any) {
         retryBadgeCache.set(false)
         if (!enabled() || !watchedSnapshotReady.value) return
+        if (playbackPaused) { deferredBadges[home] = true; return }
         try {
             val now = System.nanoTime()
             val changed = badgeHistories[home] != mergedWatchedHistory
@@ -391,11 +412,13 @@ object NuvioMergedProgress {
 
     /** Native badge loading normally publishes only after all metadata requests finish. */
     @JvmStatic fun publishCachedWatchedBadges(home: Any) {
+        if (playbackPaused) { if (enabled()) deferredBadges[home] = true; return }
         if (!enabled() || !watchedSnapshotReady.value || !pendingBadgePublications.add(home)) return
         Handler(Looper.getMainLooper()).postDelayed({
             badgeWorker.execute {
               try {
                 if (!enabled()) return@execute
+                if (playbackPaused) { deferredBadges[home] = true; return@execute }
                 val cache = field(home, "T0").get(home) as Map<*, *>
                 val snapshot = synchronized(cache) { HashMap(cache) }
                 val delta = synchronized(badgeDeltas) { badgeDeltas.getOrPut(home) { NuvioBadgeDelta() } }
@@ -424,6 +447,13 @@ object NuvioMergedProgress {
     @Suppress("UNCHECKED_CAST")
     private suspend fun mergeSnapshot() {
         val repo = repository ?: return
+        val revision = playbackRevision.get()
+        fun deferred(): Boolean {
+            val stop = !enabled() || playbackPaused || playbackRevision.get() != revision
+            if (stop) refreshDeferred.set(true)
+            return stop
+        }
+        if (deferred()) return
         val cacheKey = snapshotKey()
         val started = System.nanoTime()
         // NuvioTV 1.1.0-beta.2 constructor fields: a = WatchProgressPreferences,
@@ -455,14 +485,18 @@ object NuvioMergedProgress {
         val providers = findMethod(registry.javaClass, "b", 0).invoke(registry) as Collection<Any>
         providerBySource.clear()
         for (provider in providers) {
+            if (deferred()) return
             val authenticated = (findMethod(provider.javaClass, "b", 0).invoke(provider) as Flow<Any>).first() as? Boolean ?: false
+            if (deferred()) return
             if (!authenticated) continue
             // Nuvio's provider implementations attach their remote Continue
             // Watching synchronization to nextUpSeeds.onStart. Collect this
             // before allProgress so a launch merge does not publish the stale
             // pre-refresh progress snapshot.
             val seeds = (findMethod(provider.javaClass, "f", 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
+            if (deferred()) return
             val items = (findMethod(provider.javaClass, allProgressMethod, 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
+            if (deferred()) return
             if (items != null) {
                 val source = providerSource(provider)
                 providerBySource[sourceName(source)] = provider
@@ -471,9 +505,12 @@ object NuvioMergedProgress {
                 candidates.addAll(items)
                 sourceSeeds[source] = seeds.orEmpty()
                 sourceWatched[source] = invokeSuspending(provider, "g") as? Map<String, Set<Any>> ?: emptyMap()
+                if (deferred()) return
                 sourceWatchedItems[source] = (findMethod(provider.javaClass, "d", 0).invoke(provider) as Flow<Any>)
                     .first() as? List<Any> ?: emptyList()
+                if (deferred()) return
                 val aliases = invokeSuspending(provider, providerLayout.siblingsMethod) as? Map<String, Set<String>> ?: emptyMap()
+                if (deferred()) return
                 for ((id, related) in aliases) {
                     if ("__ambiguous__" in related) {
                         siblings.getOrPut(id) { LinkedHashSet() }.addAll(related)
@@ -485,6 +522,7 @@ object NuvioMergedProgress {
                 Log.d(TAG, "Watched source=$source shows=${sourceWatched[source]?.size} items=${sourceWatchedItems[source]?.size} aliases=${aliases.size}")
             }
         }
+        if (deferred()) return
         Log.d(TAG, "Merge provider reads: ${(System.nanoTime() - started) / 1_000_000}ms")
         val seedIndex = sourceSeeds.mapValues { (_, seeds) -> seeds.groupBy(::showKey) }
         val recent = preferences().getString(STRATEGY, "highest") == RECENT
@@ -525,7 +563,7 @@ object NuvioMergedProgress {
             mergedSeeds.addAll(winningSeeds)
             origins[show] = sourceName(winner.first)
         }
-        if (cacheKey != snapshotKey()) return
+        if (cacheKey != snapshotKey() || deferred()) return
         originByContent.clear()
         originByContent.putAll(origins)
         val badgeOrigins = origins.mapKeys { (show, _) -> show.substringAfter('|') }
@@ -546,7 +584,7 @@ object NuvioMergedProgress {
             .distinctBy(::showKey)
             .sortedByDescending { number(it, "getLastWatched") })
         Handler(Looper.getMainLooper()).post {
-            if (cacheKey != snapshotKey()) return@post
+            if (cacheKey != snapshotKey() || deferred()) return@post
             mergedProgress.value = published
             mergedNextUpSeeds.value = publishedSeeds
             mergedWatchedItems.value = watchedItems

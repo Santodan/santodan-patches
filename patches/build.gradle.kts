@@ -20,11 +20,15 @@ dependencies {
     compileOnly(libs.gson)
     patchListGeneratorClasspath(libs.gson)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    testImplementation("org.json:json:20240303")
+    testCompileOnly(files("../../SDK/platforms/android-36/android.jar"))
 }
 
 kotlin.sourceSets.named("test") {
     kotlin.srcDir("../extensions/nuvio-stream-preload/src/main/java")
 }
+
+sourceSets["test"].java.srcDir("../extensions/pillo-local-backup/src/main/java")
 
 // The Morphe patch runtime targets Java 11. Pin Java sources explicitly so
 // local builds remain reproducible even when Gradle runs on a newer JDK.
@@ -55,6 +59,29 @@ tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
 }
 
 tasks {
+    register<JavaExec>("verifyPilloLocalArchive") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyPilloLocalArchive")
+        args(file("${layout.buildDirectory.get()}/verification").absolutePath)
+    }
+    register<JavaExec>("verifyPilloLocalBackup") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyPilloLocalBackup")
+        args(file("../../.inspect-pillo-620").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/pillo-local-backup.dex").absolutePath)
+    }
+    register<JavaExec>("verifyPilloLocalBackupBundle") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyPilloLocalBackupBundleKt")
+        maxHeapSize = "4g"
+        args(file("../../.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/pillo-local-bundle").absolutePath)
+    }
+
     register<JavaExec>("verifyNuvioProviderBadge") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath

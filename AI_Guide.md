@@ -33,6 +33,37 @@ official installation. Device testing is still required for server-side behavior
 
 ## Pillo 0.6.19 and 0.6.20
 
+**Pillo - Local backup and restore** supports 0.6.20, independently of the other
+Pillo patches. Its Settings callback hook offers Local file / Google backup before
+the existing auth gate. A ThreadLocal bypass re-enters the untouched native callback
+only when Google is chosen. A platform Fragment hosts SAF import/export in the
+Settings activity; the native BackupAndRestoreActivity also gets a local button.
+The fresh-install onboarding restore chooser wraps its native BottomSheetController
+to offer local import alongside the existing Medisafe and Pillo account callbacks.
+OnboardingActivity registers the current host through a weak reference; the local
+option attaches the same retained import Fragment without a settings button.
+
+The native unencrypted `PilloDatabaseBackUpHelper.doBackup` snapshots `pillo.db`;
+shared preferences are flushed and archived with files/no_backup/primary external
+files. Restore validates indexed ZIP paths, sizes and SHA-256, SQLite quick_check,
+and native Room identity `acdc24b1947a76c496bdc3ac20b3d60e`. Cache/code and old native
+backup directories are excluded; external content URIs and Android Keystore keys
+are not portable. A pre-restore archive is retained in `app_santodan-local-backup`.
+
+Preparation copies staged data to target-filesystem siblings on a worker. The
+`PilloApp.attachBaseContext` hook runs before its locale/preference reads and commits
+only renames before providers/Room initialize. A persistent preparing/prepared/
+applying/committed journal supports rollback after process death. Old WAL/SHM/journal
+files are removed as part of the same transaction. After native onCreate, Pillo's
+alarm audit is requested; committed cleanup runs on a worker. Google backup APIs
+are not called by the local transport.
+
+Run `:patches:verifyPilloLocalArchive`, `:patches:verifyPilloLocalBackup`, and
+`:patches:verifyPilloLocalBackupBundle` for actual ZIP/filesystem round-trips,
+corruption/path-traversal/duplicate rejection, interrupted transaction recovery,
+native DEX contracts/hooks, and packaged local-only/combined application to the
+original APK. See `docs/PilloLocalBackup.md` for usage and required phone checks.
+
 **Pillo - Hybrid Lock-Screen Notifications** supports both versions. The matcher
 locates the light-reminder foreground decision structurally and fails if the alarm
 dispatcher is missing, changed, ambiguous, or already patched. It replaces only the

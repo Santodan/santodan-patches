@@ -1,3 +1,16 @@
+## [0.10.0](https://github.com/Santodan/santodan-patches/compare/v0.9.0...v0.10.0) (2026-10-09)
+
+### 🐛 Bug Fixes
+
+* **build:** resolve Android test SDK on CI runners ([957501c](https://github.com/Santodan/santodan-patches/commit/957501ca771aa5f64a71c62c1aced6bd7676d20f))
+* **nuvio:** defer merged progress work during playback [skip ci] ([e69eff2](https://github.com/Santodan/santodan-patches/commit/e69eff25705851433c7ac7e6b6e4a675b82dd66f))
+
+### ✨ New Features
+
+* **nuvio:** show merged provider icons and refresh seeds [skip ci] ([7512085](https://github.com/Santodan/santodan-patches/commit/7512085bd6a7d9bad2fc32d32e4bf94517f3b18f))
+* **pillo:** add weight change summaries and selectable comparison date ([9a723a4](https://github.com/Santodan/santodan-patches/commit/9a723a4bbd3e0feec3a3dc4619b1d6282284ef28))
+* **pillo:** import weight history from JSON [skip ci] ([8079226](https://github.com/Santodan/santodan-patches/commit/807922648b4aee39659263ef712f586ac6546dd8))
+
 ## Unreleased
 
 ### Bug Fixes

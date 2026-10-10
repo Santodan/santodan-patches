@@ -58,6 +58,15 @@ public final class RedditContentFilter {
         return thread;
     });
     private static final Map<String, CompletableFuture<Void>> POST_LOOKUP_TASKS = new ConcurrentHashMap<>();
+    private static final Map<String, Long> POST_LOOKUP_COMPLETED = new ConcurrentHashMap<>();
+    private static final Set<String> POST_LOOKUP_PENDING = ConcurrentHashMap.newKeySet();
+    private static final java.util.concurrent.atomic.AtomicBoolean POST_DISPATCH_SCHEDULED =
+        new java.util.concurrent.atomic.AtomicBoolean();
+    private static final ScheduledExecutorService POST_DISPATCH = Executors.newSingleThreadScheduledExecutor(task -> {
+        Thread thread = new Thread(task, "Reddit-filter-batch-dispatch");
+        thread.setDaemon(true);
+        return thread;
+    });
     private static volatile String lastPostLookup = "not requested";
     private static volatile String lastNativeFlairUi = "not observed";
     private static volatile String lastFlairRequestError = "none";
@@ -770,104 +779,122 @@ public final class RedditContentFilter {
 
     private static CompletableFuture<Void> requestPostDetails(String id) {
         if (id == null || id.isEmpty()) return null;
+        return requestPostDetails(Collections.singletonList(id));
+    }
+
+    /** One hydration request for a page, rather than one network round trip per card. */
+    private static CompletableFuture<Void> requestPostDetails(Collection<String> ids) {
         initializePostByIdSource();
-        if (postByIdSource == null && Looper.myLooper() != Looper.getMainLooper()) {
-            long deadline = android.os.SystemClock.uptimeMillis() + 3000L;
-            while (postByIdSource == null && android.os.SystemClock.uptimeMillis() < deadline) {
-                try { Thread.sleep(25L); }
-                catch (InterruptedException error) {
-                    Thread.currentThread().interrupt(); break;
-                }
-            }
-        }
-        if (postByIdSource == null) {
-            lastPostLookup = id + " skipped: posts-by-ID source not initialized";
-            Context context = applicationContext != null ? applicationContext : appContext();
-            if (context != null && prefs(context).getBoolean(DEBUG, false))
-                appendDecision("LOOKUP " + id + " skipped: source not initialized");
-            return null;
-        }
-        String fullId = id.startsWith("t3_") ? id : "t3_" + id;
-        PostInfo cached = POSTS.get(fullId);
-        if (cached != null && !cached.flair.isEmpty()) return null;
-        CompletableFuture<Void> previous = POST_LOOKUP_TASKS.get(fullId);
-        if (previous != null && previous.isDone()) POST_LOOKUP_TASKS.remove(fullId, previous);
-        return POST_LOOKUP_TASKS.computeIfAbsent(fullId, key -> {
+        ArrayList<String> pending = new ArrayList<>();
+        ArrayList<CompletableFuture<Void>> tasks = new ArrayList<>();
+        for (String id : ids) {
+            if (id == null || id.isEmpty()) continue;
+            String key = id.startsWith("t3_") ? id : "t3_" + id;
+            PostInfo cached = POSTS.get(key);
+            if (cached != null && !cached.flair.isEmpty()) continue;
+            // Retain completed lookups briefly, including posts with no flair and failures.
+            // An empty flair is a valid result; do not fetch it again at every hook.
+            Long completed = POST_LOOKUP_COMPLETED.get(key);
+            if (completed != null && android.os.SystemClock.uptimeMillis() - completed < 60000L)
+                continue;
             CompletableFuture<Void> result = new CompletableFuture<>();
-            POST_LOOKUPS.execute(() -> {
-                try {
-                    Object source = postByIdSource;
-                    Class<?> continuation = Class.forName("fmc");
-                    Object emptyContext = Class.forName("kotlin.coroutines.EmptyCoroutineContext")
-                        .getField("INSTANCE").get(null);
-                    Object completion = Proxy.newProxyInstance(continuation.getClassLoader(),
-                        new Class<?>[] { continuation }, (proxy, method, args) -> {
-                            if (method.getName().equals("getContext")) return emptyContext;
-                            if (method.getName().equals("resumeWith")) {
-                                finishPostLookup(key, result);
-                            }
-                            return null;
-                        });
-                    boolean linkSource = source.getClass().getName().equals("com.reddit.data.remote.h");
-                    Class<?> stateType = Class.forName(linkSource
-                        ? "com.reddit.data.remote.RemoteGqlLinkDataSource$getHomeFeedPostsByIds$1"
-                        : "com.reddit.data.remote.RemoteGqlHistoryDataSourceImpl$getPostsByIds$1");
-                    java.lang.reflect.Constructor<?> stateConstructor = stateType.getDeclaredConstructor(
-                        source.getClass(), continuation);
-                    stateConstructor.setAccessible(true);
-                    Object state = stateConstructor.newInstance(source, completion);
-                    Class<?> continuationImpl = Class.forName(
-                        "kotlin.coroutines.jvm.internal.ContinuationImpl");
-                    Method fetch;
-                    Object immediate;
-                    if (linkSource) {
-                        // The generic posts-by-ID query omits flair data for a subset of home-feed
-                        // links (notably posts from joined communities). Use Reddit's dedicated
-                        // home-feed hydration query so filtering and the optional badge see the
-                        // same complete link model as the feed itself.
-                        fetch = source.getClass().getDeclaredMethod("b", ArrayList.class,
-                            boolean.class, boolean.class, boolean.class, boolean.class,
-                            continuationImpl);
-                        fetch.setAccessible(true);
-                        immediate = fetch.invoke(source, new ArrayList<>(Collections.singletonList(key)),
-                            false, false, false, false, state);
-                    } else {
-                        fetch = source.getClass().getDeclaredMethod("c", ArrayList.class, continuationImpl);
-                        fetch.setAccessible(true);
-                        immediate = fetch.invoke(source, new ArrayList<>(Collections.singletonList(key)), state);
-                    }
-                    if (immediate != null
-                        && !immediate.getClass().getName().contains("CoroutineSingletons")) {
-                        finishPostLookup(key, result);
-                    }
-                } catch (ReflectiveOperationException | RuntimeException error) {
-                    lastPostLookup = key + " " + error.getClass().getSimpleName() + ": " + error.getMessage();
-                    result.complete(null);
-                }
-            });
-            return result;
-        });
+            CompletableFuture<Void> previous = POST_LOOKUP_TASKS.putIfAbsent(key, result);
+            if (previous == null) {
+                pending.add(key);
+                tasks.add(result);
+            } else tasks.add(previous);
+        }
+        if (!pending.isEmpty()) {
+            POST_LOOKUP_PENDING.addAll(pending);
+            schedulePostBatch();
+        }
+        return tasks.isEmpty() ? null : CompletableFuture.allOf(tasks.toArray(new CompletableFuture<?>[0]));
     }
 
-    private static void finishPostLookup(String fullId, CompletableFuture<Void> result) {
-        if (result.isDone()) return;
-        PostInfo post = POSTS.get(fullId);
-        if (post == null || post.flair.isEmpty()) fetchPublicPostDetails(fullId);
-        post = POSTS.get(fullId);
-        lastPostLookup = fullId + " completed; flair="
-            + (post == null ? "missing" : post.flair);
-        result.complete(null);
+    private static void schedulePostBatch() {
+        if (!POST_DISPATCH_SCHEDULED.compareAndSet(false, true)) return;
+        POST_DISPATCH.schedule(() -> {
+            ArrayList<String> batch = new ArrayList<>();
+            for (String id : POST_LOOKUP_PENDING) {
+                if (POST_LOOKUP_PENDING.remove(id)) batch.add(id);
+                if (batch.size() == 50) break;
+            }
+            POST_DISPATCH_SCHEDULED.set(false);
+            if (!batch.isEmpty()) POST_LOOKUPS.execute(() -> fetchPostBatch(batch));
+            if (!POST_LOOKUP_PENDING.isEmpty()) schedulePostBatch();
+        }, 25L, TimeUnit.MILLISECONDS);
     }
 
-    /**
-     * Reddit's feed and posts-by-ID GraphQL projections sometimes deliberately omit link flair.
-     * The post-detail screen uses another projection, so use the public by-id representation as
-     * a final fallback for the exact fields needed by filtering and the optional home-feed badge.
-     */
-    private static void fetchPublicPostDetails(String fullId) {
+    private static void fetchPostBatch(ArrayList<String> ids) {
+        Object source = postByIdSource;
+        if (source == null) {
+            finishPostBatch(ids);
+            return;
+        }
+        java.util.concurrent.atomic.AtomicBoolean finished = new java.util.concurrent.atomic.AtomicBoolean();
+        Runnable finish = () -> {
+            if (finished.compareAndSet(false, true)) POST_LOOKUPS.execute(() -> finishPostBatch(ids));
+        };
+        try {
+            Class<?> continuation = Class.forName("fmc");
+            Object emptyContext = Class.forName("kotlin.coroutines.EmptyCoroutineContext")
+                .getField("INSTANCE").get(null);
+            Object completion = Proxy.newProxyInstance(continuation.getClassLoader(),
+                new Class<?>[] { continuation }, (proxy, method, args) -> {
+                    if (method.getName().equals("getContext")) return emptyContext;
+                    if (method.getName().equals("resumeWith")) finish.run();
+                    return null;
+                });
+            boolean linkSource = source.getClass().getName().equals("com.reddit.data.remote.h");
+            Class<?> stateType = Class.forName(linkSource
+                ? "com.reddit.data.remote.RemoteGqlLinkDataSource$getHomeFeedPostsByIds$1"
+                : "com.reddit.data.remote.RemoteGqlHistoryDataSourceImpl$getPostsByIds$1");
+            java.lang.reflect.Constructor<?> constructor = stateType.getDeclaredConstructor(source.getClass(), continuation);
+            constructor.setAccessible(true);
+            Object state = constructor.newInstance(source, completion);
+            Class<?> continuationImpl = Class.forName("kotlin.coroutines.jvm.internal.ContinuationImpl");
+            Method fetch;
+            Object immediate;
+            if (linkSource) {
+                fetch = source.getClass().getDeclaredMethod("b", ArrayList.class,
+                    boolean.class, boolean.class, boolean.class, boolean.class, continuationImpl);
+                fetch.setAccessible(true);
+                immediate = fetch.invoke(source, ids, false, false, false, false, state);
+            } else {
+                fetch = source.getClass().getDeclaredMethod("c", ArrayList.class, continuationImpl);
+                fetch.setAccessible(true);
+                immediate = fetch.invoke(source, ids, state);
+            }
+            if (immediate != null && !immediate.getClass().getName().contains("CoroutineSingletons")) finish.run();
+            // A native suspended request must not leave IDs permanently in flight.
+            new Handler(Looper.getMainLooper()).postDelayed(finish, 3000L);
+        } catch (ReflectiveOperationException | RuntimeException error) {
+            lastPostLookup = "batch " + error.getClass().getSimpleName() + ": " + error.getMessage();
+            finish.run();
+        }
+    }
+
+    private static void finishPostBatch(List<String> ids) {
+        ArrayList<String> missing = new ArrayList<>();
+        for (String id : ids) {
+            PostInfo post = POSTS.get(id);
+            if (post == null || post.flair.isEmpty()) missing.add(id);
+        }
+        // Reddit's native projection can omit flairs. Its public by-ID endpoint accepts
+        // a comma-separated list, so the fallback also fetches the whole page together.
+        if (!missing.isEmpty()) fetchPublicPostDetails(missing);
+        for (String id : ids) {
+            POST_LOOKUP_COMPLETED.put(id, android.os.SystemClock.uptimeMillis());
+            CompletableFuture<Void> task = POST_LOOKUP_TASKS.remove(id);
+            if (task != null) task.complete(null);
+        }
+        lastPostLookup = "batch completed: " + ids.size() + " posts";
+    }
+
+    private static void fetchPublicPostDetails(List<String> ids) {
         HttpURLConnection connection = null;
         try {
-            URL url = new URL("https://www.reddit.com/by_id/" + fullId + ".json?raw_json=1");
+            URL url = new URL("https://www.reddit.com/by_id/" + String.join(",", ids) + ".json?raw_json=1");
             connection = (HttpURLConnection) url.openConnection();
             connection.setConnectTimeout(1800);
             connection.setReadTimeout(1800);
@@ -875,31 +902,30 @@ public final class RedditContentFilter {
             connection.setRequestProperty("Accept", "application/json");
             int status = connection.getResponseCode();
             if (status < 200 || status >= 300) {
-                lastPostLookup = fullId + " public lookup HTTP " + status;
+                lastPostLookup = "public batch HTTP " + status;
                 return;
             }
             StringBuilder json = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(
                     connection.getInputStream(), StandardCharsets.UTF_8))) {
                 char[] buffer = new char[4096];
-                for (int count; (count = reader.read(buffer)) >= 0; )
-                    json.append(buffer, 0, count);
+                for (int count; (count = reader.read(buffer)) >= 0;) json.append(buffer, 0, count);
             }
-            org.json.JSONObject data = new org.json.JSONObject(json.toString())
-                .getJSONObject("data").getJSONArray("children").getJSONObject(0)
-                .getJSONObject("data");
-            String id = data.optString("name", fullId);
-            String flair = data.optString("link_flair_text", "");
-            PostInfo resolved = new PostInfo(data.optString("title", ""), "",
-                data.optString("selftext", ""), data.optString("subreddit", ""), flair,
-                data.optString("link_flair_background_color", ""),
-                data.optString("link_flair_text_color", ""));
-            POSTS.put(id, resolved);
-            if (id.startsWith("t3_")) POSTS.put(id.substring(3), resolved);
-            if (!fullId.equals(id)) POSTS.put(fullId, resolved);
+            org.json.JSONArray children = new org.json.JSONObject(json.toString())
+                .getJSONObject("data").getJSONArray("children");
+            for (int index = 0; index < children.length(); index++) {
+                org.json.JSONObject data = children.getJSONObject(index).getJSONObject("data");
+                String id = data.optString("name", "");
+                if (!ids.contains(id)) continue;
+                PostInfo resolved = new PostInfo(data.optString("title", ""), "",
+                    data.optString("selftext", ""), normalizeCommunity(data.optString("subreddit", "")),
+                    data.optString("link_flair_text", ""), data.optString("link_flair_background_color", ""),
+                    data.optString("link_flair_text_color", ""));
+                POSTS.put(id, richerPostInfo(POSTS.get(id), resolved));
+                POSTS.put(id.substring(3), POSTS.get(id));
+            }
         } catch (Exception error) {
-            lastPostLookup = fullId + " public lookup " + error.getClass().getSimpleName()
-                + ": " + error.getMessage();
+            lastPostLookup = "public batch " + error.getClass().getSimpleName() + ": " + error.getMessage();
         } finally {
             if (connection != null) connection.disconnect();
         }
@@ -1070,23 +1096,7 @@ public final class RedditContentFilter {
                 boolean needsDetails = preferences.getBoolean(SHOW_HOME_FLAIRS, false);
                 if (filteredCommunity) needsDetails = true;
                 if (needsDetails) {
-                    String fullId = id.startsWith("t3_") ? id : "t3_" + id;
-                    for (int attempt = 0; attempt < 2; attempt++) {
-                        CompletableFuture<Void> lookup = requestPostDetails(id);
-                        boolean timedOut = false;
-                        if (lookup != null)
-                            try { lookup.get(3000, TimeUnit.MILLISECONDS); }
-                            catch (InterruptedException error) {
-                                Thread.currentThread().interrupt(); break;
-                            } catch (ExecutionException ignored) { break; }
-                            catch (TimeoutException ignored) { timedOut = true; }
-                        PostInfo fetched = POSTS.get(id);
-                        if (fetched == null) fetched = POSTS.get(fullId);
-                        if (fetched != null) info = fetched;
-                        if (!timedOut || (info != null && !info.flair.isEmpty())) break;
-                        POST_LOOKUP_TASKS.remove(fullId, lookup);
-                        lastPostLookup = fullId + " timed out; retrying";
-                    }
+                    requestPostDetails(id);
                 }
             }
             lastClasses = card.classes.isEmpty() ? "none" : joinValues(card.classes);
@@ -1263,10 +1273,7 @@ public final class RedditContentFilter {
             PostInfo info = POSTS.get(id);
             if (info == null) info = POSTS.get(id.startsWith("t3_") ? id.substring(3) : "t3_" + id);
             if (filteredCommunity && (info == null || info.flair.isEmpty()) && renderedFlairs.isEmpty()) {
-                CompletableFuture<Void> lookup = requestPostDetails(id);
-                if (lookup != null) try { lookup.get(3000, TimeUnit.MILLISECONDS); }
-                catch (InterruptedException error) { Thread.currentThread().interrupt(); }
-                catch (ExecutionException | TimeoutException ignored) { }
+                requestPostDetails(id);
                 info = POSTS.get(id);
                 if (info == null) info = POSTS.get(id.startsWith("t3_") ? id.substring(3) : "t3_" + id);
             }
@@ -1308,17 +1315,24 @@ public final class RedditContentFilter {
         List<FlairRule> rules = parseFlairs(prefs(context).getString(FLAIRS, ""));
         boolean showFlairs = prefs(context).getBoolean(SHOW_HOME_FLAIRS, false);
         if (rules.isEmpty() && !showFlairs) return original;
+        ArrayList<String> pageIds = new ArrayList<>();
+        for (Object element : original) {
+            if (element == null) continue;
+            String id = feedElementId(element);
+            if (!id.isEmpty()) pageIds.add(id);
+        }
+        CompletableFuture<Void> hydration = requestPostDetails(pageIds);
+        // One bounded wait for the whole page on the feed worker, never on the UI thread.
+        // Individual renderer hooks only read cached results and cannot add more waits.
+        if (hydration != null && Looper.myLooper() != Looper.getMainLooper()) {
+            try { hydration.get(1800, TimeUnit.MILLISECONDS); }
+            catch (InterruptedException error) { Thread.currentThread().interrupt(); }
+            catch (ExecutionException | TimeoutException ignored) { }
+        }
         ArrayList<Object> kept = new ArrayList<>(original.size());
         for (Object element : original) {
             if (element == null) { kept.add(null); continue; }
-            String id = "";
-            try {
-                Method getter = element.getClass().getMethod("getLinkId");
-                id = string(getter.invoke(element));
-            } catch (ReflectiveOperationException | RuntimeException ignored) {
-                try { id = string(inheritedField(element, "a")); }
-                catch (ReflectiveOperationException | RuntimeException ignoredAgain) { }
-            }
+            String id = feedElementId(element);
             if (id.isEmpty()) { kept.add(element); continue; }
             PostInfo info = POSTS.get(id);
             if (info == null) info = POSTS.get(id.startsWith("t3_") ? id.substring(3) : "t3_" + id);
@@ -1339,10 +1353,7 @@ public final class RedditContentFilter {
                 filteredCommunity = true; break;
             }
             if ((filteredCommunity || showFlairs) && (info == null || info.flair.isEmpty())) {
-                CompletableFuture<Void> lookup = requestPostDetails(id);
-                if (lookup != null) try { lookup.get(3000, TimeUnit.MILLISECONDS); }
-                catch (InterruptedException error) { Thread.currentThread().interrupt(); }
-                catch (ExecutionException | TimeoutException ignored) { }
+                requestPostDetails(id);
                 info = POSTS.get(id);
                 if (info == null) info = POSTS.get(id.startsWith("t3_") ? id.substring(3) : "t3_" + id);
                 if (info != null && community.isEmpty()) community = normalizeCommunity(info.community);
@@ -1364,6 +1375,14 @@ public final class RedditContentFilter {
             } else matchedCards++;
         }
         return kept.size() == original.size() ? original : kept;
+    }
+
+    private static String feedElementId(Object element) {
+        try { return string(element.getClass().getMethod("getLinkId").invoke(element)); }
+        catch (ReflectiveOperationException | RuntimeException ignored) {
+            try { return string(inheritedField(element, "a")); }
+            catch (ReflectiveOperationException | RuntimeException ignoredAgain) { return ""; }
+        }
     }
 
     /** Adds the missing native flair child to cached-preview feed elements. */
@@ -1462,10 +1481,7 @@ public final class RedditContentFilter {
             PostInfo post = POSTS.get(id);
             if (post == null) post = POSTS.get(id.startsWith("t3_") ? id.substring(3) : "t3_" + id);
             if (post == null || post.flair.isEmpty()) {
-                CompletableFuture<Void> lookup = requestPostDetails(id);
-                if (lookup != null) try { lookup.get(3000, TimeUnit.MILLISECONDS); }
-                catch (InterruptedException error) { Thread.currentThread().interrupt(); }
-                catch (ExecutionException | TimeoutException ignored) { }
+                requestPostDetails(id);
                 post = POSTS.get(id);
                 if (post == null) post = POSTS.get(id.startsWith("t3_") ? id.substring(3) : "t3_" + id);
             }
@@ -1612,10 +1628,7 @@ public final class RedditContentFilter {
             if (id.isEmpty() || community.isEmpty()) return false;
             PostInfo post = POSTS.get(id);
             if (post == null || post.flair.isEmpty()) {
-                CompletableFuture<Void> lookup = requestPostDetails(id);
-                if (lookup != null) try { lookup.get(3000, TimeUnit.MILLISECONDS); }
-                catch (InterruptedException error) { Thread.currentThread().interrupt(); }
-                catch (ExecutionException | TimeoutException ignored) { }
+                requestPostDetails(id);
                 post = POSTS.get(id);
             }
             String flair = post == null ? "" : normalizeFlair(post.flair);

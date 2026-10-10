@@ -2,6 +2,11 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      patch_release:
+        description: Release pending features as a patch version
+        type: boolean
+        default: false
   push:
 
 jobs:
@@ -33,6 +38,18 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Use patch version for this release
+        if: github.event_name == 'workflow_dispatch' && inputs.patch_release
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const config = JSON.parse(fs.readFileSync('.releaserc', 'utf8'));
+          const analyzer = config.plugins.find(plugin => Array.isArray(plugin)
+            && plugin[0] === '@semantic-release/commit-analyzer');
+          analyzer[1].releaseRules.find(rule => rule.type === 'feat').release = 'patch';
+          fs.writeFileSync('.releaserc', JSON.stringify(config, null, 2));
+          NODE
 
       - name: Release
         uses: cycjimmy/semantic-release-action@v6

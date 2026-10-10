@@ -322,6 +322,16 @@ bytecode layout is missing or ambiguous. `verifyRedditContentFilter` and
 `verifyRedditGuestMode` run focused checks against locally extracted original DEX files;
 those proprietary inputs are not stored in this repository.
 
+Post-detail hydration coalesces requests arriving within 25 ms into batches of up to
+50 IDs. Both the native query and public by-ID fallback request multiple posts together.
+The common feed-element worker waits at most 1.8 seconds for a page; renderer hooks
+never wait for network requests. Completed lookups, including empty flairs and failures,
+are suppressed for 60 seconds to avoid requesting the same post at every hook.
+Details that arrive after rendering are available on the next feed mapping or refresh.
+Run `verifyRedditPostBatch` for offline fallback-response checks, including posts without
+flairs, both ID forms, malformed responses, and HTTP failures. Device checks must cover
+startup with home flairs enabled and keyword/community-flair filtering.
+
 ## Peafowl Theme Maker GMS_27.5.1
 
 **Peafowl - Unlock Theme Ownership (Experimental)** targets package

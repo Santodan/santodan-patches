@@ -1,4 +1,10 @@
-## Pending changes since v0.10.0
+## v0.10.1
+
+- Speed up Reddit startup with home flairs enabled by batching post-detail requests, removing per-card waits, and briefly retaining completed lookups. Emulator feed-availability median improved from approximately 10.8 to 7.0 seconds in three runs per build.
+- Preserve the tested feed behavior; this release does not add hiding and later revealing posts while their flairs load.
+- Verify batched fallback responses, posts without flairs, HTTP failures, and malformed JSON. Existing Reddit DEX verification and the patch bundle build pass.
+
+### Previously pending changes since v0.10.0
 
 - Add **NuvioTV - Preload streams for next episode** for beta.4/beta.5, with an independent, disabled-by-default switch under **Layout > Santodan-Patches > Streams**.
 - Fetch the next episode's source list after 30 seconds of actual playback, excluding pauses and buffering. Reset the timer on episode/profile changes and cancel preload consumers when playback is left or the switch is disabled.

@@ -253,6 +253,14 @@ tasks {
         args(fileTree("../../.inspect-reddit") { include("classes*.dex") }.files.sorted().map { it.absolutePath })
     }
 
+    register<JavaExec>("verifyRedditPostBatch") {
+        dependsOn("testClasses", ":extensions:reddit-filter:compileReleaseJavaWithJavac")
+        classpath = sourceSets["test"].runtimeClasspath + files(androidTestJar,
+            project(":extensions:reddit-filter").layout.buildDirectory.dir(
+                "intermediates/javac/release/compileReleaseJavaWithJavac/classes"))
+        mainClass.set("santodan.patches.VerifyRedditPostBatch")
+    }
+
     register<JavaExec>("verifyPilloPatch") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath

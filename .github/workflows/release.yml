@@ -44,11 +44,11 @@ jobs:
         run: |
           node <<'NODE'
           const fs = require('fs');
-          const config = JSON.parse(fs.readFileSync('.releaserc', 'utf8'));
-          const analyzer = config.plugins.find(plugin => Array.isArray(plugin)
-            && plugin[0] === '@semantic-release/commit-analyzer');
-          analyzer[1].releaseRules.find(rule => rule.type === 'feat').release = 'patch';
-          fs.writeFileSync('.releaserc', JSON.stringify(config, null, 2));
+          const config = fs.readFileSync('.releaserc', 'utf8');
+          const featureRule = '{ "type": "feat", "release": "minor" }';
+          if (!config.includes(featureRule)) throw new Error('Feature release rule not found');
+          fs.writeFileSync('.releaserc', config.replace(featureRule,
+            '{ "type": "feat", "release": "patch" }'));
           NODE
 
       - name: Release

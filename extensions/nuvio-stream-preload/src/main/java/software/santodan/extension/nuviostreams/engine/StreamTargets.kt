@@ -47,4 +47,15 @@ object StreamTargets {
         if (video != null) return media(type, get(video, "getId"), get(video, "getSeason"), get(video, "getEpisode"))
         return if ((type as? String)?.lowercase(Locale.ROOT) == "movie") media(type, get(meta, "getId"), null, null) else null
     }
+
+    fun player(state: Any, profile: Any?, enabled: Boolean): NextEpisodePreloader.Snapshot {
+        val current = field(state, "w0") as? String
+        val next = field(state, "k1")
+        val target = if (field(state, "g") == "series" && next != null && field(next, "h") == true &&
+            !(field(next, "i") == false && (field(next, "g") as? String).isNullOrBlank()))
+            media(field(state, "g"), field(next, "a"), field(next, "b"), field(next, "c")) else null
+        return NextEpisodePreloader.Snapshot(profile, current, target, enabled,
+            field(state, "a") == true && field(state, "b") == false && field(state, "c") == false &&
+                field(state, "d") == null && (field(state, "Y0") as? String).isNullOrBlank())
+    }
 }

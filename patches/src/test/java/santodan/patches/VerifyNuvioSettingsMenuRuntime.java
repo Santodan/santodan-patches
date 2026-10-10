@@ -23,9 +23,10 @@ public final class VerifyNuvioSettingsMenuRuntime {
             "software.santodan.extension.nuviofinale.NuvioFinaleDates",
         "software.santodan.extension.nuviomovierelease.NuvioMovieReleaseDates",
             "software.santodan.extension.nuviocwstreams.NuvioContinueWatchingStreams",
-            "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams"
+            "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams",
+            "software.santodan.extension.nuvionextstreams.NuvioNextEpisodeStreams"
         };
-        for (int selection = 0; selection < 128; selection++) {
+        for (int selection = 0; selection < (1 << bridges.length); selection++) {
             int installed = Integer.bitCount(selection);
             Path root = Path.of(args[2]);
             Files.createDirectories(root);

@@ -1,4 +1,12 @@
-## Pending changes since v0.9.0
+## Pending changes since v0.10.0
+
+- Add **NuvioTV - Preload streams for next episode** for beta.4/beta.5, with an independent, disabled-by-default switch under **Layout > Santodan-Patches > Streams**.
+- Fetch the next episode's source list after 30 seconds of actual playback, excluding pauses and buffering. Reset the timer on episode/profile changes and cancel preload consumers when playback is left or the switch is disabled.
+- Reuse Nuvio's native source cache in the manual next-episode picker instead of forcing a new search. Explicit refresh controls retain their existing behavior. Re-observe cached searches during longer episodes so expired results can refresh.
+- Permit local scrapers only for the exact next episode and active profile during its preload, preserving the repository's pause signal for unrelated searches.
+- Timing, cancellation, cache reuse, all 256 settings-menu selections, original beta.2/beta.4/beta.5 DEX checks, and standalone/combined beta.5 bundle application passed. TV playback testing remains pending.
+
+## Changes since v0.9.0
 
 - Add **Show merged progress provider**, disabled by default, under **Layout > Santodan-Patches** on beta.4/beta.5. Continue Watching cards display the winning provider's local Trakt, Simkl, MDBList, or Nuvio icon at the bottom-right while merging is enabled.
 - Defer merged refreshes, badge retries, and incremental badge updates during playback on beta.4/beta.5; resume deferred work after leaving playback.

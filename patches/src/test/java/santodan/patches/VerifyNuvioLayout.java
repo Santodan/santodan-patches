@@ -249,6 +249,41 @@ public final class VerifyNuvioLayout {
             NuvioStreamPreloadPatch.hookComponent(owner("Lp8/e;"));
             NuvioStreamPreloadPatch.hookContinueWatching(owner(NuvioLayout.current("Lba/e2;")));
             NuvioStreamPreloadPatch.hookDetails(owner(detailModel));
+            String playerModel = NuvioLayout.current("Lna/le;");
+            String playerController = NuvioLayout.current("Lna/h8;");
+            String playerState = NuvioLayout.current("Lna/ie;");
+            String nextInfo = NuvioLayout.current("Lna/x1;");
+            field(playerModel, "W", playerController);
+            method(playerModel, "f", 0);
+            field(playerController, NuvioLayout.BETA5.equals(version) ? "z0" : "A0", "Lkotlinx/coroutines/flow/StateFlow;");
+            for (String name : List.of("a", "b", "c")) field(playerState, name, "Z");
+            for (String name : List.of("g", "w0", "Y0")) field(playerState, name, "Ljava/lang/String;");
+            field(playerState, "k1", nextInfo);
+            field(playerState, "d", NuvioLayout.BETA5.equals(version) ? "Lna/h6;" : "Lna/e6;");
+            field(nextInfo, "a", "Ljava/lang/String;");
+            field(nextInfo, "g", "Ljava/lang/String;");
+            field(nextInfo, "h", "Z");
+            field(nextInfo, "i", "Ljava/lang/Boolean;");
+            field(nextInfo, "b", "I");
+            field(nextInfo, "c", "I");
+            String pluginSearch = NuvioLayout.current("Lv9/d4;");
+            field(pluginSearch, "o", streamRepository);
+            for (String name : List.of("p", "q")) field(pluginSearch, name, "Ljava/lang/String;");
+            for (String name : List.of("r", "s")) field(pluginSearch, name, "Ljava/lang/Integer;");
+            NuvioStreamPreloadPatch.hookPlayer(owner(playerModel));
+            NuvioStreamPreloadPatch.hookNextEpisodePluginPause(owner(pluginSearch));
+            String nextTransition = NuvioLayout.current("Lna/cb;");
+            method(NuvioLayout.current("Lna/jb;"), "C", 3);
+            NuvioStreamPreloadPatch.hookNextEpisodePicker(owner(nextTransition));
+            for (Runnable duplicate : List.<Runnable>of(
+                    () -> NuvioStreamPreloadPatch.hookPlayer(owner(playerModel)),
+                    () -> NuvioStreamPreloadPatch.hookNextEpisodePluginPause(owner(pluginSearch)),
+                    () -> NuvioStreamPreloadPatch.hookNextEpisodePicker(owner(nextTransition)))) {
+                boolean rejected = false;
+                try { duplicate.run(); } catch (IllegalStateException expected) { rejected = true; }
+                if (!rejected) throw new AssertionError("Duplicate next-episode hook accepted");
+            }
+            System.out.println("PASS: next-episode player hooks, playback-state contracts and scoped local-scraper pause hook");
             boolean duplicateStreamHookRejected = false;
             try { NuvioStreamPreloadPatch.hookContinueWatching(owner(NuvioLayout.current("Lba/e2;"))); }
             catch (IllegalStateException expected) { duplicateStreamHookRejected = true; }

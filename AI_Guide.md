@@ -109,7 +109,7 @@ notification mode for the hybrid routing to apply.
 
 ## NuvioTV 1.1.0-beta.2, 1.1.0-beta.4, and 1.1.0-beta.5
 
-Eight patches target package `com.nuvio.tv` (airing-series, finale-date, and stream-preloading patches support beta4 and beta5):
+Nine patches target package `com.nuvio.tv` (airing-series, finale-date, and stream-preloading patches support beta4 and beta5):
 
 1. **NuvioTV - Merge tracking progress** combines Nuvio Sync and connected-provider
    progress for Continue Watching. It retains the last successful snapshot while the
@@ -149,8 +149,8 @@ The menu discovers installed runtime bridges independently and uses their existi
 preferences and Compose controls. Native non-focusable section labels (`sa.kc.e`)
 group merged progress, its strategy, remaining episodes, and airing-series settings
 under **Continue Watching**, and library/collection finale-date switches under **UI**.
-The two stream-preloading switches appear under **Streams**. Empty groups are omitted.
-The menu runtime check covers all 128 bridge selections.
+The three stream-preloading switches appear under **Streams**. Empty groups are omitted.
+The menu runtime check covers all 256 bridge selections.
 Old beta4 injected settings rows and merged picker
 choices are removed; beta2 retains its original UI. Merged controls register `o9.a1`
 and capture the initialized `p8.e` component. If the coordinator has not been created,
@@ -191,6 +191,33 @@ off-UI-thread searches, playback reuse, and detail observer disposal; keep beta2
 DEX checks passing. Device verification must check both settings independently,
 movie/resume/next-up/shuffle targets, source changes, and actual cached playback.
 Use `SantodanStreams` for diagnostics.
+**NuvioTV - Preload streams for next episode** independently adds an opt-in **Streams**
+switch. It hooks the player ViewModel (`na.le`/`na.me`) constructor and `onCleared`,
+observing `f()` without retaining the ViewModel. PlayerUiState (`na.ie`/`na.je`) fields
+`a`/`b`/`c` mean playing/buffering/ended; `d` is pending exit, `Y0` is error, `g` is
+content type, `w0` is current video ID and `k1` is the native resolved NextEpisodeInfo.
+Read the next ID/season/episode from its `a`/`b`/`c`, and check aired (`h`) and
+availability/release (`i`/`g`). Never calculate the next episode number manually.
+A monotonic timer counts 30 seconds of actual playing time, excluding buffering and
+pauses and resetting when the episode, active profile, or enabled state changes.
+Only this search can bypass the preload runtime's playback guard. A request-specific
+pause-flow hook in `v9.d4`/`v9.c4` permits local scrapers for the exact next target
+and active profile while its search is being observed; the singleton `k` pause flow
+is never changed. Cancel consumers and revoke this permit on leaving playback,
+pausing/buffering, target/profile changes, disabling, or a 45-second timeout.
+Successful searches are re-observed once per minute without force-refresh, so native
+15-minute expiry can refresh the source list during long episodes. Failed searches
+retry after 15 seconds. Native producers retain their own session lifecycle.
+The next-episode transition coroutine (`na.cb`/`na.fb`) has three native picker
+calls to `na.jb.C`/`na.mb.C`. Guard their force-refresh argument with the new setting:
+manual next-episode selection otherwise discards the warmed session. Only these
+transition calls reuse the cache; explicit refresh controls keep their original behavior.
+Run `:patches:verifyNuvioNextEpisodePreload`, `:patches:verifyNuvioStreamPreloadRuntime`,
+beta4/beta5 DEX checks, and `:patches:verifyNuvioNextEpisodeBundle` for timing/reset,
+local-scraper isolation, cache reuse, standalone/combined selection and assembled DEX.
+Device checks must confirm ExoPlayer and MPV, resume/seeking, crossing seasons,
+shuffle, leaving playback during the delay, and opening the next episode's sources.
+
 Debug messages report runtime registration, setting changes, each accepted search's
 start and terminal status, elapsed milliseconds, addon-group count, and stream-source
 count. Recomposition duplicates and cooldown hits stay silent. Custom video IDs are

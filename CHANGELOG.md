@@ -13,6 +13,10 @@
 
 ## Unreleased
 
+### New Features
+
+* **nuviotv:** add an independent opt-in next-episode source preload patch for beta.4/beta.5; fetch after 30 seconds of actual playback, reuse the native cache in the manual next-episode picker, refresh expired searches during longer episodes, and isolate local-scraper permission to the next target and active profile
+
 ### Bug Fixes
 
 * **nuviotv:** isolate remaining-count and finale-date badge composition in dedicated groups to prevent remembered-slot type collisions and Compose start/end imbalance crashes

@@ -1,5 +1,34 @@
 # Santodan Patches
 
+## NuvioTV launcher channels
+
+The independent Android TV launcher channels patch supports beta.4/beta.5.
+It adds per-profile, opt-in catalog/list/Library/Upcoming switches in the shared
+Layout menu. Runtime hooks capture the initialized Hilt component, observe Home,
+cancel Home observation onCleared, and observe the singleton library repository.
+Native repositories supply catalogs and authenticated tracking-provider list data.
+The publisher uses `santodan-launcher/` IDs, which cannot be mistaken for the native
+Continue Watching channel by its package-prefix orphan recovery. TvProvider
+queries filter channel/package IDs in memory, preserve row IDs and visibility,
+and update programs only when their persisted values change. See
+`docs/NuvioLauncherChannels.md` for source/refresh limits and TV checks.
+Beta.5 settings use nested native `sa.kc.a` collapsible sections for Catalogs and
+Tracking lists and their sources. `Source.sourceId`/`sourceName` persist grouping
+without changing existing channel keys or selected preference values. Upcoming
+artwork dates are rendered on two workers, keyed by image/date/style and exposed
+through a dedicated read-only artwork provider. Its manifest authority follows
+side-by-side package renaming. Only hashed PNG filenames are accepted; directory
+queries and writes are rejected. Rendering failure retains remote images plus date text. Shared date-style
+and airing-series preference listeners refresh published artwork, including finale
+cache updates. Run `verifyNuvioLauncherUi` and `verifyNuvioLauncherDates` for the
+beta.5 grouped menu and date rules; publisher verification covers date removal.
+The beta.5 native `l9.k.a` cached Next Up aired predicate delegates to the installed
+airing-series bridge when present. This prevents future-finale Upcoming entries
+from also appearing in the native Continue Watching preview channel.
+Run `verifyNuvioLauncherChannels`, `verifyNuvioLauncherPublisher`,
+`verifyNuvioLauncherBundle`, `verifyNuvioNextEpisodeBundle`, and
+`verifyNuvioSettingsMenuRuntime`; the shared menu now covers 512 selections.
+
 An independent patch bundle for **Morphe Desktop**, targeting MEO Android TV,
 NuvioTV, Reddit, Pillo, and Peafowl Theme Maker.
 
@@ -174,8 +203,9 @@ The menu discovers installed runtime bridges independently and uses their existi
 preferences and Compose controls. Native non-focusable section labels (`sa.kc.e`)
 group merged progress, its strategy, remaining episodes, and airing-series settings
 under **Continue Watching**, and library/collection finale-date switches under **UI**.
-The three stream-preloading switches appear under **Streams**. Empty groups are omitted.
-The menu runtime check covers all 256 bridge selections.
+The three stream-preloading switches appear under **Streams**, and launcher-channel
+selections appear under **Android TV launcher**. Empty groups are omitted.
+The menu runtime check covers all 512 bridge selections.
 Old beta4 injected settings rows and merged picker
 choices are removed; beta2 retains its original UI. Merged controls register `o9.a1`
 and capture the initialized `p8.e` component. If the coordinator has not been created,

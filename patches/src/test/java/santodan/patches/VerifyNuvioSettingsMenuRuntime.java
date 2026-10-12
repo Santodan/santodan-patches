@@ -24,7 +24,8 @@ public final class VerifyNuvioSettingsMenuRuntime {
         "software.santodan.extension.nuviomovierelease.NuvioMovieReleaseDates",
             "software.santodan.extension.nuviocwstreams.NuvioContinueWatchingStreams",
             "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams",
-            "software.santodan.extension.nuvionextstreams.NuvioNextEpisodeStreams"
+            "software.santodan.extension.nuvionextstreams.NuvioNextEpisodeStreams",
+            "software.santodan.extension.nuviolauncher.NuvioLauncherChannels"
         };
         for (int selection = 0; selection < (1 << bridges.length); selection++) {
             int installed = Integer.bitCount(selection);
@@ -53,11 +54,12 @@ public final class VerifyNuvioSettingsMenuRuntime {
                     continueWatching = true;
                 }
                 if (index >= 3 && index < 5 && !ui) { expected.add("UI"); ui = true; }
-                if (index >= 5 && !streams) {
+                if (index >= 5 && index < 8 && !streams) {
                     expected.add("Streams");
                     streams = true;
                 }
                 String bridge = bridges[index];
+                if (index == 8) expected.add("Android TV launcher");
                 expected.add(bridge);
                 int dot = bridge.lastIndexOf('.');
                 sources.put(bridge, "package " + bridge.substring(0, dot) + "; public class " + bridge.substring(dot + 1)
@@ -65,7 +67,8 @@ public final class VerifyNuvioSettingsMenuRuntime {
             }
             if ((selection & 28) != 0) {
                 int streamsIndex = expected.indexOf("Streams");
-                expected.add(streamsIndex < 0 ? expected.size() : streamsIndex, "Date label appearance");
+                int launcherIndex = expected.indexOf("Android TV launcher");
+                expected.add(streamsIndex >= 0 ? streamsIndex : launcherIndex >= 0 ? launcherIndex : expected.size(), "Date label appearance");
             }
             List<String> compile = new ArrayList<>(List.of("-classpath", System.getProperty("java.class.path"), "-d", directory.toString()));
             for (Map.Entry<String, String> source : sources.entrySet()) {

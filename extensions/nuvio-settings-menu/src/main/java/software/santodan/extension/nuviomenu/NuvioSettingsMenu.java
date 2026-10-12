@@ -16,7 +16,8 @@ public final class NuvioSettingsMenu {
         "software.santodan.extension.nuviomovierelease.NuvioMovieReleaseDates",
         "software.santodan.extension.nuviocwstreams.NuvioContinueWatchingStreams",
         "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams",
-        "software.santodan.extension.nuvionextstreams.NuvioNextEpisodeStreams"
+        "software.santodan.extension.nuvionextstreams.NuvioNextEpisodeStreams",
+        "software.santodan.extension.nuviolauncher.NuvioLauncherChannels"
     };
     private static volatile Object expandedState;
     private NuvioSettingsMenu() {}
@@ -70,7 +71,8 @@ public final class NuvioSettingsMenu {
                 // Show appearance controls only when at least one date-label patch is installed.
             } catch (Throwable error) { Log.e(TAG, "Date label settings failed", error); break; }
         }
-        renderGroup(composer, loader, "Streams", 5, BRIDGES.length);
+        renderGroup(composer, loader, "Streams", 5, 8);
+        renderGroup(composer, loader, "Android TV launcher", 8, BRIDGES.length);
     }
 
     private static void renderGroup(Object composer, ClassLoader loader, String label, int start, int end) {

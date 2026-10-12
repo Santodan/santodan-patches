@@ -11,7 +11,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.10.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.10.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;19 patches total
+> **[v0.10.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.10.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;20 patches total
 <details>
 <summary>📦 MEO (Android TV)&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -31,7 +31,7 @@ MEO 5.7.0 patches provide a separately installable clone and compatibility handl
 </details>
 
 <details>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;9 patches</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;10 patches</summary>
 <br>
 
 These are the available patches for NuvioTV:
@@ -66,6 +66,14 @@ All three date-label patches share one **Date label appearance** section under *
 
 - **Upcoming movie dates in library and collections**: Adds two independent, disabled-by-default switches under **UI** to show known release dates on unreleased movie posters in `dd-MMM-yy` format. Dates come from the poster metadata, with a background catalog lookup when an exact date is missing. Already released movies and unknown dates have no badge. Movies with a past release year skip unnecessary catalog requests; current/future years still need an exact date.
 
+### Android TV launcher
+
+- **Android TV launcher channels**: Choose individual catalogs and tracking lists, plus Library and Upcoming, to publish as launcher channels. Catalogs and Tracking lists are collapsed entries grouped by addon or tracking provider. Upcoming dates appear on launcher artwork and in tile text, including finale dates when enabled. Choices are saved per profile and start disabled. Tiles open their detail page. See [usage and verification](docs/NuvioLauncherChannels.md).
+
+    Native Continue Watching respects **Keep airing series in Upcoming**, so shows kept in Upcoming until their future finale are excluded from Continue Watching. Date badges use a dedicated read-only artwork provider so the launcher can load them after Nuvio closes. Artwork loads in the background; some tiles may briefly appear black while images load or the launcher refreshes its cache. In device testing, the remaining black tiles resolved after loading completed.
+
+<img src="images/NuvioTVChannels.png" width="800" alt="Santodan-Patches menu">
+
 ### Streams
 
 - **Preload streams in Continue Watching**: Searches sources in the background for visible, playable episodes and movies, so opening playback can reuse the search results.
@@ -78,7 +86,7 @@ All three date-label patches share one **Date label appearance** section under *
 
 - **Side-by-side installation**: Lets you choose a different package name and launcher name so the patched app can coexist with the official app.
 
-The patch settings are under **Layout > Santodan-Patches**, grouped under **Continue Watching**, **UI**, and **Streams** labels. Labels appear only for installed patch groups. Airing-series, finale-date, upcoming-movie-date, and stream-preloading patches support beta.4 and beta.5; merged progress, remaining episodes, and side-by-side installation also support beta.2. Package and launcher names are configured when patching the APK.
+The patch settings are under **Layout > Santodan-Patches**, grouped under **Continue Watching**, **UI**, **Streams**, and **Android TV launcher** labels. Labels appear only for installed patch groups. Package and launcher names are configured when patching the APK.
 
 <img src="images/NuvioTVMenu.png" width="800" alt="Santodan-Patches menu">
 
@@ -89,13 +97,14 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
+| [NuvioTV - Android TV launcher channels](docs/NuvioLauncherChannels.md) | Choose individual catalogs and tracking lists, Library, and Upcoming as launcher channels. |  |
 | [NuvioTV - Finale dates in library and collections](#nuviotv-finale-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters. |  |
 | [NuvioTV - Keep airing series in Upcoming](#nuviotv-keep-airing-series-in-upcoming) | Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale. |  |
 | [NuvioTV - Merge tracking progress](#nuviotv-merge-tracking-progress) | Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh. |  |
 | [NuvioTV - Preload streams for next episode](#nuviotv-preload-streams-for-next-episode) | Adds an opt-in Streams setting to fetch the next episode's source list after 30 seconds of playback, reusing Nuvio's native search cache. |  |
 | [NuvioTV - Preload streams in Continue Watching](#nuviotv-preload-streams-in-continue-watching) | Adds an opt-in Streams setting to search sources in the background for visible Continue Watching episodes and movies, reusing Nuvio's native search cache. |  |
 | [NuvioTV - Preload streams on detail page](#nuviotv-preload-streams-on-detail-page) | Adds an opt-in Streams setting to search sources for the detail page's Play or Resume episode or movie, reusing Nuvio's native search cache. |  |
-| [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default setting that displays aired, unwatched episode counts for every tracking integration. Controlled by Layout > Santodan-Patches on beta4 and beta5. |  |
+| [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default setting that displays aired, unwatched episode counts for every tracking integration. Controlled by Layout > Santodan-Patches. |  |
 | [NuvioTV - Side-by-side installation](#nuviotv-side-by-side-installation) | Installs a separately named NuvioTV clone using a configurable package name and app name. | • Package name<br>• App name |
 | [NuvioTV - Upcoming movie dates in library and collections](#nuviotv-upcoming-movie-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show known release dates on unreleased movie posters in library and collections. |  |
 

@@ -19,7 +19,7 @@ fun main(args: Array<String>) = runBlocking {
             if (combined) it.name?.startsWith("NuvioTV - ") == true && it.name != "NuvioTV - Side-by-side installation"
             else it.name == nextName
         }.toSet()
-        check(selected.size == if (combined) 8 else 1)
+        check(selected.size == if (combined) 9 else 1)
         val output = File(args[2], if (combined) "combined" else "standalone").apply { mkdirs() }
         Patcher(PatcherConfig(apkFile = File(args[0]), temporaryFilesPath = File(output, "work"))).use { patcher ->
             patcher += selected
@@ -61,7 +61,9 @@ fun main(args: Array<String>) = runBlocking {
             for (hook in listOf("registerComponent", "observeNextEpisode", "stopNextEpisode", "nextEpisodePluginPause"))
                 check(nativeHooks[hook] == 1) { "Expected one $hook hook, found ${nativeHooks[hook]}" }
             check(nativeHooks["nextEpisodePickerRefresh"] == 3) { "Next-episode manual picker must reuse the warmed search" }
-            check(extensionCalls.all { it in definitions }) {
+            val frameworkAccessor = "Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;->getContext()Landroid/content/Context;"
+            check(extensionCalls.all { it in definitions || (it == frameworkAccessor &&
+                parents["Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;"]?.contains("Landroid/content/ContentProvider;") == true) }) {
                 "Missing extension signatures: ${extensionCalls.filter { it !in definitions }}"
             }
             fun resolves(reference: String): Boolean {
@@ -77,7 +79,7 @@ fun main(args: Array<String>) = runBlocking {
             check("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes)
             check(("Lsoftware/santodan/extension/nuviocwstreams/NuvioContinueWatchingStreams;" in classes) == combined)
             check(("Lsoftware/santodan/extension/nuviodetailstreams/NuvioDetailStreams;" in classes) == combined)
-            println("PASS: ${if (combined) "all eight Nuvio runtime patches coexist" else "standalone next-episode patch"}; assembled DEX reloads and hooks resolve")
+            println("PASS: ${if (combined) "all nine Nuvio runtime patches coexist" else "standalone next-episode patch"}; assembled DEX reloads and hooks resolve")
         }
     }
 }

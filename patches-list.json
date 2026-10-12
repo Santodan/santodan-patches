@@ -74,6 +74,42 @@
       "options": []
     },
     {
+      "name": "NuvioTV - Android TV launcher channels",
+      "description": "Choose individual catalogs and tracking lists, Library, and Upcoming to publish as Android TV launcher channels.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch",
+        "ResourcePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nuvio.tv",
+          "name": "NuvioTV",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.0-beta.4",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
+              "version": "1.1.0-beta.5",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "NuvioTV - Finale dates in library and collections",
       "description": "Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters.",
       "default": false,

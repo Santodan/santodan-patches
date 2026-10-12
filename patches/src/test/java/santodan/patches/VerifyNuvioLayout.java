@@ -103,6 +103,15 @@ public final class VerifyNuvioLayout {
         for (String accessor : List.of("d", "j")) method(provider, accessor, 0);
         method(provider, "g", 1);
         method(provider, runtime.siblingsMethod, 1);
+        method(provider, runtime.refreshMethod, 2);
+        var refresh = owner(provider).getMethods().stream()
+            .filter(m -> m.getName().equals(runtime.refreshMethod) && m.getParameterTypes().size() == 2)
+            .findFirst().orElseThrow();
+        String refreshIntent = refresh.getParameterTypes().get(0).toString();
+        owner(refreshIntent);
+        if (!refresh.getParameterTypes().get(1).equals("Lkotlin/coroutines/jvm/internal/ContinuationImpl;"))
+            throw new AssertionError("Native refresh continuation changed");
+        System.out.println("PASS: native provider refresh contract");
         String watchedStore = null;
         for (Field f : owner(repository).getFields()) if (f.getName().equals("e")) watchedStore = f.getType();
         field(watchedStore, runtime.localWatchedField, "Lkotlinx/coroutines/flow/Flow;");

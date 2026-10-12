@@ -29,6 +29,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -56,6 +61,8 @@ object NuvioMergedProgress {
         Thread(task, "SantodanMergedRefresh").apply { isDaemon = true }
     }
     private val refreshStarted = AtomicBoolean(false)
+    private val providerObserverScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val providerObservers = ConcurrentHashMap<Any, Job>()
     @Volatile private var lastRefresh = 0L
     private val badgeHistories = java.util.Collections.synchronizedMap(
         java.util.WeakHashMap<Any, Map<String, Set<Any>>>())
@@ -69,6 +76,7 @@ object NuvioMergedProgress {
     private val mergedSnapshotReady = MutableStateFlow(false)
     private val watchedSnapshotReady = MutableStateFlow(false)
     private val mergedWatchedItems = MutableStateFlow<List<Any>>(emptyList())
+    private val providerRevision = MutableStateFlow(0L)
     @Volatile private var mergedWatchedHistory: Map<String, Set<Any>> = emptyMap()
     @Volatile private var mergedShowSiblings: Map<String, Set<String>> = emptyMap()
     private val badgeDeltas = java.util.Collections.synchronizedMap(java.util.WeakHashMap<Any, NuvioBadgeDelta>())
@@ -241,6 +249,10 @@ object NuvioMergedProgress {
     }
 
     @JvmStatic fun registerRepository(value: Any) {
+        if (repository !== value) {
+            providerObservers.values.forEach { it.cancel() }
+            providerObservers.clear()
+        }
         repository = value
         providerLayout = NuvioProviderLayout.forRepository(value.javaClass.name)
         allProgressMethod = providerLayout.allProgressMethod
@@ -300,8 +312,7 @@ object NuvioMergedProgress {
                     // Route provider-specific reconciliation back to the provider
                     // that supplied this show's winning Continue Watching seed.
                     method.name == "l" && method.parameterCount == 1 ->
-                        providerForContent(args?.getOrNull(0)?.toString())?.let { method.invoke(it, *(args ?: emptyArray())) }
-                            ?: delegate?.let { method.invoke(it, *(args ?: emptyArray())) }
+                        providerFlow(method, args, delegate)
                     method.name == "i" && method.parameterCount == 2 ->
                         providerForProgress(args?.getOrNull(0))?.let { method.invoke(it, *(args ?: emptyArray())) }
                             ?: delegate?.let { method.invoke(it, *(args ?: emptyArray())) }
@@ -317,6 +328,15 @@ object NuvioMergedProgress {
             return created
         }
     }
+
+    /** Detail collectors can start before the first merge chooses this show's provider. */
+    @Suppress("UNCHECKED_CAST")
+    private fun providerFlow(method: Method, args: Array<out Any?>?, delegate: Any?): Flow<Any?> =
+        NuvioProviderRefresh.route(providerRevision) {
+            val provider = providerForContent(args?.getOrNull(0)?.toString()) ?: delegate
+            if (provider == null) kotlinx.coroutines.flow.flowOf(null)
+            else method.invoke(provider, *(args ?: emptyArray())) as Flow<Any?>
+        }
 
     /** Called from effectiveWatchProgressSource; merged snapshots are read as Nuvio Sync. */
     @JvmStatic fun effectiveSource(requested: Any, isAuthenticated: Any): Any {
@@ -545,10 +565,26 @@ object NuvioMergedProgress {
             val authenticated = (findMethod(provider.javaClass, "b", 0).invoke(provider) as Flow<Any>).first() as? Boolean ?: false
             if (deferred()) return
             if (!authenticated) continue
-            // Nuvio's provider implementations attach their remote Continue
-            // Watching synchronization to nextUpSeeds.onStart. Collect this
-            // before allProgress so a launch merge does not publish the stale
-            // pre-refresh progress snapshot.
+            providerObservers.computeIfAbsent(provider) {
+                providerObserverScope.launch {
+                    try {
+                        NuvioProviderRefresh.observe(provider, listOf(allProgressMethod, "f", "d")) {
+                            refreshDeferred.set(true)
+                        }
+                    } catch (error: kotlinx.coroutines.CancellationException) {
+                        throw error
+                    } catch (error: Throwable) {
+                        Log.e(TAG, "Provider update observation failed", error)
+                    }
+                }
+            }
+            // onStart can launch a refresh without awaiting it (notably MDBList),
+            // and Trakt's seed flow has no refresh hook. Wait before reading.
+            NuvioProviderRefresh.await(provider, providerLayout.refreshMethod)
+            if (deferred()) return
+            // Initialize seed projections before reading progress. The retained
+            // observers above request another merge if background sync updates
+            // any of these flows after this read.
             val seeds = (findMethod(provider.javaClass, "f", 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
             if (deferred()) return
             val items = (findMethod(provider.javaClass, allProgressMethod, 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
@@ -657,6 +693,7 @@ object NuvioMergedProgress {
             mergedProgress.value = published
             mergedNextUpSeeds.value = publishedSeeds
             mergedWatchedItems.value = watchedItems
+            providerRevision.value += 1L
             watchedSnapshotReady.value = true
             mergedSnapshotReady.value = true
             refreshMenu()

@@ -48,6 +48,11 @@ sourceSets["test"].java.srcDir("../extensions/pillo-weight-import/src/main/java"
 sourceSets["test"].java.srcDir("../extensions/pillo-local-backup/src/main/java")
 sourceSets["test"].java.srcDir("../extensions/pillo-weight-summary/src/main/java")
 
+tasks.named<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileTestKotlin") {
+    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioProviderRefresh.kt"))
+    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioSourceContinuation.java"))
+}
+
 // The Morphe patch runtime targets Java 11. Pin Java sources explicitly so
 // local builds remain reproducible even when Gradle runs on a newer JDK.
 tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
@@ -63,6 +68,7 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
 
 // Exercise the exact Android runtime accessor table against original app DEX files.
 tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
+    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioSourceContinuation.java"))
     source(file("../extensions/nuvio-remaining-episodes/src/main/java/software/santodan/extension/nuvioremaining/NuvioBadgeComposition.java"))
     source(file("../extensions/nuvio-airing-series/src/main/java/software/santodan/extension/nuvioairing/NuvioBadgeComposition.java"))
     source(file("../extensions/nuvio-movie-release-dates/src/main/java/software/santodan/extension/nuviomovierelease/MovieReleaseDate.java"))
@@ -77,6 +83,19 @@ tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
 }
 
 tasks {
+    register<JavaExec>("verifyNuvioRemainingSyncRuntime") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyNuvioRemainingSyncRuntime")
+        doFirst { file("${layout.buildDirectory.get()}/verification").mkdirs() }
+        args(file("../extensions/nuvio-remaining-episodes/src/main/java/software/santodan/extension/nuvioremaining").absolutePath,
+            file("${layout.buildDirectory.get()}/verification").absolutePath)
+    }
+    register<JavaExec>("verifyNuvioProviderRefreshRuntime") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyNuvioProviderRefreshRuntimeKt")
+    }
     register<JavaExec>("verifyPilloWeightSummaryBundle") {
         dependsOn("testClasses", "buildAndroid")
         classpath = sourceSets["test"].runtimeClasspath

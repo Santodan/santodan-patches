@@ -230,6 +230,17 @@ not be labelled as proof of a cache hit. Timeouts stop the preload consumer; nat
 search-session producers retain their own lifecycle.
 
 Merged watched badges must follow the same per-show provider winner as progress.
+Await each authenticated provider's native AUTOMATIC refresh (`y` on beta2, `o` on
+beta4/beta5) before sampling its projection. Some refresh implementations only signal
+background work, so retain progress/seed/watched-item flow observers and schedule a
+new merge when their values change. Playback still defers merges. Detail episode
+collectors must switch to the per-show winner after each snapshot publication even
+if the collector was opened before the first merge completed. Remaining-count cache
+`count_v4_` records the card's seed signature; invalidate on seed changes, reject
+obsolete asynchronous estimates and retry the current seed without the old cooldown.
+Run `:patches:verifyNuvioProviderRefreshRuntime` and
+`:patches:verifyNuvioRemainingSyncRuntime` for delayed synchronization, cancellation,
+live provider routing and the Rage of Bahamut episode-8 to episode-20 count race.
 Prime each provider's Next Up flow before reading progress, then read Next Up again after watched-history and alias loading completes. Simkl may refresh its projection during the later getters; publishing the initial seed list can discard cached cards using a stale snapshot. `Provider snapshot` logs initial/refreshed seed counts; focused `Show seed` / `Show merge selection` logs diagnose the reported Rage of Bahamut / Virgin Soul entry without dumping the full library. Playback deferral checks also guard the final seed read.
 On beta4/beta5, the optional **Show merged progress provider** setting uses the persisted merge origins to draw a 24dp local provider icon at the bottom-right of Continue Watching posters. Read the card's `x` WatchProgress, or the concrete `y.a` NextUpInfo, by content type and ID; never match titles or infer provenance from the carrier provider. Unknown origins stay unbadged. The icon uses a separate Compose group, native Box alignment, and the existing Coil loader with bundled raw SVGs or the Nuvio launcher artwork. This adds no tracking-provider or artwork network calls. Run `:patches:verifyNuvioProviderBadge` and beta4/beta5 DEX checks, including coexistence with remaining-episode badges.
 The proxy's `g(Continuation)` supplies the coherent bulk watched episode map;

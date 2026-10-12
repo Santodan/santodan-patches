@@ -46,7 +46,7 @@ These are the available patches for NuvioTV:
 | -- | -- |
 | <img src="images/NuvioTVProvidersCard.png" width="400" alt="Collections"> | <img src="images/NuvioTVProvidersPoster.png" width="400" alt="Library"> |
 
-- **Remaining episodes in Continue Watching**: Adds a setting to show the number of aired, unwatched episodes on Continue Watching cards. Counting runs in the background for recently displayed cards and stops when disabled.<br>
+- **Remaining episodes in Continue Watching**: Adds a setting to show the number of aired, unwatched episodes on Continue Watching cards. Counting runs in the background for recently displayed cards and stops when disabled. When synced progress changes the next episode, cached counts are invalidated and older requests cannot overwrite the new count.<br>
 
 ![Remaining](images/NuvioTVRemainingCount.png)
 

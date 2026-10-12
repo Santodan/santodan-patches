@@ -6,12 +6,14 @@ public final class NuvioProviderLayout {
     public final String allProgressMethod;
     public final String siblingsMethod;
     public final String localWatchedField;
+    public final String refreshMethod;
 
     private NuvioProviderLayout(String providerInterface, String allProgressMethod, String siblingsMethod) {
         this.providerInterface = providerInterface;
         this.allProgressMethod = allProgressMethod;
         this.siblingsMethod = siblingsMethod;
         this.localWatchedField = "h";
+        this.refreshMethod = "ca.a0".equals(providerInterface) ? "y" : "o";
     }
 
     public static NuvioProviderLayout forRepository(String repositoryClass) {

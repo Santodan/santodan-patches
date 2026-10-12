@@ -30,7 +30,7 @@ public final class NuvioRemainingEpisodes {
     private static final String TAG = "SantodanRemaining";
     private static final String PREFS = "santodan_nuvio_remaining_episodes";
     private static final String ENABLED = "enabled";
-    private static final String COUNT_PREFIX = "count_v3_";
+    private static final String COUNT_PREFIX = "count_v4_";
     private static final long FALLBACK_GRACE_MS = 500L;
     private static final Map<String, String> TITLES = new ConcurrentHashMap<>();
     private static final Map<String, Integer> REMAINING = new ConcurrentHashMap<>();
@@ -81,13 +81,24 @@ public final class NuvioRemainingEpisodes {
             Integer seedEpisode = (Integer) field(nextUpInfo, "y").get(nextUpInfo);
             if (id != null && title != null) {
                 TITLES.put(id, title);
-                if (!REMAINING.containsKey(id)) {
-                    int cached = preferences().getInt(COUNT_PREFIX + id, -1);
-                    if (cached >= 0) REMAINING.put(id, Integer.valueOf(cached));
+                Object[] seed = new Object[]{season, episode, seedSeason, seedEpisode};
+                boolean changed;
+                synchronized (SEEDS) {
+                    Object[] previous = SEEDS.put(id, seed);
+                    changed = previous != null && !java.util.Arrays.equals(previous, seed);
+                    if (changed) {
+                        REMAINING.remove(id);
+                        RETRY_AFTER.remove(id);
+                        preferences().edit().remove(COUNT_PREFIX + id).remove(COUNT_PREFIX + id + "_seed").apply();
+                    } else if (!REMAINING.containsKey(id)
+                        && java.util.Arrays.toString(seed).equals(preferences().getString(COUNT_PREFIX + id + "_seed", null))) {
+                        int cached = preferences().getInt(COUNT_PREFIX + id, -1);
+                        if (cached >= 0) REMAINING.put(id, Integer.valueOf(cached));
+                    }
                 }
                 if (LOGGED.add("register:" + id)) Log.d(TAG, "registered id=" + id + " title=" + title
                     + " next=" + season + ':' + episode + " seed=" + seedSeason + ':' + seedEpisode);
-                SEEDS.put(id, new Object[]{season, episode, seedSeason, seedEpisode});
+                if (changed) { bumpRevision(); requestCounts(); }
             }
         } catch (Throwable error) {
             Log.e(TAG, "NextUpInfo registration failed", error);
@@ -267,7 +278,7 @@ public final class NuvioRemainingEpisodes {
             int count = NuvioEpisodeCounts.remaining(airedSnapshot, watchedSnapshot);
             Integer previous = REMAINING.put(id, count);
             if (previous == null || previous.intValue() != count) {
-                preferences().edit().putInt(COUNT_PREFIX + id, count).apply();
+                persistCount(id, count);
                 Log.d(TAG, "native count id=" + id + " aired=" + airedSnapshot.size()
                     + " watched=" + watchedSnapshot.size() + " remaining=" + count
                     + " countCoverage=" + (watchedSnapshot.size() >= airedSnapshot.size()));
@@ -280,6 +291,7 @@ public final class NuvioRemainingEpisodes {
 
     private static void fetchRemaining(String id, int nextSeason, int nextEpisode,
                                        Integer seedSeason, Integer seedEpisode) {
+        Object[] requestedSeed = new Object[]{nextSeason, nextEpisode, seedSeason, seedEpisode};
         long retryTime = android.os.SystemClock.elapsedRealtime();
         if (!enabled() || !VISIBLE.containsKey(id) || nativeAvailable(id) || !id.startsWith("tt")
             || retryTime < RETRY_AFTER.getOrDefault(id, 0L) || !FETCHING.add(id)) return;
@@ -335,26 +347,35 @@ public final class NuvioRemainingEpisodes {
                 // after cards are first constructed. Do not flash a metadata
                 // estimate that will immediately be replaced by native data.
                 Thread.sleep(FALLBACK_GRACE_MS);
-                if (enabled() && !nativeAvailable(id) && VISIBLE.containsKey(id)) {
+                synchronized (SEEDS) {
+                if (enabled() && !nativeAvailable(id) && VISIBLE.containsKey(id)
+                    && java.util.Arrays.equals(requestedSeed, SEEDS.get(id))) {
                     Integer previous = REMAINING.put(id, remaining);
                     RETRY_AFTER.put(id, android.os.SystemClock.elapsedRealtime() + 600_000L);
                     if (previous == null || previous.intValue() != remaining.intValue()) {
-                        preferences().edit().putInt(COUNT_PREFIX + id, remaining.intValue()).apply();
+                        persistCount(id, remaining.intValue());
                         Log.d(TAG, "fallback count id=" + id + " remaining=" + remaining
                             + " next=" + nextSeason + ':' + nextEpisode
                             + " seed=" + seedSeason + ':' + seedEpisode);
                         bumpRevision();
                     }
                 }
+                }
             } catch (Throwable error) {
                 Log.e(TAG, "fallback metadata fetch failed id=" + id, error);
             } finally {
                 if (connection != null) connection.disconnect();
                 FETCHING.remove(id);
+                if (!java.util.Arrays.equals(requestedSeed, SEEDS.get(id))) requestCounts();
             }
         };
         try { FETCHER.execute(worker); }
         catch (java.util.concurrent.RejectedExecutionException ignored) { FETCHING.remove(id); }
+    }
+
+    private static void persistCount(String id, int count) throws Exception {
+        preferences().edit().putInt(COUNT_PREFIX + id, count)
+            .putString(COUNT_PREFIX + id + "_seed", java.util.Arrays.toString(SEEDS.get(id))).apply();
     }
 
     private static boolean nativeAvailable(String id) {

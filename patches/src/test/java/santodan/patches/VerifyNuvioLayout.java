@@ -103,6 +103,23 @@ public final class VerifyNuvioLayout {
         for (String accessor : List.of("d", "j")) method(provider, accessor, 0);
         method(provider, "g", 1);
         method(provider, runtime.siblingsMethod, 1);
+        if (newer) {
+            String rowOwner = NuvioLayout.type(version, "Lsa/eb;");
+            method(rowOwner, "a", 18);
+            method(rowOwner, "j", 11);
+            String playbackRows = NuvioLayout.BETA5.equals(version) ? "Lsa/p3;" : "Lsa/o3;";
+            method(playbackRows, "q", 9);
+            method(playbackRows, "r", 9);
+            method(playbackRows, "y0", 14);
+            method("Ld2/z;", "<init>", 1);
+            field("Lh3/r0;", "a", "Lh3/h0;");
+            field("Lh3/h0;", "b", "J");
+            String picker = NuvioLayout.BETA5.equals(version) ? "Lsa/lb;" : "Lsa/mb;";
+            method(picker, "<init>", 6);
+            for (String alignment : List.of("a", "b", "c", "d", "e", "f", "g", "h", "i"))
+                field("Lw1/b;", alignment, "Lw1/i;");
+            System.out.println("PASS: native date-label settings, pickers and nine alignments");
+        }
         method(provider, runtime.refreshMethod, 2);
         var refresh = owner(provider).getMethods().stream()
             .filter(m -> m.getName().equals(runtime.refreshMethod) && m.getParameterTypes().size() == 2)

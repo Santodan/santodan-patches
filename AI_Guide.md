@@ -146,6 +146,28 @@ Only poster images are hooked; collection logos are excluded. Unknown/non-IMDb I
 and movies are skipped. Dates refresh asynchronously with a six-hour persistent cache.
 Use `SantodanFinale:D` for diagnostics. Verify both switches independently on device.
 
+All three date runtimes delegate their native TV appearance controls and Compose
+modifier construction to `nuviomenu.NuvioDateLabelStyle` in the existing shared settings
+dependency. `DateLabelStyle` validates choices and packs Compose Color/TextUnit values.
+All date patches use preference scope `santodan_nuvio_date_label_style` with `date_label_`
+keys. The shared menu renders one appearance section only when a date patch is installed.
+Nine positions map
+to `w1.b.a` through `i`. Label and font use Playback's native percentage sliders
+(`sa.o3.y0` / `sa.p3.y0`) from 50% to 200%, step 10. At 100%, padding reads native
+`va.l0.a.e/d` and font size reads the native labelSmall TextStyle's `a.b` TextUnit.
+Background/font colors use the native subtitle swatch/opacity dialog (`q`) and color
+rows (`r`). Both use the subtitle text-color palette; label backgrounds additionally
+offer transparency. Packed colors, including
+alpha, persist separately from legacy palette indexes. The appearance section uses
+`sa.kc.a`, native action rows (`sa.eb.a` / `sa.db.a`), and single-choice dialogs (`j`)
+with native `sa.mb` / `sa.lb` picker options.
+The native `j` picker requires explicit 420 dp width and 320 dp maximum height;
+R8 removes those default-mask branches. Passing zero sizes creates an empty overlay.
+One shared Compose revision refreshes visible badges after edits/reset. Reset preserves
+the patch's enable/filter switches.
+Run `:patches:verifyNuvioDateLabelStyleRuntime`, movie runtime, badge composition,
+and beta4/beta5 DEX checks; test TV dialog focus, card positions and colors on device.
+
 Beta4 runtime patches share an unnamed settings-menu dependency. It inserts one keyed
 lazy item in Layout's native section list, rendered with `sa.kc.a` as **Santodan-Patches**.
 The menu discovers installed runtime bridges independently and uses their existing

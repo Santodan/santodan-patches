@@ -83,6 +83,14 @@ tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
 }
 
 tasks {
+    register<JavaExec>("verifyNuvioDateLabelStyleRuntime") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyNuvioDateLabelStyleRuntime")
+        doFirst { file("${layout.buildDirectory.get()}/verification").mkdirs() }
+        args(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu").absolutePath,
+            file("${layout.buildDirectory.get()}/verification").absolutePath)
+    }
     register<JavaExec>("verifyNuvioRemainingSyncRuntime") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath

@@ -61,6 +61,15 @@ public final class NuvioSettingsMenu {
         ClassLoader loader = composer.getClass().getClassLoader();
         renderGroup(composer, loader, "Continue Watching", 0, 3);
         renderGroup(composer, loader, "UI", 3, 5);
+        for (int index = 2; index < 5; index++) {
+            try {
+                Class.forName(BRIDGES[index], false, loader);
+                NuvioDateLabelStyle.renderSettings(composer, "", "Date label appearance");
+                break;
+            } catch (ClassNotFoundException absent) {
+                // Show appearance controls only when at least one date-label patch is installed.
+            } catch (Throwable error) { Log.e(TAG, "Date label settings failed", error); break; }
+        }
         renderGroup(composer, loader, "Streams", 5, BRIDGES.length);
     }
 

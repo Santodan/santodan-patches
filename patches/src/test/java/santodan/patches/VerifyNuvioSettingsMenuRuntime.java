@@ -32,6 +32,8 @@ public final class VerifyNuvioSettingsMenuRuntime {
             Files.createDirectories(root);
             Path directory = Files.createTempDirectory(root, "selection-" + selection + "-");
             Map<String, String> sources = new LinkedHashMap<>();
+            sources.put("software.santodan.extension.nuviomenu.NuvioDateLabelStyle",
+                "package software.santodan.extension.nuviomenu; public class NuvioDateLabelStyle { public static void renderSettings(Object composer,String scope,String title){sa.kc.events.add(title);} }");
             sources.put("android.util.Log", "package android.util; public class Log { public static int e(String tag,String message,Throwable cause) { throw new AssertionError(message,cause); } }");
             sources.put("q1.s", "package q1; public class s { public final Object content; public s(int key,Object content,boolean tracked) { this.content=content; } }");
             sources.put("g1.j", "package g1; public class j { public static class Composer {} public static class State { private Object value; public State(Object v){value=v;} public Object getValue(){return value;} public void setValue(Object v){value=v;} } public static State r(Object value){return new State(value);} }");
@@ -60,6 +62,10 @@ public final class VerifyNuvioSettingsMenuRuntime {
                 int dot = bridge.lastIndexOf('.');
                 sources.put(bridge, "package " + bridge.substring(0, dot) + "; public class " + bridge.substring(dot + 1)
                     + " { public static void renderSettings(Object composer){sa.kc.rendered++;sa.kc.events.add(\"" + bridge + "\");} }");
+            }
+            if ((selection & 28) != 0) {
+                int streamsIndex = expected.indexOf("Streams");
+                expected.add(streamsIndex < 0 ? expected.size() : streamsIndex, "Date label appearance");
             }
             List<String> compile = new ArrayList<>(List.of("-classpath", System.getProperty("java.class.path"), "-d", directory.toString()));
             for (Map.Entry<String, String> source : sources.entrySet()) {

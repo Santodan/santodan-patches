@@ -141,9 +141,9 @@ public final class NuvioMovieReleaseDates {
             Object boxScope = staticField(Class.forName("e0.v", false, loader), "a").get(null);
             Object[] style = badgeStyle(loader, boxScope, composer);
             // Compose packs sp as a unit tag followed by the float's bits.
-            long fontSize = 0x100000000L | (Float.floatToRawIntBits(14f) & 0xffffffffL);
+            long fontSize = ((Number) style[2]).longValue();
             method.invoke(null, badge, style[0], style[1], fontSize, null, null, 0L, null, 0L,
-                0, false, 0, 0, null, style[2], composer, 0, 0, 65520);
+                0, false, 0, 0, null, style[3], composer, 0, 0, 65520);
         } catch (Throwable error) {
             Log.e(TAG, "badge compose failed", error);
             // Keep the host card usable if badge rendering fails.
@@ -151,39 +151,9 @@ public final class NuvioMovieReleaseDates {
     }
 
     private static Object[] badgeStyle(ClassLoader loader, Object boxScope, Object composer) throws Exception {
-        Method compositionLocal = findMethod(composer.getClass(), "j", 1);
-        // Compose's sRGB Color representation stores ARGB in the upper 32 bits.
-        long content = 0xffffffff00000000L;
-        long background = 0xff1976d200000000L;
-
-        Class<?> typographyOwner = Class.forName("x5.i2", false, loader);
-        Object typography = compositionLocal.invoke(composer, staticField(typographyOwner, "a").get(null));
-        Object textStyle = field(typography, "o").get(typography);
-
-        float horizontal = 6f;
-        float vertical = 3f;
-
-        Class<?> modifierOwner = Class.forName("w1.n", false, loader);
-        Object modifier = staticField(modifierOwner, "b").get(null);
-        Object bottomCenter = staticField(Class.forName("w1.b", false, loader), "h").get(null);
-        modifier = findMethod(boxScope.getClass(), "a", 2).invoke(boxScope, modifier, bottomCenter);
-        Class<?> modifierType = Class.forName("w1.q", false, loader);
-        java.lang.reflect.Constructor<?> layerConstructor = Class.forName("w1.v", false, loader)
-            .getDeclaredConstructor(float.class);
-        layerConstructor.setAccessible(true);
-        Object layer = layerConstructor.newInstance(10f);
-        modifier = modifierType.getMethod("d", modifierType).invoke(modifier, layer);
-        modifier = findStatic(Class.forName("e0.b", false, loader), "u", 2)
-            .invoke(null, modifier, Float.valueOf(horizontal));
-        Object shape = staticField(Class.forName(NuvioRuntimeLayout.name("ba.d3"), false, loader), "a").get(null);
-        modifier = findStatic(Class.forName("a2.j", false, loader), "b", 2)
-            .invoke(null, modifier, shape);
-        Object rectangle = staticField(Class.forName("d2.g0", false, loader), "b").get(null);
-        modifier = findStatic(Class.forName("y.l", false, loader), "g", 3)
-            .invoke(null, modifier, Long.valueOf(background), rectangle);
-        modifier = findStatic(Class.forName("e0.b", false, loader), "v", 3)
-            .invoke(null, modifier, Float.valueOf(horizontal), Float.valueOf(vertical));
-        return new Object[]{modifier, Long.valueOf(content), textStyle};
+        return (Object[]) findStatic(Class.forName("software.santodan.extension.nuviomenu.NuvioDateLabelStyle",
+            false, loader), "build", 5).invoke(null, loader, boxScope, composer,
+                NuvioRuntimeLayout.name("ba.d3"), PREFS);
     }
 
     private static boolean validId(String id) { return id != null && id.matches("tt[0-9]+"); }

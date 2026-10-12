@@ -56,6 +56,8 @@ These are the available patches for NuvioTV:
 
 ### UI
 
+All three date-label patches share one **Date label appearance** section under **Layout > Santodan-Patches**, displayed when any date-label patch is installed. Choose one of nine positions. Label and font size use the same 50–200% sliders as Playback subtitle settings, with 100% matching the native top-right label's padding and font size. Background and font colors use Nuvio's subtitle color swatches, opacity controls and Apply/Cancel menu; backgrounds also offer transparency. Label size changes padding independently of font size. Changes apply to airing-series, series-finale and movie-release date labels together. **Reset date label appearance** restores the shared style; each patch's enable/filter switches remain independent.
+
 - **Finale dates in library and collections**: Adds separate settings to show the latest scheduled episode date on library and collection posters in `dd-MMM-yy` format. Enable **Only show dates for series still airing** to hide dates once the latest known scheduled episode has aired in both locations. This filter is disabled by default.
 
 | Collections | Library |

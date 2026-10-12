@@ -135,7 +135,10 @@ Use `SantodanAiring:D` for diagnostics.
 **NuvioTV - Finale dates in library and collections** adds independent opt-in switches
 under Layout > Santodan-Patches (beta4/beta5). It reuses the Upcoming badge style and latest known
 catalog episode date, including past dates, with `dd-MMM-yy` formatting and its own
-preferences and runtime.
+preferences and runtime. The disabled-by-default **Only show dates for series still airing**
+switch filters both locations to latest known scheduled dates strictly after the current
+instant. Past dates and the exact release instant are hidden when enabled; unknown
+dates remain unlabelled. Existing library/collection switches still apply independently.
 Library uses `ba.n3.m`; collection row cards use `ba.q1.o`, both MetaPreview fields.
 `ba.i1` scopes the library/collection calls. Card and restart lambdas capture that
 scope so recomposition retains the right setting and other catalog rows stay unaffected.

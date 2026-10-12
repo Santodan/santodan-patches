@@ -56,7 +56,7 @@ These are the available patches for NuvioTV:
 
 ### UI
 
-- **Finale dates in library and collections**: Adds separate settings to show the latest scheduled episode date on library and collection posters in `dd-MMM-yy` format.
+- **Finale dates in library and collections**: Adds separate settings to show the latest scheduled episode date on library and collection posters in `dd-MMM-yy` format. Enable **Only show dates for series still airing** to hide dates once the latest known scheduled episode has aired in both locations. This filter is disabled by default.
 
 | Collections | Library |
 | -- | -- |

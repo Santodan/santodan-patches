@@ -31,6 +31,7 @@ public final class NuvioFinaleDates {
     private static final String PREFS = "santodan_nuvio_finale_dates";
     private static final String LIBRARY = "library";
     private static final String COLLECTIONS = "collections";
+    private static final String ONLY_AIRING = "only_airing";
     // Scope belongs to each captured card/restart lambda, never to a shared media model.
     private static final ThreadLocal<String> CONTEXT = new ThreadLocal<>();
     private static final ThreadLocal<java.util.ArrayDeque<String>> STACK =
@@ -68,11 +69,15 @@ public final class NuvioFinaleDates {
     public static void enterContext(Object lambda) { enter(CARDS.getOrDefault(lambda, "")); }
 
     public static void renderSettings(Object composer) {
-        renderSetting(composer, LIBRARY, "Show finale dates in library");
-        renderSetting(composer, COLLECTIONS, "Show finale dates in collections");
+        renderSetting(composer, LIBRARY, "Show finale dates in library",
+            "Show the latest known scheduled episode date on series posters (dd-MMM-yy).");
+        renderSetting(composer, COLLECTIONS, "Show finale dates in collections",
+            "Show the latest known scheduled episode date on series posters (dd-MMM-yy).");
+        renderSetting(composer, ONLY_AIRING, "Only show dates for series still airing",
+            "Hide finale dates in library and collections once the latest scheduled episode has aired.");
     }
 
-    private static void renderSetting(Object composer, String key, String title) {
+    private static void renderSetting(Object composer, String key, String title, String description) {
         try {
             Log.d(TAG, "renderSettings reached composer=" + composer.getClass().getName());
             ClassLoader loader = composer.getClass().getClassLoader();
@@ -93,7 +98,7 @@ public final class NuvioFinaleDates {
                 "invoke".equals(method.getName()) ? kotlinUnit(loader) : objectMethod(proxy, method, args));
             Method row = findStatic(Class.forName(NuvioRuntimeLayout.name("sa.eb"), false, loader), "m", 13);
             row.invoke(null, title,
-                "Show the latest known scheduled episode date on series posters (dd-MMM-yy).",
+                description,
                 stateValue(state), toggle, null, noop, false, null, 0L, false, composer, 0, 1008);
             Log.d(TAG, "renderSettings row rendered");
         } catch (Throwable error) {
@@ -121,7 +126,7 @@ public final class NuvioFinaleDates {
                 if (cached > 0L) { finale = cached; FINALES.put(id, finale); }
             }
             fetchFinaleAsync(id);
-            if (finale != null) PREPARED_BADGE.set(
+            if (finale != null && (!enabled(ONLY_AIRING) || finale > System.currentTimeMillis())) PREPARED_BADGE.set(
                 new SimpleDateFormat("dd-MMM-yy", Locale.getDefault()).format(new Date(finale)));
         } catch (Throwable error) { Log.e(TAG, "finale badge preparation failed", error); }
     }

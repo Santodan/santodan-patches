@@ -138,3 +138,6 @@ local.properties
 
 # Kotlin compiler session cache
 .kotlin/
+
+# Killo COde
+.kilo/

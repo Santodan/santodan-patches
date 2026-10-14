@@ -7,7 +7,7 @@ import java.util.*;
 import javax.tools.ToolProvider;
 
 /** Exercises production settings callbacks and modifier construction against both native layouts. */
-public final class VerifyNuvioDateLabelStyleRuntime {
+public final class VerifyNuvioBeta6DateStyleRuntime {
     public static void main(String[] args) throws Exception {
         Path dir = Files.createTempDirectory(Path.of(args[1]), "date-label-style-");
         Map<String,String> sources = new LinkedHashMap<>();
@@ -18,12 +18,12 @@ public final class VerifyNuvioDateLabelStyleRuntime {
         sources.put("kotlin.Unit", "package kotlin; public class Unit { public static final Unit INSTANCE=new Unit(); }");
         for (int count : new int[]{0,1,3}) sources.put("kotlin.jvm.functions.Function"+count,
             "package kotlin.jvm.functions; public interface Function"+count+" { Object invoke("+(count==0?"":count==1?"Object a":"Object a,Object b,Object c")+"); }");
-        sources.put("g1.j", "package g1; public class j { public static class State { public Object value; public State(Object v){value=v;} public Object getValue(){return value;} public void setValue(Object v){value=v;} } public static State r(Object v){return new State(v);} public Object j(Object key){return new x5.i2.Type();} }");
-        sources.put("x5.i2", "package x5; public class i2 { public static final Object a=new Object(); public static class Type { public Object o=new h3.r0(); } }");
-        sources.put("h3.r0", "package h3; public class r0 { public h0 a=new h0(); }");
-        sources.put("h3.h0", "package h3; public class h0 { public long b=0x100000000L | (Float.floatToRawIntBits(11f)&0xffffffffL); }");
-        sources.put("va.l0", "package va; public class l0 { public static final m0 a=new m0(); }");
-        sources.put("va.m0", "package va; public class m0 { public float e=8f,d=4f; }");
+        sources.put("g1.j", "package g1; public class j { public static class State { public Object value; public State(Object v){value=v;} public Object getValue(){return value;} public void setValue(Object v){value=v;} } public static State r(Object v){return new State(v);} public Object j(Object key){return new x5.h2.Type();} }");
+        sources.put("x5.h2", "package x5; public class h2 { public static final Object a=new Object(); public static class Type { public Object o=new h3.s0(); } }");
+        sources.put("h3.s0", "package h3; public class s0 { public i0 a=new i0(); }");
+        sources.put("h3.i0", "package h3; public class i0 { public long b=0x100000000L | (Float.floatToRawIntBits(11f)&0xffffffffL); }");
+        sources.put("ab.l0", "package ab; public class l0 { public static final m0 a=new m0(); }");
+        sources.put("ab.m0", "package ab; public class m0 { public float e=8f,d=4f; }");
         sources.put("d2.z", "package d2; public class z { public long a; public z(long value){a=value;} }");
         sources.put("q1.s", "package q1; public class s { public final Object body; public s(int key,Object body,boolean tracked){this.body=body;} }");
         sources.put("w1.q", "package w1; public interface q { q d(q other); }");
@@ -35,35 +35,35 @@ public final class VerifyNuvioDateLabelStyleRuntime {
         sources.put("a2.j", "package a2; public class j { public static w1.q b(w1.q m,Object shape){return m;} }");
         sources.put("y.l", "package y; public class l { public static w1.q g(w1.q m,long color,Object shape){((w1.n)m).background=color;return m;} }");
         sources.put("d2.g0", "package d2; public class g0 { public static final Object b=new Object(); }");
-        for (String name : List.of("ba.d3","ba.e3")) sources.put(name,"package ba; public class "+name.substring(3)+" { public static final Object a=new Object(); }");
-        sources.put("sa.kc", "package sa; public class kc { public static kotlin.jvm.functions.Function0 toggle; public static void a(String title,String desc,boolean expanded,kotlin.jvm.functions.Function0 t,Object modifier,Object icon,Object focus,kotlin.jvm.functions.Function0 noop,q1.s body,Object composer,int flags){toggle=t;if(expanded)((kotlin.jvm.functions.Function3)body.body).invoke(null,composer,0);} }");
-        for (String name : List.of("sa.mb","sa.lb")) sources.put(name, "package sa; public class "+name.substring(3)+" { public final Object value; public "+name.substring(3)+"(Object value,String title,String desc,String trailing,Object font,int mask){if(mask!=28)throw new AssertionError();this.value=value;} }");
+        for (String name : List.of("fa.q2")) sources.put(name,"package fa; public class "+name.substring(3)+" { public static final Object a=new Object(); }");
+        sources.put("xa.bd", "package xa; public class bd { public static kotlin.jvm.functions.Function0 toggle; public static void a(String title,String desc,boolean expanded,kotlin.jvm.functions.Function0 t,Object modifier,Object icon,Object focus,kotlin.jvm.functions.Function0 noop,q1.s body,Object composer,int flags){toggle=t;if(expanded)((kotlin.jvm.functions.Function3)body.body).invoke(null,composer,0);} }");
+        for (String name : List.of("xa.cc")) sources.put(name, "package xa; public class "+name.substring(3)+" { public final Object value; public "+name.substring(3)+"(Object value,String title,String desc,String trailing,Object font,int mask){if(mask!=28)throw new AssertionError();this.value=value;} }");
         String row = " { public static final java.util.List<kotlin.jvm.functions.Function0> clicks=new java.util.ArrayList<>(); public static java.util.List<?> options; public static Object selected; public static kotlin.jvm.functions.Function1 select; public static kotlin.jvm.functions.Function0 dismiss; public static void a(String title,String desc,String value,kotlin.jvm.functions.Function0 click,Object modifier,kotlin.jvm.functions.Function0 noop,boolean enabled,Object icon,Object titleIcon,long tint,Object leading,Integer raw,float size,long color,Object composer,int flags,int flags2,int defaults){if(defaults!=16336)throw new AssertionError();clicks.add(click);} public static void j(String title,java.util.List<?> values,Object current,kotlin.jvm.functions.Function1 choose,kotlin.jvm.functions.Function0 close,String subtitle,float width,float height,Object composer,int flags,int defaults){if(defaults!=32 || width!=420f || height!=320f)throw new AssertionError(\"Picker must have visible dimensions\");options=values;selected=current;select=choose;dismiss=close;} }";
-        for (String name : List.of("sa.eb","sa.db")) sources.put(name, "package sa; public class "+name.substring(3)+row);
-        for (String name : List.of("sa.o3","sa.p3")) {
-            String rows = name.endsWith("p3") ? "sa.db" : "sa.eb";
-            sources.put(name, "package sa; public class "+name.substring(3)+" { public static void r(String title,long color,boolean transparent,kotlin.jvm.functions.Function0 click,kotlin.jvm.functions.Function0 focus,boolean enabled,Object composer,int flags,int defaults){"+rows+".clicks.add(click);} public static void y0(String title,int value,String text,int min,int max,int step,kotlin.jvm.functions.Function1 change,String subtitle,kotlin.jvm.functions.Function0 focus,boolean enabled,Object modifier,Object composer,int flags,int defaults){if(min!=50||max!=200||step!=10||!text.equals(value+\"%\"))throw new AssertionError();"+rows+".clicks.add(()->change.invoke(max));} public static void q(String title,java.util.List<?> colors,long selected,boolean transparent,kotlin.jvm.functions.Function1 select,kotlin.jvm.functions.Function0 dismiss,Object composer,int flags,int defaults){"+rows+".options=colors;"+rows+".select=select;"+rows+".dismiss=dismiss;} }");
+        for (String name : List.of("xa.ub")) sources.put(name, "package xa; public class "+name.substring(3)+row);
+        for (String name : List.of("xa.za")) {
+            String rows = name.endsWith("p3") ? "xa.ub" : "xa.ub";
+            sources.put(name, "package xa; public class "+name.substring(3)+" { public static void c(String title,long color,boolean transparent,kotlin.jvm.functions.Function0 click,kotlin.jvm.functions.Function0 focus,boolean enabled,Object composer,int flags,int defaults){"+rows+".clicks.add(click);} public static void h(String title,int value,String text,int min,int max,int step,kotlin.jvm.functions.Function1 change,String subtitle,kotlin.jvm.functions.Function0 focus,boolean enabled,Object modifier,Object composer,int flags,int defaults){if(min!=50||max!=200||step!=10||!text.equals(value+\"%\"))throw new AssertionError();"+rows+".clicks.add(()->change.invoke(max));} public static void b(String title,java.util.List<?> colors,long selected,boolean transparent,kotlin.jvm.functions.Function1 select,kotlin.jvm.functions.Function0 dismiss,Object composer,int flags,int defaults){"+rows+".options=colors;"+rows+".select=select;"+rows+".dismiss=dismiss;} }");
         }
         List<String> compile = new ArrayList<>(List.of("-d", dir.toString()));
         for (var source : sources.entrySet()) { Path file=dir.resolve(source.getKey().replace('.','/')+".java");Files.createDirectories(file.getParent());Files.writeString(file,source.getValue());compile.add(file.toString()); }
-        for (String file : List.of("DateLabelStyle.java","NuvioDateLabelStyle.java")) compile.add(Path.of(args[0],file).toString());
+        for (String file : List.of("DateLabelStyle.java","NuvioDateLabelStyle.java","NuvioBeta6.java")) compile.add(Path.of(args[0],file).toString());
         check(ToolProvider.getSystemJavaCompiler().run(null,null,null,compile.toArray(String[]::new))==0,"Compile failed");
-        for (String version : List.of("1.1.0-beta.4","1.1.0-beta.5")) try (URLClassLoader loader=new URLClassLoader(new URL[]{dir.toUri().toURL()},ClassLoader.getPlatformClassLoader())) {
+        for (String version : List.of("1.1.0-beta.6")) try (URLClassLoader loader=new URLClassLoader(new URL[]{dir.toUri().toURL()},ClassLoader.getPlatformClassLoader())) {
             loader.loadClass("android.app.Application").getField("version").set(null,version);
             Class<?> bridge=loader.loadClass("software.santodan.extension.nuviomenu.NuvioDateLabelStyle");
             Object composer=loader.loadClass("g1.j").getConstructor().newInstance();
             Object scope=loader.loadClass("e0.v").getField("a").get(null);
             Method build=bridge.getMethod("build",ClassLoader.class,Object.class,Object.class,String.class,String.class);
             Method render=bridge.getMethod("renderSettings",Object.class,String.class,String.class);
-            String shape=version.endsWith("5")?"ba.e3":"ba.d3";
+            String shape=version.endsWith("5")?"fa.q2":"fa.q2";
             String prefs="santodan_nuvio_airing_series";
-            Class<?> rows=loader.loadClass(version.endsWith("5")?"sa.db":"sa.eb");
+            Class<?> rows=loader.loadClass(version.endsWith("5")?"xa.ub":"xa.ub");
             Class<?> function0=loader.loadClass("kotlin.jvm.functions.Function0"),function1=loader.loadClass("kotlin.jvm.functions.Function1");
             defaults((Object[])build.invoke(null,loader,scope,composer,shape,prefs));
             render.invoke(null,composer,prefs,"Appearance");
             List<?> clicks=(List<?>)rows.getField("clicks").get(null);
             check(clicks.isEmpty(),"Collapsed settings rendered controls");
-            function0.getMethod("invoke").invoke(loader.loadClass("sa.kc").getField("toggle").get(null));
+            function0.getMethod("invoke").invoke(loader.loadClass("xa.bd").getField("toggle").get(null));
             for (int property=0;property<5;property++) {
                 clicks.clear();render.invoke(null,composer,prefs,"Appearance");check(clicks.size()==6,"Missing controls or reset");
                 function0.getMethod("invoke").invoke(clicks.get(property));
@@ -103,7 +103,7 @@ public final class VerifyNuvioDateLabelStyleRuntime {
             Field states=bridge.getDeclaredField("STATES");states.setAccessible(true);((Map<?,?>)states.get(null)).clear();
             style=(Object[])build.invoke(null,loader,scope,composer,shape,prefs);
             check(style[1].equals(0xff90ee9000000000L),"Saved style did not survive state recreation");
-            render.invoke(null,composer,prefs,"Appearance");function0.getMethod("invoke").invoke(loader.loadClass("sa.kc").getField("toggle").get(null));
+            render.invoke(null,composer,prefs,"Appearance");function0.getMethod("invoke").invoke(loader.loadClass("xa.bd").getField("toggle").get(null));
             clicks.clear();render.invoke(null,composer,prefs,"Appearance");function0.getMethod("invoke").invoke(clicks.get(5));
             defaults((Object[])build.invoke(null,loader,scope,composer,shape,prefs));
             Class<?> model=loader.loadClass("software.santodan.extension.nuviomenu.DateLabelStyle");

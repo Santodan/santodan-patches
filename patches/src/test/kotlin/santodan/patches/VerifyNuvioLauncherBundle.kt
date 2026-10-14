@@ -63,6 +63,6 @@ fun main(args: Array<String>) = runBlocking {
             "effectiveCachedHasAired" to 1)) { "Incorrect standalone hooks: $hooks" }
         check("Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;" in parents)
         check(parents.keys.none { it.startsWith("Lsoftware/santodan/extension/nuviostreams/") })
-        println("PASS: packaged standalone launcher patch applies to beta5; merged DEX reloads, five hooks, artwork provider and native coroutine calls resolve")
+        println("PASS: packaged standalone launcher patch applies to beta6; merged DEX reloads, five hooks, artwork provider and native coroutine calls resolve")
     }
 }

@@ -1,27 +1,16 @@
 package software.santodan.extension.nuviomerged;
 
-/** Flow return types are erased in DEX; these accessors have different value types. */
+/** Verified beta.6 provider accessors; erased Flow types still carry different values. */
 public final class NuvioProviderLayout {
-    public final String providerInterface;
-    public final String allProgressMethod;
-    public final String siblingsMethod;
-    public final String localWatchedField;
-    public final String refreshMethod;
-
-    private NuvioProviderLayout(String providerInterface, String allProgressMethod, String siblingsMethod) {
-        this.providerInterface = providerInterface;
-        this.allProgressMethod = allProgressMethod;
-        this.siblingsMethod = siblingsMethod;
-        this.localWatchedField = "h";
-        this.refreshMethod = "ca.a0".equals(providerInterface) ? "y" : "o";
-    }
-
+    public final String providerInterface = "o9.z";
+    public final String allProgressMethod = "r";
+    public final String siblingsMethod = "w";
+    public final String localWatchedField = "i";
+    public final String refreshMethod = "o";
+    private NuvioProviderLayout() {}
     public static NuvioProviderLayout forRepository(String repositoryClass) {
-        switch (repositoryClass) {
-            case "ja.md": return new NuvioProviderLayout("ca.a0", "q", "v");
-            // q() is remoteProgressLoaded (Boolean) in beta4; r() carries progress lists.
-            case "v9.yc": return new NuvioProviderLayout("o9.z", "r", "w");
-            default: throw new IllegalStateException("Unsupported Nuvio repository: " + repositoryClass);
-        }
+        if (!"z9.zc".equals(repositoryClass))
+            throw new IllegalStateException("Unsupported Nuvio repository: " + repositoryClass);
+        return new NuvioProviderLayout();
     }
 }

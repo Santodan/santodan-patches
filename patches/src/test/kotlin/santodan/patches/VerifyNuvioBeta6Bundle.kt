@@ -20,34 +20,35 @@ import java.io.File
 import java.util.zip.ZipFile
 import kotlinx.coroutines.runBlocking
 
-/** Verify packaged standalone and combined patches against the original beta5 APK. */
+/** Verify packaged standalone and combined patches against the original beta6 APK. */
 fun main(args: Array<String>) = runBlocking {
+    NuvioLayout.use("1.1.0-beta.6")
     val originals = mutableMapOf<String, ClassDef>()
     val pickerCallers = mutableListOf<String>()
     ZipFile(args[0]).use { zip ->
         for (entry in zip.entries().asSequence().filter { it.name.matches(Regex("classes\\d*\\.dex")) }) {
             zip.getInputStream(entry).buffered().use { input ->
                 for (owner in DexBackedDexFile.fromInputStream(null, input).classes) {
-                    if (owner.type in setOf("Lna/mb;", "Lna/me;", "Lna/k8;")) originals[owner.type] = owner
+                    if (owner.type in setOf("Lsa/ec;", "Lsa/df;", "Lsa/p8;")) originals[owner.type] = owner
                     for (method in owner.methods) for (instruction in method.implementation?.instructions ?: emptyList()) {
                         val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
-                        if (ref.toString() == "Lna/mb;->C(Lna/k8;Lcom/nuvio/tv/domain/model/Video;Z)V")
+                        if (ref.toString() == "Lsa/ec;->C(Lsa/p8;Lcom/nuvio/tv/domain/model/Video;Z)V")
                             pickerCallers += "${owner.type}->${method.name}"
                     }
                 }
             }
         }
     }
-    check(pickerCallers.size == 3 && pickerCallers.all { it == "Lna/fb;->invokeSuspend" })
-    val original = originals.getValue("Lna/mb;")
-    check(originals.getValue("Lna/me;").fields.single { it.name == "W" }.type == "Lna/k8;")
-    check(originals.getValue("Lna/k8;").fields.single { it.name == "Q" }.type == "Ljava/lang/String;")
+    check(pickerCallers.size == 3 && pickerCallers.all { it == "Lsa/wb;->invokeSuspend" })
+    val original = originals.getValue("Lsa/ec;")
+    check(originals.getValue("Lsa/df;").fields.single { it.name == "Y" }.type == "Lsa/p8;")
+    check(originals.getValue("Lsa/p8;").fields.single { it.name == "S" }.type == "Ljava/lang/String;")
     check(original.methods.single { it.name == "p" }.implementation!!.instructions.any {
-        (it as? ReferenceInstruction)?.reference?.toString() == "Lna/k8;->Q:Ljava/lang/String;"
+        (it as? ReferenceInstruction)?.reference?.toString() == "Lsa/p8;->S:Ljava/lang/String;"
     })
     fun rejected(owner: MutableClass) {
         var failed = false
-        try { NuvioStreamPreloadPatch.hookNextEpisodeRoutesBeta5(owner) }
+        try { NuvioStreamPreloadPatch.hookNextEpisodeRoutesBeta6(owner) }
         catch (expected: IllegalStateException) { failed = true }
         check(failed) { "Invalid or already patched next-episode routes accepted" }
     }
@@ -65,9 +66,9 @@ fun main(args: Array<String>) = runBlocking {
         picker.returnType, picker.accessFlags, picker.annotations, picker.hiddenApiRestrictions, picker.implementation)))
     rejected(ambiguous)
     val installed = MutableClass(original)
-    NuvioStreamPreloadPatch.hookNextEpisodeRoutesBeta5(installed)
+    NuvioStreamPreloadPatch.hookNextEpisodeRoutesBeta6(installed)
     rejected(installed)
-    println("PASS: beta5 picker callers are exclusively next-episode transitions; missing, changed, ambiguous and duplicate route hooks rejected")
+    println("PASS: beta6 picker callers are exclusively next-episode transitions; missing, changed, ambiguous and duplicate route hooks rejected")
     val available = loadPatchesFromJar(setOf(File(args[1])))
     val nextName = "NuvioTV - Preload streams for next episode"
     check(available.count { it.name == nextName } == 1)
@@ -122,7 +123,7 @@ fun main(args: Array<String>) = runBlocking {
             // Inspect the assembled entry points, not just the presence of extension calls.
             for (dex in output.listFiles()!!.filter { it.name.matches(Regex("classes\\d*\\.dex")) }) {
                 dex.inputStream().buffered().use { input ->
-                    for (owner in DexBackedDexFile.fromInputStream(null, input).classes.filter { it.type == "Lna/mb;" }) {
+                    for (owner in DexBackedDexFile.fromInputStream(null, input).classes.filter { it.type == "Lsa/ec;" }) {
                         val entry = owner.methods.single { it.name == "C" }.implementation!!
                         val instructions = entry.instructions.toList()
                         check((instructions[0] as RegisterRangeInstruction).startRegister == entry.registerCount - 1)

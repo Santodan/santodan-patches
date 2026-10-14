@@ -14,7 +14,7 @@ public final class NuvioSettingsStoreResolver {
         if (store != null) return store;
         Object current = component;
         if (current == null) throw new IllegalStateException("Watch progress settings component is unavailable");
-        java.lang.reflect.Field field = current.getClass().getDeclaredField("w3");
+        java.lang.reflect.Field field = current.getClass().getDeclaredField(current.getClass().getName().equals("p8.e") && NuvioBeta6.active() ? "I3" : "w3");
         field.setAccessible(true);
         Object provider = field.get(current);
         java.lang.reflect.Method get = provider.getClass().getDeclaredMethod("get");

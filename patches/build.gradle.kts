@@ -102,9 +102,10 @@ tasks {
             file("${layout.buildDirectory.get()}/verification/carscanner-managed-bundle").absolutePath)
     }
     register<JavaExec>("verifyNuvioLauncherUi") {
-        dependsOn("testClasses", ":extensions:nuvio-launcher-channels:compileReleaseKotlin")
+        dependsOn("testClasses", ":extensions:nuvio-launcher-channels:compileReleaseKotlin", ":extensions:nuvio-launcher-channels:compileReleaseJavaWithJavac")
         classpath = sourceSets["test"].runtimeClasspath + files(
-            project(":extensions:nuvio-launcher-channels").layout.buildDirectory.dir("intermediates/built_in_kotlinc/release/compileReleaseKotlin/classes"))
+            project(":extensions:nuvio-launcher-channels").layout.buildDirectory.dir("intermediates/built_in_kotlinc/release/compileReleaseKotlin/classes"),
+            project(":extensions:nuvio-launcher-channels").layout.buildDirectory.dir("intermediates/javac/release/compileReleaseJavaWithJavac/classes"))
         mainClass.set("santodan.patches.VerifyNuvioLauncherUi")
         args(file("${layout.buildDirectory.get()}/verification/launcher-ui").absolutePath)
     }
@@ -114,9 +115,10 @@ tasks {
         mainClass.set("santodan.patches.VerifyNuvioLauncherDatesKt")
     }
     register<JavaExec>("verifyNuvioLauncherPublisher") {
-        dependsOn("testClasses", ":extensions:nuvio-launcher-channels:compileReleaseKotlin")
+        dependsOn("testClasses", ":extensions:nuvio-launcher-channels:compileReleaseKotlin", ":extensions:nuvio-launcher-channels:compileReleaseJavaWithJavac")
         classpath = sourceSets["test"].runtimeClasspath + files(
-            project(":extensions:nuvio-launcher-channels").layout.buildDirectory.dir("intermediates/built_in_kotlinc/release/compileReleaseKotlin/classes"))
+            project(":extensions:nuvio-launcher-channels").layout.buildDirectory.dir("intermediates/built_in_kotlinc/release/compileReleaseKotlin/classes"),
+            project(":extensions:nuvio-launcher-channels").layout.buildDirectory.dir("intermediates/javac/release/compileReleaseJavaWithJavac/classes"))
         mainClass.set("santodan.patches.VerifyNuvioLauncherPublisher")
         args(file("${layout.buildDirectory.get()}/verification/launcher-publisher").absolutePath)
     }
@@ -125,20 +127,20 @@ tasks {
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyNuvioLauncherBundleKt")
         maxHeapSize = "4g"
-        args(file("../../OriginalApps/NuvioTV-1.1.0-beta5.apk").absolutePath,
+        args(file("../../OriginalApps/NuvioTV-1.1.0-beta6.apk").absolutePath,
             file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
             file("${layout.buildDirectory.get()}/verification/nuvio-launcher-bundle").absolutePath)
     }
     register<JavaExec>("verifyNuvioLauncherChannels") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
-        mainClass.set("santodan.patches.VerifyNuvioLauncherChannelsKt")
-        args(file("../../.inspect-nuvio-beta4").absolutePath, file("../../.inspect-nuvio-beta5").absolutePath)
+        mainClass.set("santodan.patches.VerifyNuvioBeta6LauncherKt")
+        args(file("../../.inspect-nuvio-beta6").absolutePath)
     }
     register<JavaExec>("verifyNuvioDateLabelStyleRuntime") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
-        mainClass.set("santodan.patches.VerifyNuvioDateLabelStyleRuntime")
+        mainClass.set("santodan.patches.VerifyNuvioBeta6DateStyleRuntime")
         doFirst { file("${layout.buildDirectory.get()}/verification").mkdirs() }
         args(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu").absolutePath,
             file("${layout.buildDirectory.get()}/verification").absolutePath)
@@ -249,9 +251,9 @@ tasks {
     register<JavaExec>("verifyNuvioNextEpisodeBundle") {
         dependsOn("testClasses", "buildAndroid")
         classpath = sourceSets["test"].runtimeClasspath
-        mainClass.set("santodan.patches.VerifyNuvioNextEpisodeBundleKt")
+        mainClass.set("santodan.patches.VerifyNuvioBeta6BundleKt")
         maxHeapSize = "4g"
-        args(file("../../OriginalApps/NuvioTV-1.1.0-beta5.apk").absolutePath,
+        args(file("../../OriginalApps/NuvioTV-1.1.0-beta6.apk").absolutePath,
             file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
             file("${layout.buildDirectory.get()}/verification/nuvio-next-episode-bundle").absolutePath)
     }
@@ -294,29 +296,8 @@ tasks {
             file("${layout.buildDirectory.get()}/verification/settings-menu-runtime").absolutePath)
     }
 
-    register<JavaExec>("verifyNuvioBeta2") {
-        dependsOn("testClasses")
-        classpath = sourceSets["test"].runtimeClasspath
-        mainClass.set("santodan.patches.VerifyNuvioLayout")
-        args("1.1.0-beta.2", file("../../.inspect-nuvio-beta2").absolutePath,
-            file("${layout.buildDirectory.get()}/verification/nuvio-beta2.dex").absolutePath)
-    }
 
-    register<JavaExec>("verifyNuvioBeta4") {
-        dependsOn("testClasses")
-        classpath = sourceSets["test"].runtimeClasspath
-        mainClass.set("santodan.patches.VerifyNuvioLayout")
-        args("1.1.0-beta.4", file("../../.inspect-nuvio-beta4").absolutePath,
-            file("${layout.buildDirectory.get()}/verification/nuvio-beta4.dex").absolutePath)
-    }
 
-    register<JavaExec>("verifyNuvioBeta5") {
-        dependsOn("testClasses")
-        classpath = sourceSets["test"].runtimeClasspath
-        mainClass.set("santodan.patches.VerifyNuvioLayout")
-        args("1.1.0-beta.5", file("../../.inspect-nuvio-beta5").absolutePath,
-            file("${layout.buildDirectory.get()}/verification/nuvio-beta5.dex").absolutePath)
-    }
 
     register<JavaExec>("verifyRedditContentFilter") {
         dependsOn("testClasses")
@@ -361,4 +342,54 @@ tasks {
     publish {
         dependsOn("generatePatchesList")
     }
+}
+
+tasks.register<JavaExec>("verifyNuvioBeta6") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta6")
+    maxHeapSize = "2g"
+    args("1.1.0-beta.6", file("../../.inspect-nuvio-beta6").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-beta6.dex").absolutePath)
+}
+
+sourceSets["test"].java.srcDir("../extensions/nuvio-stream-preload/src/main/java")
+
+tasks.register<JavaExec>("verifyNuvioBeta6Bundle") {
+    dependsOn("testClasses", "buildAndroid")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta6BundleKt")
+    maxHeapSize = "3g"
+    args(file("../../OriginalApps/NuvioTV-1.1.0-beta6.apk").absolutePath,
+        file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-beta6-bundle").absolutePath)
+}
+
+tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
+    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioBeta6.java"))
+}
+
+tasks.register<JavaExec>("verifyNuvioBeta6DateStyleRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta6DateStyleRuntime")
+    args(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu").absolutePath,
+        file("${layout.buildDirectory.get()}/verification").absolutePath)
+}
+tasks.register<JavaExec>("verifyNuvioBeta6Launcher") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta6LauncherKt")
+    args(file("../../.inspect-nuvio-beta6").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioBeta6Player") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta6PlayerKt")
+    args(file("${layout.buildDirectory.get()}/verification").absolutePath)
+}
+
+tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
+    source(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu/NuvioBeta6.java"))
 }

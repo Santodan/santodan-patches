@@ -1,7 +1,7 @@
 # NuvioTV Android TV launcher channels
 
 Select **NuvioTV - Android TV launcher channels** when patching the original
-NuvioTV **1.1.0-beta.4** or **1.1.0-beta.5** APK. This patch can be installed
+NuvioTV **1.1.0-beta.6** APK. This patch can be installed
 independently or alongside the other NuvioTV patches.
 
 Open **Settings → Layout → Santodan-Patches → Android TV launcher**:
@@ -15,12 +15,12 @@ Open **Settings → Layout → Santodan-Patches → Android TV launcher**:
   Trakt, Simkl, or MDBList providers. List membership and per-list ranks determine
   the entries and order.
 
-On beta.5, **Catalogs** and **Tracking lists** each start as one collapsed entry.
+On beta.6, **Catalogs** and **Tracking lists** each start as one collapsed entry.
 Expand that entry to see collapsed addon or tracking-provider groups, then expand
 only the source whose individual channels you want to select. Source groups show
 the number of selected channels. Existing channel selections survive this UI change.
 
-Beta.5 Upcoming tiles include the native unaired date, or the future finale date
+Beta.6 Upcoming tiles include the native unaired date, or the future finale date
 when **Keep airing series in Upcoming** is enabled. The shared **Date label
 appearance** settings control the artwork badge's position, color and size. Badges
 are rendered into cached artwork in the background and published through a
@@ -29,7 +29,7 @@ hashed names, so launchers can read badges after Nuvio closes. Dates also appear
 the tile title and description. If artwork cannot be downloaded, the original
 image and date text remain available.
 
-On beta.5, native Continue Watching also uses the installed airing-series patch's
+On beta.6, native Continue Watching also uses the installed airing-series patch's
 effective aired rule. A show whose future finale keeps it in Upcoming is excluded
 from the native Continue Watching channel, matching the app's split rows.
 
@@ -62,16 +62,16 @@ Verification:
 :patches:verifyNuvioSettingsMenuRuntime
 ```
 
-These cover original beta4/beta5 DEX contracts, source identities, membership and
+These cover original beta6 DEX contracts, source identities, membership and
 ordering, actual publisher operations against a TvProvider fixture, standalone
-application to the beta5 APK, combined runtime patches, and partial settings-menu
+application to the beta6 APK, combined runtime patches, and partial settings-menu
 selections. Physical TV checks remain necessary for launcher visibility, focus and
 scrolling, profile switching, provider disconnect/reconnect, and cold/warm tile
-navigation. Beta.5 checks also cover grouped-menu expansion/collapse and saved
+navigation. Beta.6 checks also cover grouped-menu expansion/collapse and saved
 selections, date formatting and removal, image read permissions, asynchronous badge
 appearance and style changes. Runtime failures use the `SantodanLauncher` log tag.
 
-For native Continue Watching problems, beta.5 logs a read-only **Native CW
+For native Continue Watching problems, beta.6 logs a read-only **Native CW
 diagnostic** under `SantodanLauncher`. Open Home, let its rows load, then return to
 the launcher. The log compares the visible in-app item count, native cache counts
 and timestamps, native published-program count, and missing artwork. Only artwork

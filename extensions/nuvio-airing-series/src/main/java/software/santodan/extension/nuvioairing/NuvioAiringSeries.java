@@ -44,20 +44,7 @@ public final class NuvioAiringSeries {
 
     private NuvioAiringSeries() {}
 
-    private static volatile Boolean newerLayout;
 
-    private static boolean beta4() throws Exception {
-        Boolean cached = newerLayout;
-        if (cached == null) {
-            Application app = (Application) Class.forName("android.app.ActivityThread")
-                .getMethod("currentApplication").invoke(null);
-            if (app == null) throw new IllegalStateException("Application is unavailable");
-            cached = !"1.1.0-beta.2".equals(app.getPackageManager()
-                .getPackageInfo(app.getPackageName(), 0).versionName);
-            newerLayout = cached;
-        }
-        return cached.booleanValue();
-    }
 
     public static void register(Object nextUpInfo) {
         try {
@@ -103,7 +90,7 @@ public final class NuvioAiringSeries {
             });
             Object noop = Proxy.newProxyInstance(loader, new Class<?>[]{function0}, (proxy, method, args) ->
                 "invoke".equals(method.getName()) ? kotlinUnit(loader) : objectMethod(proxy, method, args));
-            Method row = findStatic(Class.forName(NuvioRuntimeLayout.name("sa.eb"), false, loader), "m", 13);
+            Method row = findStatic(Class.forName(NuvioBeta6.name("sa.eb"), false, loader), "m", 13);
             row.invoke(null, "Keep airing series in Upcoming",
                 "With Separate Upcoming Row, keep library series there until their latest scheduled episode has aired.",
                 stateValue(state), toggle, null, noop, false, null, 0L, false, composer, 0, 1008);
@@ -172,7 +159,7 @@ public final class NuvioAiringSeries {
             findMethod(revision.getClass(), "getValue", 0).invoke(revision);
             // Subscribe every card so asynchronously loaded finale dates recompose.
             if (badge == null) return;
-            Class<?> text = Class.forName(beta4() ? "x5.g2" : "x5.i2", false, loader);
+            Class<?> text = Class.forName(NuvioBeta6.name("x5.g2"), false, loader);
             Method method = findStatic(text, "b", 19);
             Object boxScope = staticField(Class.forName("e0.v", false, loader), "a").get(null);
             Object[] style = badgeStyle(loader, boxScope, composer);
@@ -189,7 +176,7 @@ public final class NuvioAiringSeries {
     private static Object[] badgeStyle(ClassLoader loader, Object boxScope, Object composer) throws Exception {
         return (Object[]) findStatic(Class.forName("software.santodan.extension.nuviomenu.NuvioDateLabelStyle",
             false, loader), "build", 5).invoke(null, loader, boxScope, composer,
-                NuvioRuntimeLayout.name("ba.d3"), PREFS);
+                NuvioBeta6.name("ba.d3"), PREFS);
     }
 
     private static void fetchFinale(String id) {
@@ -265,8 +252,8 @@ public final class NuvioAiringSeries {
         synchronized (NuvioAiringSeries.class) {
             result = enabledState;
             if (result == null) {
-                Class<?> compose = Class.forName(beta4() ? "g1.j" : "g1.h", false, loader);
-                result = findStatic(compose, beta4() ? "r" : "s", 1).invoke(null, Boolean.valueOf(enabled()));
+                Class<?> compose = Class.forName("g1.j", false, loader);
+                result = findStatic(compose, "r", 1).invoke(null, Boolean.valueOf(enabled()));
                 enabledState = result;
             }
         }
@@ -279,8 +266,8 @@ public final class NuvioAiringSeries {
         synchronized (NuvioAiringSeries.class) {
             result = revisionState;
             if (result == null) {
-                Class<?> compose = Class.forName(beta4() ? "g1.j" : "g1.h", false, loader);
-                result = findStatic(compose, beta4() ? "r" : "s", 1).invoke(null, Integer.valueOf(0));
+                Class<?> compose = Class.forName("g1.j", false, loader);
+                result = findStatic(compose, "r", 1).invoke(null, Integer.valueOf(0));
                 revisionState = result;
             }
         }

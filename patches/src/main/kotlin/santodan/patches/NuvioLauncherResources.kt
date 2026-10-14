@@ -6,7 +6,7 @@ val nuvioLauncherArtworkResourcesPatch = resourcePatch(default = false) {
     execute {
         document("AndroidManifest.xml").use { document ->
             val manifest = document.documentElement
-            if (manifest.getAttribute("android:versionName") != "1.1.0-beta.5") return@use
+            if (!NuvioLayout.recent(manifest.getAttribute("android:versionName"))) return@use
             val application = document.getElementsByTagName("application").item(0)
             val name = "software.santodan.extension.nuviolauncher.LauncherArtworkProvider"
             val providers = document.getElementsByTagName("provider")

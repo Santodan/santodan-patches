@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
     check(LauncherModels.listItems(listOf(movie to setOf("a"), series to setOf("b")), "b", emptyMap()) == listOf(series))
     println("PASS: catalog/provider identities, type-aware deduplication, cap, membership and provider ordering")
 
-    for ((version, directory) in listOf(NuvioLayout.BETA4 to args[0], NuvioLayout.BETA5 to args[1])) {
+    for ((version, directory) in listOf(NuvioLayout.BETA6 to args[0])) {
         NuvioLayout.use(version)
         val classes = File(directory).listFiles()!!.filter { it.extension == "dex" }.flatMap { file ->
             file.inputStream().buffered().use { DexBackedDexFile.fromInputStream(null, it).classes.toList() }
@@ -38,23 +38,23 @@ fun main(args: Array<String>) {
                 "$version missing/ambiguous $type->$name/$count"
             }
         }
-        val homeType = NuvioLayout.current("Lla/z3;")
-        val libraryType = if (version == NuvioLayout.BETA5) "Lv9/t0;" else "Lv9/u0;"
-        val stateType = if (version == NuvioLayout.BETA5) "Lla/z2;" else "Lla/x2;"
-        field(homeType, "x", "Lkotlinx/coroutines/flow/MutableStateFlow;")
-        field(homeType, "b", "Lz9/a;")
-        field(homeType, "d", if (version == NuvioLayout.BETA5) "Lv9/s;" else "Lv9/t;")
+        val homeType = "Lqa/a4;"
+        val libraryType = "Lz9/u0;"
+        val stateType = "Lqa/z2;"
+        field(homeType, "z", "Lkotlinx/coroutines/flow/MutableStateFlow;")
+        field(homeType, "b", "Lda/a;")
+        field(homeType, "d", "Lz9/t;")
         field(stateType, "c", "Ljava/util/List;")
-        field(if (version == NuvioLayout.BETA5) "Lv9/k;" else "Lv9/l;", "r", "Lkotlinx/coroutines/flow/StateFlow;")
-        field(libraryType, "m", "Lkotlinx/coroutines/flow/Flow;")
-        field(libraryType, "e", "Lo9/j;")
-        field(libraryType, "f", "Le9/f;")
+        field("Lz9/l;", "r", "Lkotlinx/coroutines/flow/StateFlow;")
+        field(libraryType, "n", "Lkotlinx/coroutines/flow/Flow;")
+        field(libraryType, "f", "Lo9/j;")
+        field(libraryType, "g", "Le9/f;")
         field("Le9/f;", "f", "Lkotlinx/coroutines/flow/StateFlow;")
-        field("Lp8/e;", "y", "Lnb/c;")
+        field("Lp8/e;", "B", "Lsb/c;")
         method("Lo9/j;", "b", 0, "Ljava/util/List;")
         for (name in listOf("b", "n", "c")) method("Lo9/i;", name, 0, "Lkotlinx/coroutines/flow/Flow;")
         method("Lo9/i;", "a", 0, "Lo9/g0;")
-        method(if (version == NuvioLayout.BETA5) "Lv9/s;" else "Lv9/t;", "a", 11, "Lkotlinx/coroutines/flow/Flow;")
+        method("Lz9/t;", "a", 11, "Lkotlinx/coroutines/flow/Flow;")
         for ((model, getters) in mapOf(
             "Addon" to listOf("getEnabled", "getCatalogs", "getBaseUrl", "getId", "getDisplayName"),
             "CatalogDescriptor" to listOf("getExtra", "getExtraRequired", "getId", "getName", "getApiType"),
@@ -64,14 +64,14 @@ fun main(args: Array<String>) {
             "LibraryEntry" to listOf("getType", "getId", "getName", "getPoster", "getBackground", "getDescription", "getListKeys", "getListRanks"),
             "LibraryListTab" to listOf("getKey", "getTitle")
         )) for (getter in getters) method("Lcom/nuvio/tv/domain/model/$model;", getter, 0)
-        val next = NuvioLayout.current("Lla/aa;")
+        val next = "Lqa/y9;"
         for (name in listOf("a", "b", "c", "d", "e", "o")) field(next, name, "Ljava/lang/String;")
-        field(if (version == NuvioLayout.BETA5) "Lla/f0;" else "Lla/e0;", "a", next)
+        field("Lqa/e0;", "a", next)
         val component = MutableClass(owner("Lp8/e;"))
         val home = MutableClass(owner(homeType))
         val library = MutableClass(owner(libraryType))
         NuvioLauncherChannelsPatch.hookReturn(NuvioRemainingEpisodesPatch.unique(component, "<init>", 1), "registerComponent")
-        NuvioLauncherChannelsPatch.hookReturn(NuvioRemainingEpisodesPatch.unique(home, "<init>", 25), "observeHome")
+        NuvioLauncherChannelsPatch.hookReturn(NuvioRemainingEpisodesPatch.unique(home, "<init>", 27), "observeHome")
         NuvioLauncherChannelsPatch.insert(NuvioRemainingEpisodesPatch.unique(home, "onCleared", 0), 0, "stopHome")
         NuvioLauncherChannelsPatch.hookReturn(NuvioRemainingEpisodesPatch.unique(library, "<init>", 8), "observeLibrary")
         val calls = listOf(component, home, library).flatMap { it.methods }.flatMap { method ->

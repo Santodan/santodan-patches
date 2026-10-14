@@ -32,30 +32,28 @@ public final class NuvioMergedProgressPatch {
                     String version = context.getPackageMetadata().getVersionName();
                 NuvioLayout.use(version);
                     NuvioLayout.modern(version);
-                    MutableClass repository = context.mutableClassDefBy(NuvioLayout.type(version, "Lja/md;"));
+                    MutableClass repository = context.mutableClassDefBy("Lz9/zc;");
                     hookRepository(repository);
-                    if (NuvioLayout.modern(version)) {
-                        NuvioRemainingEpisodesPatch.hookCard(context.mutableClassDefBy(NuvioLayout.current("Lba/e2;")),
+                    {
+                        NuvioRemainingEpisodesPatch.hookCard(context.mutableClassDefBy("Lfa/v1;"),
                             "Lc7/a;", EXT, "prepareProviderBadge", "renderProviderBadge");
-                        hookPlaybackPause(context.mutableClassDefBy(NuvioLayout.current("Lv9/i4;")));
-                        hookInlinedCutoff(context.mutableClassDefBy(NuvioLayout.current("Lla/h5;")));
-                        hookInlinedCutoff(context.mutableClassDefBy(NuvioLayout.current("Lla/w1;")));
-                        hookBadgeCacheHit(context.mutableClassDefBy(NuvioLayout.current("Lla/e5;")));
-                        hookBadgeGroupProgress(context.mutableClassDefBy(NuvioLayout.current("Lla/t5;")));
-                    } else {
-                        hookMergedProviderPolicies(repository);
+                        hookPlaybackPause(context.mutableClassDefBy("Lz9/k4;"));
+                        hookInlinedCutoff(context.mutableClassDefBy("Lqa/g5;"));
+                        hookInlinedCutoff(context.mutableClassDefBy("Lqa/y1;"));
+                        hookBadgeCacheHit(context.mutableClassDefBy("Ln9/k0;"));
+                        hookBadgeGroupProgress(context.mutableClassDefBy("Lqa/s5;"));
                     }
-                    hookInlinedNextUpSeedPolicy(context.mutableClassDefBy(NuvioLayout.type(version, "Lza/z4;")));
-                    hookMergedProvider(context.mutableClassDefBy(NuvioLayout.type(version, "Lja/cc;")));
-                    hookEffectiveSource(context.mutableClassDefBy(NuvioLayout.type(version, "La/a;")));
-                    hookWatchProgressEnum(context.mutableClassDefBy(NuvioLayout.type(version, "Lcom/nuvio/tv/data/local/rb;")));
-                    if (!NuvioLayout.modern(version)) hookWatchProgressPicker(context.mutableClassDefBy("Lfb/h3;"), "W0", "Lfb/sj;");
-                    else {
+                    hookInlinedNextUpSeedPolicy(context.mutableClassDefBy("Lqa/s5;"));
+                    hookMergedProvider(context.mutableClassDefBy("Lz9/sb;"));
+                    hookEffectiveSource(context.mutableClassDefBy("Lio/sentry/o;"));
+                    hookWatchProgressEnum(context.mutableClassDefBy("Lcom/nuvio/tv/data/local/dc;"));
+
+                    {
                         hookSettingsStore(context.mutableClassDefBy("Lo9/a1;"));
                         hookSettingsComponent(context.mutableClassDefBy("Lp8/e;"));
                     }
-                    hookWatchProgressSelection(context.mutableClassDefBy(NuvioLayout.type(version, "Lfb/c2;")));
-                    hookWatchProgressSummary(context.mutableClassDefBy(NuvioLayout.type(version, "Lfb/lj;")), NuvioLayout.BETA5.equals(version) ? "h1" : NuvioLayout.modern(version) ? "g1" : "W0");
+                    hookWatchProgressSelection(context.mutableClassDefBy("Lxa/o7;"));
+                    hookWatchProgressSummary(context.mutableClassDefBy("Lxa/bh;"), "z");
                     return Unit.INSTANCE;
                 });
                 return Unit.INSTANCE;
@@ -70,7 +68,7 @@ public final class NuvioMergedProgressPatch {
                 || candidate.getImplementation() == null) continue;
             for (Instruction instruction : instructions(candidate)) {
                 if (instruction instanceof ReferenceInstruction && ((ReferenceInstruction) instruction).getReference()
-                    .toString().equals(owner.getType() + "->k:Lkotlinx/coroutines/flow/MutableStateFlow;")) {
+                    .toString().equals(owner.getType() + ("->l:") + "Lkotlinx/coroutines/flow/MutableStateFlow;")) {
                     matches.add(candidate);
                     break;
                 }
@@ -105,7 +103,7 @@ public final class NuvioMergedProgressPatch {
         int anchor = -1;
         for (int i = 0; i + 2 < ins.size(); i++) {
             if (ins.get(i).getOpcode() != Opcode.IGET_OBJECT || !(ins.get(i) instanceof ReferenceInstruction) || !((ReferenceInstruction) ins.get(i)).getReference()
-                .toString().equals(NuvioLayout.current("Lla/z3;->V0:Ljava/util/Set;"))) continue;
+                .toString().equals("Lqa/a4;->X0:Ljava/util/Set;")) continue;
             if (anchor >= 0 || !calls(ins.get(i + 1), "Lkotlin/jvm/internal/Intrinsics;", "areEqual")
                 || ins.get(i + 2).getOpcode() != Opcode.MOVE_RESULT)
                 throw unsupported("Badge ID cache comparison changed");
@@ -131,7 +129,7 @@ public final class NuvioMergedProgressPatch {
         for (int i = 0; i < ins.size(); i++) {
             Instruction instruction = ins.get(i);
             if (instruction instanceof ReferenceInstruction && ((ReferenceInstruction) instruction).getReference()
-                .toString().equals(NuvioLayout.current("Lla/z3;->T0:Ljava/util/Map;"))) {
+                .toString().equals("Lqa/a4;->V0:Ljava/util/Map;")) {
                 int receiver = ((TwoRegisterInstruction) instruction).getRegisterB();
                 if (home >= 0 && home != receiver) throw unsupported("Badge group Home register changed");
                 home = receiver;
@@ -191,7 +189,7 @@ public final class NuvioMergedProgressPatch {
         int hook = -1;
         int result = -1;
         for (int i = 0; i + 1 < ins.size(); i++) {
-            if (!calls(ins.get(i), NuvioLayout.forOwner(owner.getType(), "Lca/b0;"), "a") || !(ins.get(i + 1) instanceof OneRegisterInstruction)) continue;
+            if (!calls(ins.get(i), "Lo9/a0;", "a") || !(ins.get(i + 1) instanceof OneRegisterInstruction)) continue;
             if (hook >= 0) throw unsupported("Multiple provider-registry lookup anchors found");
             hook = i + 2;
             result = ((OneRegisterInstruction) ins.get(i + 1)).getRegisterA();
@@ -202,11 +200,11 @@ public final class NuvioMergedProgressPatch {
             method(EXT, "mergedProvider", List.of("Ljava/lang/Object;"), "Ljava/lang/Object;")));
         target.getImplementation().addInstruction(hook++, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, result));
         target.getImplementation().addInstruction(hook, new BuilderInstruction21c(Opcode.CHECK_CAST, result,
-            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference(NuvioLayout.forOwner(owner.getType(), "Lca/a0;"))));
+            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lo9/z;")));
     }
 
     private static void hookRepository(MutableClass owner) {
-        MutableMethod ctor = unique(owner, "<init>", 13);
+        MutableMethod ctor = unique(owner, "<init>", 14);
         int instance = parameterStart(ctor);
         List<Instruction> ins = instructions(ctor);
         for (int i = 0; i < ins.size(); i++) if (ins.get(i).getOpcode() == Opcode.RETURN_VOID) {
@@ -218,53 +216,11 @@ public final class NuvioMergedProgressPatch {
     }
 
     /** Prevents the Trakt carrier from imposing its policy on other providers' merged seeds. */
-    private static void hookMergedProviderPolicies(MutableClass owner) {
-        MutableMethod cutoff = null;
-        MutableMethod seed = null;
-        for (MutableMethod method : owner.getMethods()) {
-            List<? extends CharSequence> params = method.getParameterTypes();
-            if (method.getImplementation() == null) continue;
-            if (params.size() == 2 && "I".contentEquals(params.get(0)) && "J".contentEquals(params.get(1))
-                && "Ljava/lang/Long;".equals(method.getReturnType())) cutoff = method;
-            if (params.size() == 2
-                && "Lcom/nuvio/tv/domain/model/WatchProgress;".contentEquals(params.get(0))
-                && "J".contentEquals(params.get(1)) && "Z".equals(method.getReturnType())) seed = method;
-        }
-        if (cutoff == null) throw unsupported("Continue Watching cutoff policy method not found");
 
-        List<Instruction> cutoffIns = instructions(cutoff);
-        for (int i = cutoffIns.size() - 1; i >= 0; i--) {
-            Instruction instruction = cutoffIns.get(i);
-            if (instruction.getOpcode() != Opcode.RETURN_OBJECT || !(instruction instanceof OneRegisterInstruction)) continue;
-            int result = ((OneRegisterInstruction) instruction).getRegisterA();
-            if (result > 15) throw unsupported("Continue Watching cutoff result register changed");
-            cutoff.getImplementation().addInstruction(i, new BuilderInstruction35c(Opcode.INVOKE_STATIC, 1,
-                result, 0, 0, 0, 0,
-                method(EXT, "adjustContinueWatchingCutoff", List.of("Ljava/lang/Long;"), "Ljava/lang/Long;")));
-            cutoff.getImplementation().addInstruction(i + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, result));
-        }
 
-        // R8 inlines this repository method in beta.2. Keep the hook for builds
-        // where it survives, while the provider proxy handles direct calls.
-        if (seed != null) {
-            int progress = parameterStart(seed) + 1;
-            List<Instruction> seedIns = instructions(seed);
-            for (int i = seedIns.size() - 1; i >= 0; i--) {
-                Instruction instruction = seedIns.get(i);
-                if (instruction.getOpcode() != Opcode.RETURN || !(instruction instanceof OneRegisterInstruction)) continue;
-                int result = ((OneRegisterInstruction) instruction).getRegisterA();
-                if (progress > 15 || result > 15) throw unsupported("Next-up seed policy register layout changed");
-                seed.getImplementation().addInstruction(i, new BuilderInstruction35c(Opcode.INVOKE_STATIC, 2,
-                    progress, result, 0, 0, 0,
-                    method(EXT, "adjustNextUpSeedDecision", List.of("Ljava/lang/Object;", "Z"), "Z")));
-                seed.getImplementation().addInstruction(i + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT, result));
-            }
-        }
-    }
-
-    /** beta.2 inlines shouldUseAsNextUpSeed into the Home pipeline helper. */
+    /** beta.6 inlines shouldUseAsNextUpSeed into the Home pipeline helper. */
     private static void hookInlinedNextUpSeedPolicy(MutableClass owner) {
-        MutableMethod target = unique(owner, NuvioLayout.newer(owner.getType()) ? "C" : "l", 2);
+        MutableMethod target = unique(owner, "C", 2);
         if (!"Z".equals(target.getReturnType())
             || !"Lcom/nuvio/tv/domain/model/WatchProgress;".contentEquals(target.getParameterTypes().get(1)))
             throw unsupported("Inlined next-up seed policy signature changed");
@@ -288,7 +244,7 @@ public final class NuvioMergedProgressPatch {
     private static void hookEffectiveSource(MutableClass owner) {
         MutableMethod target = null;
         for (MutableMethod method : owner.getMethods()) {
-            if (method.getParameterTypes().size() == 2 && NuvioLayout.forOwner(owner.getType(), "Lcom/nuvio/tv/data/local/rb;").equals(method.getReturnType())) {
+            if (method.getParameterTypes().size() == 2 && "Lcom/nuvio/tv/data/local/dc;".equals(method.getReturnType())) {
                 if (target != null) throw unsupported("Multiple effective source methods found");
                 target = method;
             }
@@ -299,7 +255,7 @@ public final class NuvioMergedProgressPatch {
             method(EXT, "effectiveSource", List.of("Ljava/lang/Object;", "Ljava/lang/Object;"), "Ljava/lang/Object;")));
         target.getImplementation().addInstruction(1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, first));
         target.getImplementation().addInstruction(2, new BuilderInstruction21c(Opcode.CHECK_CAST, first,
-            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference(NuvioLayout.forOwner(owner.getType(), "Lcom/nuvio/tv/data/local/rb;"))));
+            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lcom/nuvio/tv/data/local/dc;")));
     }
 
     private static void hookWatchProgressEnum(MutableClass owner) {
@@ -322,7 +278,7 @@ public final class NuvioMergedProgressPatch {
     }
 
     private static int addEnumValue(MutableClass owner, MutableMethod clinit, int at, String name) {
-        String type = NuvioLayout.forOwner(owner.getType(), "Lcom/nuvio/tv/data/local/rb;");
+        String type = "Lcom/nuvio/tv/data/local/dc;";
         clinit.getImplementation().addInstruction(at++, new BuilderInstruction21c(Opcode.NEW_INSTANCE, 1,
             new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference(type)));
         clinit.getImplementation().addInstruction(at++, new BuilderInstruction21c(Opcode.CONST_STRING, 2,
@@ -340,62 +296,7 @@ public final class NuvioMergedProgressPatch {
         return at;
     }
 
-    private static void hookWatchProgressPicker(MutableClass owner, String labelMethod, String selectedOwner) {
-        MutableMethod target = unique(owner, NuvioLayout.newer(owner.getType()) ? "P0" : "K0", 7);
-        List<Instruction> ins = instructions(target);
-        int listHook = -1;
-        int listRegister = -1;
-        int labelHook = -1;
-        int selectedHook = -1;
-        int selectedRegister = -1;
-        int sourceRegister = -1;
-        int labelRegister = -1;
-        for (int i = 0; i < ins.size(); i++) {
-            if (calls(ins.get(i), "Lkotlin/collections/CollectionsKt;", "build") && i + 1 < ins.size()
-                && ins.get(i + 1) instanceof OneRegisterInstruction) {
-                int register = ((OneRegisterInstruction) ins.get(i + 1)).getRegisterA();
-                // This is the only list builder in K0 immediately followed by conversion to Iterable.
-                if (i + 2 < ins.size() && ins.get(i + 2).getOpcode() == Opcode.CHECK_CAST) {
-                    listHook = i + 2;
-                    listRegister = register;
-                }
-            }
-            if (calls(ins.get(i), NuvioLayout.forOwner(owner.getType(), "Lfb/h3;"), labelMethod) && ins.get(i) instanceof FiveRegisterInstruction
-                && i + 1 < ins.size() && ins.get(i + 1) instanceof OneRegisterInstruction) {
-                FiveRegisterInstruction call = (FiveRegisterInstruction) ins.get(i);
-                sourceRegister = call.getRegisterC();
-                labelRegister = ((OneRegisterInstruction) ins.get(i + 1)).getRegisterA();
-                labelHook = i + 2;
-            }
-            if (ins.get(i).getOpcode() == Opcode.IGET_OBJECT && ins.get(i) instanceof ReferenceInstruction
-                && ins.get(i) instanceof TwoRegisterInstruction) {
-                Object reference = ((ReferenceInstruction) ins.get(i)).getReference();
-                if (reference instanceof FieldReference
-                    && selectedOwner.equals(((FieldReference) reference).getDefiningClass())
-                    && "a".equals(((FieldReference) reference).getName())) {
-                    selectedRegister = ((TwoRegisterInstruction) ins.get(i)).getRegisterA();
-                    selectedHook = i + 1;
-                }
-            }
-        }
-        if (listHook < 0) throw unsupported("Watch progress picker list anchor not found");
-        if (labelHook < 0) throw unsupported("Watch progress picker label anchor not found");
-        if (selectedHook < 0) throw unsupported("Watch progress selected-value anchor not found");
 
-        // Insert hooks from the end of the method so earlier indices remain valid.
-        target.getImplementation().addInstruction(selectedHook, new BuilderInstruction35c(Opcode.INVOKE_STATIC, 1,
-            selectedRegister, 0, 0, 0, 0,
-            method(EXT, "selectedSource", List.of("Ljava/lang/Object;"), "Ljava/lang/Object;")));
-        target.getImplementation().addInstruction(selectedHook + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, selectedRegister));
-        target.getImplementation().addInstruction(labelHook, new BuilderInstruction35c(Opcode.INVOKE_STATIC, 1,
-            sourceRegister, 0, 0, 0, 0,
-            method(EXT, "displayLabel", List.of("Ljava/lang/Object;"), "Ljava/lang/String;")));
-        target.getImplementation().addInstruction(labelHook + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, labelRegister));
-        target.getImplementation().addInstruction(listHook, new BuilderInstruction35c(Opcode.INVOKE_STATIC, 1,
-            listRegister, 0, 0, 0, 0,
-            method(EXT, "appendMergedSources", List.of("Ljava/util/List;"), "Ljava/util/List;")));
-        target.getImplementation().addInstruction(listHook + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, listRegister));
-    }
 
     private static void hookWatchProgressSelection(MutableClass owner) {
         MutableMethod target = unique(owner, "invokeSuspend", 1);
@@ -403,7 +304,7 @@ public final class NuvioMergedProgressPatch {
         int hook = -1;
         int source = -1;
         for (int i = 0; i < ins.size(); i++) {
-            if (!calls(ins.get(i), NuvioLayout.forOwner(owner.getType(), "Lca/b1;"), "f") || !(ins.get(i) instanceof FiveRegisterInstruction)) continue;
+            if (!calls(ins.get(i), "Lo9/a1;", "f") || !(ins.get(i) instanceof FiveRegisterInstruction)) continue;
             FiveRegisterInstruction call = (FiveRegisterInstruction) ins.get(i);
             if (hook >= 0) throw unsupported("Multiple watch progress persistence anchors found");
             hook = i;
@@ -415,7 +316,7 @@ public final class NuvioMergedProgressPatch {
             method(EXT, "selectSource", List.of("Ljava/lang/Object;"), "Ljava/lang/Object;")));
         target.getImplementation().addInstruction(hook + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, source));
         target.getImplementation().addInstruction(hook + 2, new BuilderInstruction21c(Opcode.CHECK_CAST, source,
-            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference(NuvioLayout.forOwner(owner.getType(), "Lcom/nuvio/tv/data/local/rb;"))));
+            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lcom/nuvio/tv/data/local/dc;")));
     }
 
     private static void hookWatchProgressSummary(MutableClass owner, String labelMethod) {
@@ -425,7 +326,7 @@ public final class NuvioMergedProgressPatch {
         int source = -1;
         int label = -1;
         for (int i = 0; i + 1 < ins.size(); i++) {
-            if (!calls(ins.get(i), NuvioLayout.forOwner(owner.getType(), "Lfb/h3;"), labelMethod) || !(ins.get(i) instanceof FiveRegisterInstruction)
+            if (!calls(ins.get(i), "Lxa/za;", labelMethod) || !(ins.get(i) instanceof FiveRegisterInstruction)
                 || !(ins.get(i + 1) instanceof OneRegisterInstruction)) continue;
             if (hook >= 0) throw unsupported("Multiple Watch Progress summary labels found");
             hook = i + 2;
@@ -453,7 +354,7 @@ public final class NuvioMergedProgressPatch {
     private static List<Instruction> instructions(MutableMethod method) { List<Instruction> out = new ArrayList<>(); for (Instruction i : method.getImplementation().getInstructions()) out.add(i); return out; }
     private static boolean calls(Instruction i, String owner, String name) { if (!(i instanceof ReferenceInstruction)) return false; Object r=((ReferenceInstruction)i).getReference(); return r instanceof MethodReference && owner.equals(((MethodReference)r).getDefiningClass()) && name.equals(((MethodReference)r).getName()); }
     private static ImmutableMethodReference method(String owner,String name,List<String> params,String result){return new ImmutableMethodReference(owner,name,params,result);}
-    private static IllegalStateException unsupported(String reason){return new IllegalStateException("Unsupported NuvioTV bytecode: "+reason+". Use an original NuvioTV 1.1.0-beta.2, 1.1.0-beta.4, or 1.1.0-beta.5 APK.");}
+    private static IllegalStateException unsupported(String reason){return new IllegalStateException("Unsupported NuvioTV bytecode: "+reason+". Use an original NuvioTV 1.1.0-beta.6 APK.");}
     private static InputStream extensionStream() {
         String path="extensions/nuvio-merged-progress.mpe"; InputStream resource=NuvioMergedProgressPatch.class.getClassLoader().getResourceAsStream(path); if(resource!=null)return resource;
         try { URI source=NuvioMergedProgressPatch.class.getProtectionDomain().getCodeSource().getLocation().toURI(); try(ZipFile zip=new ZipFile(new File(source))){ZipEntry entry=zip.getEntry(path);if(entry==null)throw new FileNotFoundException(path);try(InputStream input=zip.getInputStream(entry)){return new ByteArrayInputStream(input.readAllBytes());}} } catch(Exception error){throw new IllegalStateException("Cannot load merged-progress extension",error);}

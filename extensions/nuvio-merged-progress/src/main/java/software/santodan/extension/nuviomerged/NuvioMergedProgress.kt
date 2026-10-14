@@ -68,7 +68,7 @@ object NuvioMergedProgress {
         java.util.WeakHashMap<Any, Map<String, Set<Any>>>())
     @Volatile private var repository: Any? = null
     @Volatile private var allProgressMethod = "q"
-    @Volatile private var providerLayout = NuvioProviderLayout.forRepository("ja.md")
+    @Volatile private var providerLayout = NuvioProviderLayout.forRepository("z9.zc")
     @Volatile private var proxyRepository: Any? = null
     @Volatile private var providerProxy: Any? = null
     private val mergedProgress = MutableStateFlow<List<Any>>(emptyList())
@@ -171,7 +171,7 @@ object NuvioMergedProgress {
                 modifier = findMethod(loader.loadClass("e0.b"), "u", 2).invoke(null, modifier, 4f)
                 modifier = findMethod(loader.loadClass("androidx.compose.foundation.layout.b"), "m", 2)
                     .invoke(null, modifier, 24f)
-                findMethod(loader.loadClass("c7.a"), "b", 15).invoke(null,
+                findMethod(loader.loadClass(NuvioBeta6.name("c7.a")), "b", 15).invoke(null,
                     "android.resource://${app.packageName}/$resourceId", "Progress from $source", modifier,
                     null, null, null, null, null, fieldStatic(loader.loadClass("w1.b"), "e"),
                     fieldStatic(loader.loadClass("u2.l"), "b"), 1f, composer, 0, 0, 2552)
@@ -180,7 +180,7 @@ object NuvioMergedProgress {
     }
 
     private fun fieldStatic(owner: Class<*>, name: String): Any =
-        fields.getOrPut(owner to name) { owner.getDeclaredField(name).apply { isAccessible = true } }.get(null)!!
+        fields.getOrPut(owner to name) { owner.getDeclaredField(NuvioBeta6.field(owner, name)).apply { isAccessible = true } }.get(null)!!
 
     private fun renderMenuToggle(composer: Any, title: String, description: String, checked: Boolean, action: () -> Unit) {
         val loader = composer.javaClass.classLoader
@@ -193,7 +193,7 @@ object NuvioMergedProgress {
                 else -> "SantodanMergedSettingsCallback"
             }
         }
-        findMethod(loader.loadClass(NuvioRuntimeLayout.name("sa.eb")), "m", 13).invoke(null,
+        findMethod(loader.loadClass(NuvioBeta6.name("sa.eb")), "m", 13).invoke(null,
             title, description, checked, callback(action), null, callback {}, false, null, 0L, false, composer, 0, 1008)
     }
 
@@ -500,7 +500,7 @@ object NuvioMergedProgress {
                 val delta = synchronized(badgeDeltas) { badgeDeltas.getOrPut(home) { NuvioBadgeDelta() } }
                 val changed = delta.changed(mergedWatchedHistory, snapshot)
                 if (changed.isEmpty()) return@execute
-                findMethod(home.javaClass.classLoader.loadClass(NuvioRuntimeLayout.name("la.t5")), "g", 2)
+                findMethod(home.javaClass.classLoader.loadClass(NuvioBeta6.name("la.t5")), "g", 2)
                     .invoke(null, home, changed)
                 val holder = field(home, "u").get(home)
                 val labels = (field(holder, "f").get(holder) as StateFlow<*>).value as Set<*>
@@ -532,7 +532,7 @@ object NuvioMergedProgress {
         if (deferred()) return
         val cacheKey = snapshotKey()
         val started = System.nanoTime()
-        // NuvioTV 1.1.0-beta.2 constructor fields: a = WatchProgressPreferences,
+        // NuvioTV 1.1.0-beta.6 constructor fields: a = WatchProgressPreferences,
         // j = ProfileManager, k = tracking providers.
         val registry = field(repo, "k").get(repo)
         val localStore = field(repo, "a").get(repo)
@@ -1038,7 +1038,7 @@ object NuvioMergedProgress {
         return "${SNAPSHOT}_$id"
     }
     private fun field(owner: Any, name: String): Field = fields.getOrPut(owner.javaClass to name) {
-        owner.javaClass.getDeclaredField(name).apply { isAccessible = true }
+        owner.javaClass.getDeclaredField(NuvioBeta6.field(owner.javaClass, name)).apply { isAccessible = true }
     }
     private fun findMethod(owner: Class<*>, name: String, count: Int): Method =
         methods.getOrPut(Triple(owner, name, count)) {

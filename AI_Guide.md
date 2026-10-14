@@ -43,7 +43,7 @@ Paths below are relative to `E:\Morphe\santodan-patches` unless stated otherwise
 | `../.morphe-template-reference/`, `../.morphe-patches-reference/` | Local API/example references; check against installed dependency versions |
 | `../Apps/` | Patched app outputs; do not use as original patch inputs |
 
-At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.5`,
+At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.6`,
 Pillo `0.6.20`, Reddit `2026.37.0`, MEO Android TV `5.7.0`, and Peafowl
 `GMS_27.5.1`. These are discovery hints, not a permanent version allowlist.
 Rescan inputs for each task. Apps without existing patches need their own inspection.
@@ -94,8 +94,8 @@ rg --files patches/src/main extensions patches/src/test
 rg -n 'register<JavaExec>|verify' patches/build.gradle.kts
 .\build-local.ps1 :patches:tasks --all
 .\build-local.ps1 :patches:buildAndroid
-# Example for a Nuvio beta.5 hook change; add the relevant feature/runtime tasks:
-.\build-local.ps1 :patches:verifyNuvioBeta5
+# Example for a Nuvio beta.6 hook change; add the relevant feature/runtime tasks:
+.\build-local.ps1 :patches:verifyNuvioBeta6
 # When patch names/descriptions/options/compatibility change:
 .\build-local.ps1 :patches:generatePatchesList
 git diff --check
@@ -139,32 +139,11 @@ retain the target contracts within its context window.
 
 ## NuvioTV launcher channels
 
-The independent Android TV launcher channels patch supports beta.4/beta.5.
-It adds per-profile, opt-in catalog/list/Library/Upcoming switches in the shared
-Layout menu. Runtime hooks capture the initialized Hilt component, observe Home,
-cancel Home observation onCleared, and observe the singleton library repository.
-Native repositories supply catalogs and authenticated tracking-provider list data.
-The publisher uses `santodan-launcher/` IDs, which cannot be mistaken for the native
-Continue Watching channel by its package-prefix orphan recovery. TvProvider
-queries filter channel/package IDs in memory, preserve row IDs and visibility,
-and update programs only when their persisted values change. See
-`docs/NuvioLauncherChannels.md` for source/refresh limits and TV checks.
-Beta.5 settings use nested native `sa.kc.a` collapsible sections for Catalogs and
-Tracking lists and their sources. `Source.sourceId`/`sourceName` persist grouping
-without changing existing channel keys or selected preference values. Upcoming
-artwork dates are rendered on two workers, keyed by image/date/style and exposed
-through a dedicated read-only artwork provider. Its manifest authority follows
-side-by-side package renaming. Only hashed PNG filenames are accepted; directory
-queries and writes are rejected. Rendering failure retains remote images plus date text. Shared date-style
-and airing-series preference listeners refresh published artwork, including finale
-cache updates. Run `verifyNuvioLauncherUi` and `verifyNuvioLauncherDates` for the
-beta.5 grouped menu and date rules; publisher verification covers date removal.
-The beta.5 native `l9.k.a` cached Next Up aired predicate delegates to the installed
-airing-series bridge when present. This prevents future-finale Upcoming entries
-from also appearing in the native Continue Watching preview channel.
-Run `verifyNuvioLauncherChannels`, `verifyNuvioLauncherPublisher`,
-`verifyNuvioLauncherBundle`, `verifyNuvioNextEpisodeBundle`, and
-`verifyNuvioSettingsMenuRuntime`; the shared menu now covers 512 selections.
+NuvioTV patches target only `com.nuvio.tv` `1.1.0-beta.6`. See
+`docs/NuvioBeta6.md` for native contracts, input provenance, and verification.
+Launcher channels are opt-in and use native repositories, per-profile settings,
+and the shared Layout menu. Their artwork-provider authority follows side-by-side
+package renaming. Device checks are documented in `docs/NuvioLauncherChannels.md`.
 
 An independent patch bundle for **Morphe Desktop**, targeting MEO Android TV,
 NuvioTV, Reddit, Pillo, and Peafowl Theme Maker.
@@ -273,250 +252,24 @@ mutation scope, rejection cases, and DEX write/reload. Full release verification
 also patch and rebuild the original app bundle. Users must select Pillo's Banner/Light
 notification mode for the hybrid routing to apply.
 
-## NuvioTV 1.1.0-beta.2, 1.1.0-beta.4, and 1.1.0-beta.5
+## NuvioTV 1.1.0-beta.6
 
-Nine patches target package `com.nuvio.tv` (airing-series, finale-date, and stream-preloading patches support beta4 and beta5):
+All ten NuvioTV patches support only `1.1.0-beta.6`. Original DEX descriptors are
+used directly in the patch implementations; there are no historical type tables.
+`NuvioLayout` rejects every other version and declares a single compatibility
+entry. Runtime reflection helpers map their local semantic aliases to beta.6
+symbols and reject unsupported installed versions.
 
-1. **NuvioTV - Merge tracking progress** combines Nuvio Sync and connected-provider
-   progress for Continue Watching. It retains the last successful snapshot while the
-   providers refresh during startup, then publishes the refreshed merged result.
-2. **NuvioTV - Remaining episodes in Continue Watching** adds an opt-in setting that
-   displays the number of aired, unwatched episodes. It works with every supported
-   tracking integration and is disabled by default.
-3. **NuvioTV - Side-by-side installation** changes the package and launcher name so
-   the patched build can coexist with the official app. Both values are configurable;
-   use a unique valid Android package name for each clone.
+The optional features retain native provider authentication, profile isolation,
+source-search sessions, lifecycle disposal, and disabled paths. Stream preloading
+uses the native `z9.k4` repository and its `l` pause flow. The next-episode player
+uses `sa.df.Y`, controller request type `sa.p8.S`, and the `sa.ec.C/w` entry hooks.
+Provider aggregation uses `z9.zc` and `o9.z` and observes local watched flow
+`com.nuvio.tv.data.local.sc.i`. Shared controls use `xa.ub`, `xa.bd`, and `xa.za`.
 
-**NuvioTV - Keep airing series in Upcoming** is a separate beta.4/beta.5 patch. Its
-disabled-by-default setting keeps library series with future scheduled episodes in
-the Separate Upcoming Row, preserves native labels such as New Season, and adds the
-scheduled finale date to Poster, Card, and Wide displays in `dd-MMM` format.
-Enable Show unaired next up episodes and Separate Upcoming Row before enabling
-Keep airing series in Upcoming. The blue badge uses white 14sp text and bottom-center
-alignment, with a higher z-index to draw above captions. Finale dates use the latest
-known scheduled release from Nuvio's catalog; unknown dates are not estimated.
-Its preferences and runtime bridge are independent of the remaining-episodes patch.
-Use `SantodanAiring:D` for diagnostics.
-
-**NuvioTV - Finale dates in library and collections** adds independent opt-in switches
-under Layout > Santodan-Patches (beta4/beta5). It reuses the Upcoming badge style and latest known
-catalog episode date, including past dates, with `dd-MMM-yy` formatting and its own
-preferences and runtime. The disabled-by-default **Only show dates for series still airing**
-switch filters both locations to latest known scheduled dates strictly after the current
-instant. Past dates and the exact release instant are hidden when enabled; unknown
-dates remain unlabelled. Existing library/collection switches still apply independently.
-Library uses `ba.n3.m`; collection row cards use `ba.q1.o`, both MetaPreview fields.
-`ba.i1` scopes the library/collection calls. Card and restart lambdas capture that
-scope so recomposition retains the right setting and other catalog rows stay unaffected.
-Only poster images are hooked; collection logos are excluded. Unknown/non-IMDb IDs
-and movies are skipped. Dates refresh asynchronously with a six-hour persistent cache.
-Use `SantodanFinale:D` for diagnostics. Verify both switches independently on device.
-
-All three date runtimes delegate their native TV appearance controls and Compose
-modifier construction to `nuviomenu.NuvioDateLabelStyle` in the existing shared settings
-dependency. `DateLabelStyle` validates choices and packs Compose Color/TextUnit values.
-All date patches use preference scope `santodan_nuvio_date_label_style` with `date_label_`
-keys. The shared menu renders one appearance section only when a date patch is installed.
-Nine positions map
-to `w1.b.a` through `i`. Label and font use Playback's native percentage sliders
-(`sa.o3.y0` / `sa.p3.y0`) from 50% to 200%, step 10. At 100%, padding reads native
-`va.l0.a.e/d` and font size reads the native labelSmall TextStyle's `a.b` TextUnit.
-Background/font colors use the native subtitle swatch/opacity dialog (`q`) and color
-rows (`r`). Both use the subtitle text-color palette; label backgrounds additionally
-offer transparency. Packed colors, including
-alpha, persist separately from legacy palette indexes. The appearance section uses
-`sa.kc.a`, native action rows (`sa.eb.a` / `sa.db.a`), and single-choice dialogs (`j`)
-with native `sa.mb` / `sa.lb` picker options.
-The native `j` picker requires explicit 420 dp width and 320 dp maximum height;
-R8 removes those default-mask branches. Passing zero sizes creates an empty overlay.
-One shared Compose revision refreshes visible badges after edits/reset. Reset preserves
-the patch's enable/filter switches.
-Run `:patches:verifyNuvioDateLabelStyleRuntime`, movie runtime, badge composition,
-and beta4/beta5 DEX checks; test TV dialog focus, card positions and colors on device.
-
-Beta4 runtime patches share an unnamed settings-menu dependency. It inserts one keyed
-lazy item in Layout's native section list, rendered with `sa.kc.a` as **Santodan-Patches**.
-The menu discovers installed runtime bridges independently and uses their existing
-preferences and Compose controls. Native non-focusable section labels (`sa.kc.e`)
-group merged progress, its strategy, remaining episodes, and airing-series settings
-under **Continue Watching**, and library/collection finale-date switches under **UI**.
-The three stream-preloading switches appear under **Streams**, and launcher-channel
-selections appear under **Android TV launcher**. Empty groups are omitted.
-The menu runtime check covers all 512 bridge selections.
-Old beta4 injected settings rows and merged picker
-choices are removed; beta2 retains its original UI. Merged controls register `o9.a1`
-and capture the initialized `p8.e` component. If the coordinator has not been created,
-they resolve its native `w3` provider on demand; Layout must work before opening the
-native tracking settings page. They use its native `f` persistence route with a ContinuationImpl adapter, retaining the
-previous native source per profile when enabling merging. `SantodanSettings:D` diagnoses
-menu failures. Run `:patches:verifyNuvioSettingsMenuRuntime` for expansion/collapse,
-partial patch selections, and coroutine completion checks. Run
-`:patches:verifyNuvioSettingsStoreRuntime` for lazy coordinator resolution and reuse.
-Verify TV focus/scrolling,
-each patch alone, and saved choices on device.
-
-**NuvioTV - Preload streams in Continue Watching** and **NuvioTV - Preload streams on detail page**
-are independent opt-in beta4/beta5 patches. Their shared unnamed dependency captures
-the initialized `p8.e` component. Its scoped `K2` provider lazily supplies the native
-stream repository (`v9.i4` on beta4, `v9.h4` on beta5), whose `j(type, videoId, season,
-episode, false)` flow warms the same native sessions as playback. Do not cache stream
-links separately or force refresh: native sessions include the profile and source
-configuration, expire after 15 minutes, and are bounded to 12 entries.
-
-Continue Watching hooks the card lambda (`ba.e2`/`ba.f2`) and reads its `x` WatchProgress
-or `y.a` NextUpInfo. Use the exact native video ID and season/episode; skip unaired
-NextUp entries. Detail preloading observes `ka.l9.u()`/`ka.n9.u()`, the final UI StateFlow
-including shuffle selection, and reads `b` Meta and `h` NextToWatch. Its observer stops
-at `onCleared`. Use native `ka.d1.C`/`ka.e1.C` to resolve the hero Play video from Meta,
-NextToWatch, and the current season's episodes, including resume and default-video
-fallbacks. Movie IDs without a hero video come from Meta. Repeated composition and
-state emissions deduplicate requests; queued detail targets are replaced when Play changes.
-
-The shared queue has two background consumers, at most eight queued targets, detail
-priority, 15-second queue freshness, a 45-second consumer timeout, and bounded
-60-second success / 15-second failure cooldowns. Recheck preferences, active profile,
-and native playback pause state before starting a search. Native session producers
-retain their own lifecycle when a preload consumer stops. Run
-`:patches:verifyNuvioStreamPreload` and `:patches:verifyNuvioStreamPreloadRuntime` for
-target selection, bounded work, profile isolation, lazy repository resolution,
-off-UI-thread searches, playback reuse, and detail observer disposal; keep beta2/4/5
-DEX checks passing. Device verification must check both settings independently,
-movie/resume/next-up/shuffle targets, source changes, and actual cached playback.
-Use `SantodanStreams` for diagnostics.
-**NuvioTV - Preload streams for next episode** independently adds an opt-in **Streams**
-switch. It hooks the player ViewModel (`na.le`/`na.me`) constructor and `onCleared`,
-observing `f()` without retaining the ViewModel. PlayerUiState (`na.ie`/`na.je`) fields
-`a`/`b`/`c` mean playing/buffering/ended; `d` is pending exit, `Y0` is error, `g` is
-content type, `w0` is current video ID and `k1` is the native resolved NextEpisodeInfo.
-For the explicitly requested beta.5 fix, normalize player content types with
-`Locale.ROOT`: accept case-insensitive `series`/`tv` and search as `series`.
-Read that request type from `na.me.W -> na.k8.Q:String`, matching the native
-`na.mb.p` episode loader; do not gate beta.5 on presentation field `na.je.g`.
-Case normalization of the UI field alone still rejected available episodes on a Xiaomi box.
-Keep beta.4's existing dispatch unchanged. `Next episode state` logs readiness
-flags and five-second playing-time milestones without exposing native stream URLs.
-Read the next ID/season/episode from its `a`/`b`/`c`, and check aired (`h`) and
-availability/release (`i`/`g`). Never calculate the next episode number manually.
-A monotonic timer counts 30 seconds of actual playing time, excluding buffering and
-pauses and resetting when the episode, active profile, or enabled state changes.
-Only this search can bypass the preload runtime's playback guard. A request-specific
-pause-flow hook in `v9.d4`/`v9.c4` permits local scrapers for the exact next target
-and active profile while its search is being observed; the singleton `k` pause flow
-is never changed. Cancel consumers and revoke this permit on leaving playback,
-pausing/buffering, target/profile changes, disabling, or a 45-second timeout.
-Successful searches are re-observed once per minute without force-refresh, so native
-15-minute expiry can refresh the source list during long episodes. Failed searches
-retry after 15 seconds. Native producers retain their own session lifecycle.
-Beta.5 guards the force-refresh parameter at `na.mb.C(na.k8, Video, boolean)` entry.
-All three callers in the original APK are next-episode transitions in `na.fb`.
-Call-site guards can be skipped by branches targeting the original invoke, so the
-entry hook always runs before the native picker delegates to `na.mb.p`. Explicit
-refresh controls call the loader directly and retain their original behavior.
-The native threshold preloader `na.mb.w(na.k8)` returns early while the independent
-patch switch is enabled; the 30-second observer owns background preloading and
-native cache expiry/retry instead. With the switch disabled, both methods execute
-their original behavior. Earlier-version hooks are preserved without modification.
-Run `:patches:verifyNuvioNextEpisodePreload`, `:patches:verifyNuvioStreamPreloadRuntime`,
-the existing beta5 DEX check, and `:patches:verifyNuvioNextEpisodeBundle` for timing/reset,
-local-scraper isolation, cache reuse, standalone/combined selection and assembled DEX.
-Device checks must confirm ExoPlayer and MPV, resume/seeking, crossing seasons,
-shuffle, leaving playback during the delay, and opening the next episode's sources.
-
-Debug messages report runtime registration, setting changes, each accepted search's
-start and terminal status, elapsed milliseconds, addon-group count, and stream-source
-count. Recomposition duplicates and cooldown hits stay silent. Custom video IDs are
-redacted; stream URLs and credentials are never included in these debug messages.
-The native cache does not expose cache-hit provenance, so elapsed time alone must
-not be labelled as proof of a cache hit. Timeouts stop the preload consumer; native
-search-session producers retain their own lifecycle.
-
-Merged watched badges must follow the same per-show provider winner as progress.
-Await each authenticated provider's native AUTOMATIC refresh (`y` on beta2, `o` on
-beta4/beta5) before sampling its projection. Some refresh implementations only signal
-background work, so retain progress/seed/watched-item flow observers and schedule a
-new merge when their values change. Playback still defers merges. Detail episode
-collectors must switch to the per-show winner after each snapshot publication even
-if the collector was opened before the first merge completed. Remaining-count cache
-`count_v4_` records the card's seed signature; invalidate on seed changes, reject
-obsolete asynchronous estimates and retry the current seed without the old cooldown.
-Run `:patches:verifyNuvioProviderRefreshRuntime` and
-`:patches:verifyNuvioRemainingSyncRuntime` for delayed synchronization, cancellation,
-live provider routing and the Rage of Bahamut episode-8 to episode-20 count race.
-Prime each provider's Next Up flow before reading progress, then read Next Up again after watched-history and alias loading completes. Simkl may refresh its projection during the later getters; publishing the initial seed list can discard cached cards using a stale snapshot. `Provider snapshot` logs initial/refreshed seed counts; focused `Show seed` / `Show merge selection` logs diagnose the reported Rage of Bahamut / Virgin Soul entry without dumping the full library. Playback deferral checks also guard the final seed read.
-On beta4/beta5, the optional **Show merged progress provider** setting uses the persisted merge origins to draw a 24dp local provider icon at the bottom-right of Continue Watching posters. Read the card's `x` WatchProgress, or the concrete `y.a` NextUpInfo, by content type and ID; never match titles or infer provenance from the carrier provider. Unknown origins stay unbadged. The icon uses a separate Compose group, native Box alignment, and the existing Coil loader with bundled raw SVGs or the Nuvio launcher artwork. This adds no tracking-provider or artwork network calls. Run `:patches:verifyNuvioProviderBadge` and beta4/beta5 DEX checks, including coexistence with remaining-episode badges.
-The proxy's `g(Continuation)` supplies the coherent bulk watched episode map;
-`d()` supplies watched items. Alternate catalog IDs come from `v(Continuation)`
-on beta2 or `w(Continuation)` on beta4. These must not fall through to the carrier
-provider, which omits shows watched only on other connected providers. Resolve
-local watched items from repository `e` / store `h`, and retain one provider's
-episode numbering per show. Bulk requests immediately return cached watched
-projection instead of publishing a partial carrier map. Interface default accessors
-(such as Trakt's empty `d()`) need inherited-method reflection fallback.
-Run `:patches:verifyNuvioWatchedHistory` for source selection and alternate-ID checks.
-Cache `snapshot_v2_<profileId>` contains progress, seeds, origins, watched items, episode maps, and aliases. Restore it off the UI thread. Every merged getter emits immediately, including on first launch without a cache. Background refresh runs every two minutes and checks for profile changes every second; discard results when the active profile changes. Reflection members are cached, seeds are indexed by show, and badge publication uses one reusable worker.
-On beta4/beta5, observe the native stream repository's Boolean playback pause setter (`v9.i4` / `v9.h4`, writing `k`). Defer merged refreshes, badge retries, and incremental badge publications while native source searches are paused for playback. Recheck between provider reads and before posting a snapshot; a playback revision prevents an older read from publishing after a playback transition. Resume deferred badges and refresh after leaving playback. Already-running native requests are allowed to finish; beta2 retains its existing behavior.
-`SantodanMergedProgress` logs provider-read and total merge times, per-provider totals, and published
-badge totals. Capture live logs before reproducing, rather than using only `logcat -d`.
-
-Beta4 badge metadata runs in `la.e5`. Its unchanged-ID gate (`la.z3.V0`) can skip
-unresolved metadata after a cancelled batch; bypass it on history changes and at most once every two minutes for retries.
-`la.t5.i` resolves metadata groups. Hook the loop after `hasNext`'s result to publish
-changed cached metadata through native `la.t5.g` after each group, debounced off the
-UI thread. The live Home receiver is the same register used for `la.z3.T0`, not the
-original constructor argument. This avoids waiting for thousands of titles before
-library/collection labels update. `Badge validation progress` reports changed IDs, cached metadata, and label totals at most every 30 seconds.
-Once per changed watched-history snapshot, before the key comparison, discard in-memory validation deadlines for IDs lacking
-episode metadata; a persisted "fresh" deadline alone cannot validate the new merged
-history. Preserve deadlines for cached metadata and keep existing labels until native
-validation decides their state. `Badge validation pending` reports missing metadata.
-Keep `__ambiguous__` sibling markers as markers; never create a title ID or cross-show
-alias group from them. The real beta4 DEX check verifies both badge-loader anchors.
-
-Beta4's remaining-episode hook reads `la.z3.T0`, the aired-episode map. `W0` is the
-provider-alias map and must never be used to count episodes: it produced six aliases
-per title and overwrote correct counts with `6` after synchronization.
-
-Remaining counts also follow native `publishBadgeUpdate`: watched-count coverage
-(`watched.size >= aired.size`) means zero aired episodes remain, even if provider and
-addon episode keys differ. Otherwise count exact unmatched aired keys, preserving
-watch-history gaps. Do not subtract raw totals for partially watched shows. Unaired
-episodes remain excluded. Cached counts use `count_v3_` to discard earlier incorrect
-values. Run `:patches:verifyNuvioRemainingCounts` for the Bleach regression (414 aired,
-418 watched, 41 exact matches), partial progress, gaps, specials, and empty sets.
-
-The progress and remaining-episode patches may be enabled independently. The
-side-by-side patch affects installation identity only. Rebuild from the original APK,
-and keep the package name and signing key unchanged when updating an existing clone.
-
-Both versions have explicit bytecode layouts. Beta4 uses a new NextUpInfo constructor
-with MDBList ratings, new Compose settings controls, and inlined Continue Watching
-cutoff calls. The runtime bridges select the corresponding provider interface and
-Compose classes. Unknown versions and changed hook anchors fail closed.
-
-Provider flow return types are erased to `Flow` in DEX. Beta2's `q()` carries
-progress lists, but beta4's `q()` carries the Boolean remote-loaded flag and `r()`
-carries progress lists. `NuvioProviderLayout` is shared by the runtime and regression
-checks; using the Boolean flow for progress caused an `ArrayList`/`Boolean` crash.
-Provider origins use stable enum identities rather than obfuscated class names.
-
-Run `:patches:verifyNuvioBeta2`, `:patches:verifyNuvioBeta4`, and `:patches:verifyNuvioBeta5` with original DEX files
-under the workspace's `.inspect-nuvio-beta2`, `.inspect-nuvio-beta4`, and `.inspect-nuvio-beta5` directories.
-These checks exercise every bytecode hook, validate runtime reflection contracts,
-and write/reload the modified classes. Apply all seven patches to the original beta4
-APK and run SDK DEX verification before distributing a build. Device testing must
-check provider refresh, both merged selection modes, and the optional episode badge.
-
-The original beta4 APK triggers 36 cross-DEX missing-class reports for optional
-third-party dependencies. The patched APK has the same reports and no new ones;
-all six final DEX files pass dexdump/D8 checks. Compare hierarchy reports against
-the original APK rather than treating its existing reports as patch regressions.
-
-Beta5 retains the provider interface, repositories, flow accessors, model fields,
-and settings coordinator contracts. Its Home classes, card renderers, Layout section
-lambda, and toggle renderer have different obfuscated names. `NuvioLayout` selects
-an explicit per-thread mapping during each patch execution; runtime extensions select
-reflection names using the installed APK version. The Watch Progress summary helper
-is `sa.p3.h1` on beta5 (`sa.o3.g1` on beta4). Keep all three original-DEX checks passing.
+Run the latest-only tasks in `docs/NuvioBeta6.md`; historical DEX tasks are retired.
+The generic launcher/source and date-style tasks also use the beta.6 fixtures.
+Always regenerate compatibility metadata with `:patches:generatePatchesList`.
 
 ## Reddit 2026.37.0
 
@@ -665,15 +418,15 @@ per two minutes, and throttle incremental progress logs to 30 seconds. Run
 and cache-eviction regression coverage.
 
 All injected badge renderers must open their own replace group with composer `d0`
-and close it with `p(false)` (beta2 `g1.k0`, beta4/beta5 `g1.m0`). Native text has a
+and close it with `p(false)` (beta.6 `g1.m0`). Native text has a
 restart group but the badge's placement can still collide with the host's remembered
 slots without this wrapper. Use stable distinct keys for the three extensions and
 close groups on early returns. `q()` ends defaults; do not use it for this wrapper.
 Run `:patches:verifyNuvioBadgeComposition` for all three production wrappers, alongside
-the beta2/beta4/beta5 DEX checks for the start/end contracts.
+the beta.6 DEX checks for the start/end contracts.
 
 **NuvioTV - Upcoming movie dates in library and collections** is independent of the
-series finale patch and supports beta4/beta5. Two disabled-by-default switches appear
+series finale patch and supports beta.6. Two disabled-by-default switches appear
 under UI. It reuses the verified poster/scope hooks with a distinct extension and
 Compose group key, and skips series and released movies. Exact preview `released`
 then `releaseInfo` values take precedence; year-only data never invents a date.
@@ -682,7 +435,7 @@ a bounded queue, request timeouts, and a six-hour persistent cache. Other IDs ca
 show their exact preview dates without a catalog lookup. Date-only releases use UTC
 midnight, zoned releases use their exact instant, and timestamp badges use the local
 date, matching Nuvio's native release rules. `verifyNuvioMovieReleaseDates` checks
-these rules; beta4/beta5 DEX checks exercise both movie and series hooks together.
+these rules; beta.6 DEX checks exercise both movie and series hooks together.
 Use `SantodanMovieRelease:V` for diagnostics. Release dates describe metadata releases,
 not a guarantee that a streaming source exists.
 

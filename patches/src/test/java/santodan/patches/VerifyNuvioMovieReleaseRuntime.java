@@ -26,28 +26,28 @@ public final class VerifyNuvioMovieReleaseRuntime {
         sources.put("kotlin.jvm.functions.Function0", "package kotlin.jvm.functions; public interface Function0 { Object invoke(); }");
         sources.put("g1.j", "package g1; public class j { public static class State { private Object v; public State(Object v){this.v=v;} public Object getValue(){return v;} public void setValue(Object v){this.v=v;} } public static State r(Object v){return new State(v);} }");
         sources.put("fixture.Meta", "package fixture; public class Meta { public String type=\"movie\",released=\"2099-10-09\",info,id=\"custom:id\"; public String getApiType(){return type;} public String getReleased(){return released;} public String getReleaseInfo(){return info;} public String getImdbId(){return null;} public String getId(){return id;} }");
-        for(String name: List.of("ba.n3","ba.o3","ba.q1")) sources.put(name,"package ba; public class "+name.substring(3)+" { public Object "+(name.equals("ba.q1")?"o":"m")+"; public "+name.substring(3)+"(Object item){"+(name.equals("ba.q1")?"o":"m")+"=item;} }");
+        for(String name: List.of("fa.e3","fa.i1")) sources.put(name,"package fa; public class "+name.substring(3)+" { public Object "+(name.equals("fa.i1")?"o":"m")+"; public "+name.substring(3)+"(Object item){"+(name.equals("fa.i1")?"o":"m")+"=item;} }");
         String row=" { public static java.util.List<String> titles=new java.util.ArrayList<>(); public static java.util.List<Boolean> values=new java.util.ArrayList<>(); public static java.util.List<kotlin.jvm.functions.Function0> toggles=new java.util.ArrayList<>(); public static void m(String title,String desc,boolean enabled,kotlin.jvm.functions.Function0 toggle,Object a,kotlin.jvm.functions.Function0 noop,boolean b,Object c,long d,boolean e,Object composer,int f,int g){titles.add(title);values.add(enabled);toggles.add(toggle);} }";
-        sources.put("sa.eb","package sa; public class eb"+row);sources.put("sa.db","package sa; public class db"+row);
+        sources.put("xa.ub","package xa; public class ub"+row);
         List<String> compile=new ArrayList<>(List.of("-d",dir.toString()));
         for(var entry:sources.entrySet()) { Path file=dir.resolve(entry.getKey().replace('.','/')+".java");Files.createDirectories(file.getParent());Files.writeString(file,entry.getValue());compile.add(file.toString()); }
         try(var files=Files.list(Path.of(args[0]))) { files.filter(f->f.toString().endsWith(".java")).forEach(f->compile.add(f.toString())); }
         if(ToolProvider.getSystemJavaCompiler().run(null,null,null,compile.toArray(String[]::new))!=0)throw new AssertionError("Fixture compile failed");
-        for(String version:List.of("1.1.0-beta.4","1.1.0-beta.5")) try(URLClassLoader loader=new URLClassLoader(new URL[]{dir.toUri().toURL()},ClassLoader.getPlatformClassLoader())) {
+        for(String version:List.of("1.1.0-beta.6")) try(URLClassLoader loader=new URLClassLoader(new URL[]{dir.toUri().toURL()},ClassLoader.getPlatformClassLoader())) {
             Class<?> appType=loader.loadClass("android.app.Application");appType.getField("version").set(null,version);
             Object app=loader.loadClass("android.app.ActivityThread").getField("APP").get(null);
             Map<String,Object> prefs=(Map<String,Object>)appType.getField("prefs").get(app).getClass().getField("values").get(appType.getField("prefs").get(app));
             Class<?> bridge=loader.loadClass("software.santodan.extension.nuviomovierelease.NuvioMovieReleaseDates");
             Class<?> metaType=loader.loadClass("fixture.Meta");Object item=metaType.getConstructor().newInstance();
-            Class<?> cardType=loader.loadClass(version.endsWith("5")?"ba.o3":"ba.n3");Object library=cardType.getConstructor(Object.class).newInstance(item);
-            Object collection=loader.loadClass("ba.q1").getConstructor(Object.class).newInstance(item);
+            Class<?> cardType=loader.loadClass("fa.e3");Object library=cardType.getConstructor(Object.class).newInstance(item);
+            Object collection=loader.loadClass("fa.i1").getConstructor(Object.class).newInstance(item);
             call(bridge,"libraryItem",item);call(bridge,"captureContext",library);call(bridge,"collectionItem",item);call(bridge,"captureContext",collection);bridge.getMethod("exitContext").invoke(null);bridge.getMethod("exitContext").invoke(null);
             check(null,badge(bridge,library));check(null,badge(bridge,collection));
             prefs.put("library",true);check("09-Oct-99",badge(bridge,library));check(null,badge(bridge,collection));
             prefs.put("library",false);prefs.put("collections",true);check(null,badge(bridge,library));check("09-Oct-99",badge(bridge,collection));
             Object other=cardType.getConstructor(Object.class).newInstance(item);check(null,badge(bridge,other));
             // Restart scope remains valid after the original item call exits.
-            call(bridge,"enterContext",collection);Object recomposed=loader.loadClass("ba.q1").getConstructor(Object.class).newInstance(item);call(bridge,"captureContext",recomposed);bridge.getMethod("exitContext").invoke(null);check("09-Oct-99",badge(bridge,recomposed));
+            call(bridge,"enterContext",collection);Object recomposed=loader.loadClass("fa.i1").getConstructor(Object.class).newInstance(item);call(bridge,"captureContext",recomposed);bridge.getMethod("exitContext").invoke(null);check("09-Oct-99",badge(bridge,recomposed));
             metaType.getField("type").set(item,"series");check(null,badge(bridge,collection));metaType.getField("type").set(item,"movie");
             metaType.getField("released").set(item,"2000-10-09");check(null,badge(bridge,collection));
             metaType.getField("released").set(item,"2099");check(null,badge(bridge,collection));
@@ -58,7 +58,7 @@ public final class VerifyNuvioMovieReleaseRuntime {
             metaType.getField("info").set(item,String.valueOf(java.time.Year.now().getValue()));check("09-Oct-99",badge(bridge,collection));
             metaType.getField("released").set(item,"2000-10-09");check(null,badge(bridge,collection)); // Cached future value cannot override authoritative released metadata.
             prefs.clear();Object composer=loader.loadClass("g1.j").getConstructor().newInstance();call(bridge,"renderSettings",composer);
-            Class<?> rows=loader.loadClass(version.endsWith("5")?"sa.db":"sa.eb");check(List.of(false,false),rows.getField("values").get(null));check(List.of("Show upcoming movie dates in library","Show upcoming movie dates in collections"),rows.getField("titles").get(null));
+            Class<?> rows=loader.loadClass(version.endsWith("5")?"xa.ub":"xa.ub");check(List.of(false,false),rows.getField("values").get(null));check(List.of("Show upcoming movie dates in library","Show upcoming movie dates in collections"),rows.getField("titles").get(null));
             List<?> toggles=(List<?>)rows.getField("toggles").get(null);Class<?> function=loader.loadClass("kotlin.jvm.functions.Function0");function.getMethod("invoke").invoke(toggles.get(0));check(true,prefs.get("library"));check(null,prefs.get("collections"));function.getMethod("invoke").invoke(toggles.get(1));check(true,prefs.get("collections"));function.getMethod("invoke").invoke(toggles.get(0));check(false,prefs.get("library"));
             System.out.println("PASS: movie runtime "+version+" independent settings, nested and restart scopes, type filtering, cached dates, and metadata precedence");
         }

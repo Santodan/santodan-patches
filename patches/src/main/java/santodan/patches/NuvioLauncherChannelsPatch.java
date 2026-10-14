@@ -29,14 +29,13 @@ public final class NuvioLauncherChannelsPatch {
             builder.execute(context -> {
                 NuvioStreamPreloadPatch.validateTarget(context.getPackageMetadata().getPackageName(),
                     context.getPackageMetadata().getVersionName());
-                if (NuvioLayout.BETA5.equals(context.getPackageMetadata().getVersionName()))
-                    hookContinueWatching(context.mutableClassDefBy("Ll9/k;"));
+                hookContinueWatching(context.mutableClassDefBy("Ll9/k;"));
                 hookReturn(NuvioRemainingEpisodesPatch.unique(context.mutableClassDefBy("Lp8/e;"), "<init>", 1), "registerComponent");
-                MutableClass home = context.mutableClassDefBy(NuvioLayout.current("Lla/z3;"));
-                hookReturn(NuvioRemainingEpisodesPatch.unique(home, "<init>", 25), "observeHome");
+                MutableClass home = context.mutableClassDefBy("Lqa/a4;");
+                hookReturn(NuvioRemainingEpisodesPatch.unique(home, "<init>", 27), "observeHome");
                 insert(NuvioRemainingEpisodesPatch.unique(home, "onCleared", 0), 0, "stopHome");
                 hookReturn(NuvioRemainingEpisodesPatch.unique(context.mutableClassDefBy(
-                    NuvioLayout.BETA5.equals(context.getPackageMetadata().getVersionName()) ? "Lv9/t0;" : "Lv9/u0;"), "<init>", 8), "observeLibrary");
+                    "Lz9/u0;"), "<init>", 8), "observeLibrary");
                 return Unit.INSTANCE;
             });
             return Unit.INSTANCE;
@@ -52,7 +51,7 @@ public final class NuvioLauncherChannelsPatch {
             if (!(instruction instanceof com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction) ||
                 !(instruction instanceof com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction)) continue;
             var reference = ((com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction) instruction).getReference();
-            if (!reference.toString().equals("Lcom/nuvio/tv/data/local/q0;->n:Z")) continue;
+            if (!reference.toString().equals("Lcom/nuvio/tv/data/local/t0;->n:Z")) continue;
             var registers = (com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction) instruction;
             target.getImplementation().replaceInstruction(i, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
                 registers.getRegisterB(), 1, new ImmutableMethodReference(EXTENSION, "effectiveCachedHasAired", List.of("Ljava/lang/Object;"), "Z")));

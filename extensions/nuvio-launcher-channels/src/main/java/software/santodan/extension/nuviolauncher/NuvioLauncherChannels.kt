@@ -38,11 +38,11 @@ object NuvioLauncherChannels {
         if (latest()) LauncherArtwork.uri(app(), tile, ::requestPublish) else tile.background ?: tile.poster
     } }
     private val artworkSettingsListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> requestPublish() }
-    private fun latest() = app().packageManager.getPackageInfo(app().packageName, 0).versionName == "1.1.0-beta.5"
+    private fun latest() = NuvioBeta6.active()
 
     private fun app(): Application = Class.forName("android.app.ActivityThread")
         .getMethod("currentApplication").invoke(null) as Application
-    private fun field(owner: Any, name: String): Any? = owner.javaClass.getDeclaredField(name)
+    private fun field(owner: Any, name: String): Any? = owner.javaClass.getDeclaredField(NuvioBeta6.field(owner.javaClass, name))
         .apply { isAccessible = true }.get(owner)
     private fun method(owner: Class<*>, name: String, count: Int) = owner.declaredMethods
         .single { it.name == name && it.parameterCount == count }.apply { isAccessible = true }
@@ -333,8 +333,8 @@ object NuvioLauncherChannels {
             val redraw = menuRevision ?: stateFactory.invoke(null, 0).also { menuRevision = it }
             call(redraw, "getValue") // register Compose's observation of changing source choices
             val selected = selected(profile)
-            val beta5 = app().packageManager.getPackageInfo(app().packageName, 0).versionName == "1.1.0-beta.5"
-            val toggleRow = method(loader.loadClass(if (beta5) "sa.db" else "sa.eb"), "m", 13)
+            val beta6 = NuvioBeta6.active()
+            val toggleRow = method(loader.loadClass(NuvioBeta6.name("sa.db")), "m", 13)
             fun renderSource(source: Source, rowComposer: Any) {
                 val stateKey = profile + ":" + source.key
                 val state = uiStates.getOrPut(stateKey) { stateFactory.invoke(null, source.key in selected) }
@@ -352,13 +352,13 @@ object NuvioLauncherChannels {
                     }
                 }
                 val group = when (source.group) { "catalog" -> "Catalog"; "tracking" -> "Tracking list"; else -> source.title }
-                val title = if (beta5 && source.sourceName.isNotBlank()) source.title.replace(" · ${source.sourceName}", "") else source.title
+                val title = if (beta6 && source.sourceName.isNotBlank()) source.title.replace(" · ${source.sourceName}", "") else source.title
                 toggleRow.invoke(null, title, "$group channel on the Android TV launcher", call(state, "getValue"),
                     toggle, null, callback(loader) {}, false, null, 0L, false, rowComposer, 0, 1008)
             }
             renderSource(Source("library", "Library", "library", emptyList()), composer)
             renderSource(Source("upcoming", "Upcoming", "upcoming", emptyList()), composer)
-            if (!beta5) {
+            if (!beta6) {
                 choices.filter { it.group == "catalog" || it.group == "tracking" }
                     .sortedWith(compareBy({ it.group }, { it.title })).forEach { renderSource(it, composer) }
             } else for ((group, title) in listOf("catalog" to "Catalogs", "tracking" to "Tracking lists")) {
@@ -388,7 +388,7 @@ object NuvioLauncherChannels {
         val content = loader.loadClass("q1.s").getDeclaredConstructor(Int::class.javaPrimitiveType, Any::class.java, Boolean::class.javaPrimitiveType)
             .newInstance(key.hashCode(), contentFunction, true)
         val modifier = loader.loadClass("w1.n").getDeclaredField("b").apply { isAccessible = true }.get(null)
-        method(loader.loadClass("sa.kc"), "a", 11).invoke(null,
+        method(loader.loadClass(NuvioBeta6.name("sa.kc")), "a", 11).invoke(null,
             title, description, call(state, "getValue"), toggle, modifier, null, null, callback(loader) {}, content, composer, 0)
     }
     private fun callback(loader: ClassLoader, action: () -> Unit): Any =

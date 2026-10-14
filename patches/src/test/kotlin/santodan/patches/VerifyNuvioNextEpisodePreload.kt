@@ -30,7 +30,7 @@ fun main() = runBlocking {
     check(StreamTargets.player(PlayerState(), 1, true, normalizeType = true, requestType = "movie").next == null)
     check(StreamTargets.player(PlayerState(), 1, true, normalizeType = true, requestType = "other").next == null)
     check(StreamTargets.player(PlayerState(), 1, true, normalizeType = true, requestType = null).next == null)
-    println("PASS: beta5 series/TV playback aliases normalize to the native series search key")
+    println("PASS: beta6 series/TV playback aliases normalize to the native series search key")
     println("PASS: native player fields, exact next IDs, unavailable/unaired episodes and playback readiness")
 
     val ticks = Channel<Unit>()

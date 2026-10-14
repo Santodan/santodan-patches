@@ -19,7 +19,7 @@ import kotlin.Unit;
 public final class NuvioMovieReleaseDatesPatch {
     public static final String NAME = "NuvioTV - Upcoming movie dates in library and collections";
     static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = NuvioLayout.BETA4;
+    static final String VERSION = NuvioLayout.BETA6;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuviomovierelease/NuvioMovieReleaseDates;";
 
     private NuvioMovieReleaseDatesPatch() {}
@@ -36,12 +36,12 @@ public final class NuvioMovieReleaseDatesPatch {
                 builder.execute(context -> {
                     String version = context.getPackageMetadata().getVersionName();
                     NuvioLayout.use(version);
-                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || (!NuvioLayout.BETA4.equals(version) && !NuvioLayout.BETA5.equals(version)))
+                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.BETA6.equals(version))
                         throw NuvioFinaleDatesPatch.unsupported("Expected " + PACKAGE + " " + VERSION);
-                    NuvioFinaleDatesPatch.hookItems(context.mutableClassDefBy(NuvioLayout.current("Lba/i1;")), EXTENSION);
-                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy(NuvioLayout.current("Lba/n3;")), EXTENSION);
-                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy("Lba/q1;"), EXTENSION);
-                    for (String type : List.of(NuvioLayout.current("Lba/n3;"), "Lba/q1;", NuvioLayout.current("Lba/o3;"), "Lba/s1;"))
+                    NuvioFinaleDatesPatch.hookItems(context.mutableClassDefBy("Lfa/d1;"), EXTENSION);
+                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy("Lfa/e3;"), EXTENSION);
+                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy("Lfa/i1;"), EXTENSION);
+                    for (String type : List.of("Lfa/e3;", "Lfa/i1;", "Lfa/f3;", "Lfa/k1;"))
                         NuvioFinaleDatesPatch.hookContext(context.mutableClassDefBy(type), EXTENSION);
                     return Unit.INSTANCE;
                 });

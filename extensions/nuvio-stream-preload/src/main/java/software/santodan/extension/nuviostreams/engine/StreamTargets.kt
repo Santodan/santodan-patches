@@ -1,5 +1,6 @@
 package software.santodan.extension.nuviostreams.engine
 
+import software.santodan.extension.nuviostreams.NuvioBeta6
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.Locale
@@ -11,7 +12,7 @@ object StreamTargets {
     private val fields = ConcurrentHashMap<Pair<Class<*>, String>, Field>()
     private val methods = ConcurrentHashMap<Pair<Class<*>, String>, Method>()
     fun field(owner: Any, name: String): Any? = fields.getOrPut(owner.javaClass to name) {
-        owner.javaClass.getDeclaredField(name).apply { isAccessible = true }
+        owner.javaClass.getDeclaredField(NuvioBeta6.field(owner.javaClass, name)).apply { isAccessible = true }
     }.get(owner)
     fun get(owner: Any, name: String): Any? = methods.getOrPut(owner.javaClass to name) {
         owner.javaClass.getDeclaredMethod(name).apply { isAccessible = true }

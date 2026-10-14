@@ -30,7 +30,7 @@ public final class NuvioDateLabelStyle {
             .newInstance(scope.hashCode(), callback(loader, "Function3", args -> {
                 renderRows(args[1], scope, dialog); return unit(loader);
             }), true);
-        method(Class.forName("sa.kc", false, loader), "a", 11).invoke(null,
+        method(Class.forName(NuvioBeta6.name("sa.kc"), false, loader), "a", 11).invoke(null,
             title, "Position, label size and color, font size and color", get(expanded),
             toggle, staticValue(loader, "w1.n", "b"), null, null, noop, body, composer, 0);
         int property = ((Number) get(dialog)).intValue();
@@ -41,7 +41,7 @@ public final class NuvioDateLabelStyle {
         }
         String[] choices = DateLabelStyle.choices(property);
         java.util.ArrayList<Object> options = new java.util.ArrayList<>();
-        Class<?> optionType = Class.forName("sa.db".equals(rowsOwner()) ? "sa.lb" : "sa.mb", false, loader);
+        Class<?> optionType = Class.forName(NuvioBeta6.name("sa.db").equals(rowsOwner()) ? NuvioBeta6.name("sa.lb") : NuvioBeta6.name("sa.mb"), false, loader);
         java.lang.reflect.Constructor<?> option = Arrays.stream(optionType.getDeclaredConstructors())
             .filter(value -> value.getParameterCount() == 6).findFirst().orElseThrow();
         option.setAccessible(true);
@@ -110,7 +110,7 @@ public final class NuvioDateLabelStyle {
     public static Object[] build(ClassLoader loader, Object boxScope, Object composer, String shapeOwner, String ignored) throws Exception {
         String scope = PREFS;
         subscribe(loader, scope);
-        Object typography = method(composer.getClass(), "j", 1).invoke(composer, staticValue(loader, "x5.i2", "a"));
+        Object typography = method(composer.getClass(), "j", 1).invoke(composer, staticValue(loader, NuvioBeta6.name("x5.i2"), "a"));
         Object textStyle = field(typography.getClass(), "o").get(typography);
         Object modifier = staticValue(loader, "w1.n", "b");
         modifier = method(boxScope.getClass(), "a", 2).invoke(boxScope, modifier,
@@ -125,7 +125,7 @@ public final class NuvioDateLabelStyle {
         modifier = method(Class.forName("y.l", false, loader), "g", 3).invoke(null, modifier,
             color(scope, 2), staticValue(loader, "d2.g0", "b"));
         float scale = percent(scope, 1) / 100f;
-        Object spacing = staticValue(loader, "va.l0", "a");
+        Object spacing = staticValue(loader, NuvioBeta6.name("va.l0"), "a");
         float horizontal = field(spacing.getClass(), "e").getFloat(spacing);
         float vertical = field(spacing.getClass(), "d").getFloat(spacing);
         Object span = field(textStyle.getClass(), "a").get(textStyle);
@@ -137,7 +137,7 @@ public final class NuvioDateLabelStyle {
         return new Object[]{modifier, color(scope, 4), fontSize, textStyle};
     }
 
-    private static String playbackOwner() throws Exception { return "sa.db".equals(rowsOwner()) ? "sa.p3" : "sa.o3"; }
+    private static String playbackOwner() throws Exception { return NuvioBeta6.name("sa.db").equals(rowsOwner()) ? NuvioBeta6.name("sa.p3") : NuvioBeta6.name("sa.o3"); }
     private static String percentKey(int property) { return "date_label_" + DateLabelStyle.KEYS[property] + "_percent"; }
     private static String colorKey(int property) { return "date_label_" + DateLabelStyle.KEYS[property] + "_color"; }
     private static int percent(String scope, int property) throws Exception {
@@ -185,10 +185,7 @@ public final class NuvioDateLabelStyle {
     private static void set(Object state, Object value) throws Exception { method(state.getClass(), "setValue", 1).invoke(state, value); }
     private static Application application() throws Exception { return (Application) Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null); }
     private static SharedPreferences preferences(String scope) throws Exception { return application().getSharedPreferences(scope, Context.MODE_PRIVATE); }
-    private static String rowsOwner() throws Exception {
-        Application app = application();
-        return "1.1.0-beta.5".equals(app.getPackageManager().getPackageInfo(app.getPackageName(), 0).versionName) ? "sa.db" : "sa.eb";
-    }
+    private static String rowsOwner() { return NuvioBeta6.name("sa.db"); }
     private interface Callback { Object invoke(Object[] args) throws Exception; }
     private static Object callback(ClassLoader loader, String type, Callback action) throws Exception {
         return Proxy.newProxyInstance(loader, new Class<?>[]{Class.forName("kotlin.jvm.functions." + type, false, loader)}, (proxy, method, args) -> {
@@ -205,7 +202,7 @@ public final class NuvioDateLabelStyle {
     private static Object staticValue(ClassLoader loader, String owner, String name) throws Exception { return field(Class.forName(owner, false, loader), name).get(null); }
     private static Field field(Class<?> owner, String name) throws Exception { Field field = owner.getDeclaredField(name); field.setAccessible(true); return field; }
     private static Method method(Class<?> owner, String name, int count) throws Exception {
-        for (Method method : owner.getDeclaredMethods()) if (method.getName().equals(name) && method.getParameterCount() == count) { method.setAccessible(true); return method; }
+        for (Method method : owner.getDeclaredMethods()) if (method.getName().equals(NuvioBeta6.method(owner, name)) && method.getParameterCount() == count) { method.setAccessible(true); return method; }
         throw new NoSuchMethodException(owner.getName() + '.' + name);
     }
 }

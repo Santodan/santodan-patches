@@ -1,7 +1,7 @@
-package ka
+package pa
 import software.santodan.extension.nuviostreams.engine.StreamTargets
 class ResolvedVideo(val id: String, val season: Int?, val episode: Int?)
-object e1 {
+object z0 {
     @JvmStatic fun C(meta: Any, next: Any?, episodes: List<*>): Any? {
         if (StreamTargets.get(meta, "getApiType") == "movie") return null
         if (next == null) return null

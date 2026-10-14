@@ -52,7 +52,7 @@ public final class NuvioSettingsMenu {
             });
             Field modifier = Class.forName("w1.n", false, loader).getDeclaredField("b");
             modifier.setAccessible(true);
-            method(Class.forName("sa.kc", false, loader), "a", 11).invoke(null,
+            method(Class.forName(NuvioBeta6.name("sa.kc"), false, loader), "a", 11).invoke(null,
                 "Santodan-Patches", "Settings for installed Santodan patches", expanded,
                 toggle, modifier.get(null), null, null, noop, content, composer, 0);
         } catch (Throwable error) { Log.e(TAG, "Layout menu rendering failed", error); }
@@ -85,7 +85,7 @@ public final class NuvioSettingsMenu {
                     // Native SettingsSectionLabel: non-focusable text with the app's spacing and typography.
                     Field modifier = Class.forName("w1.n", false, loader).getDeclaredField("b");
                     modifier.setAccessible(true);
-                    method(Class.forName("sa.kc", false, loader), "e", 6)
+                    method(Class.forName(NuvioBeta6.name("sa.kc"), false, loader), "e", 6)
                         .invoke(null, 0, 4, composer, label, null, modifier.get(null));
                     labelled = true;
                 }

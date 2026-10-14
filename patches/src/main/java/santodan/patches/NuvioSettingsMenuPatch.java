@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import kotlin.Unit;
 
-/** Shared, unnamed dependency: installed once by any beta4 runtime settings patch. */
+/** Shared, unnamed dependency: installed once by any NuvioTV runtime settings patch. */
 public final class NuvioSettingsMenuPatch {
     private static BytecodePatch patch;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuviomenu/NuvioSettingsMenu;";
@@ -33,8 +33,8 @@ public final class NuvioSettingsMenuPatch {
                 NuvioLayout.use(version);
                 if (!"com.nuvio.tv".equals(context.getPackageMetadata().getPackageName()))
                     throw NuvioAiringSeriesPatch.unsupported("Expected com.nuvio.tv");
-                // Keep beta2's existing UI contracts; beta4 introduces collapsible Layout sections.
-                if (NuvioLayout.modern(version)) hookLayoutList(context.mutableClassDefBy("Lja/n;"));
+                // Install the shared collapsible Layout section.
+                hookLayoutList(context.mutableClassDefBy("Loa/m;"));
                 return Unit.INSTANCE;
             });
             return Unit.INSTANCE;
@@ -48,9 +48,9 @@ public final class NuvioSettingsMenuPatch {
         int matches = 0;
         for (int i = instructions.size() - 1; i >= 0; i--) {
             Instruction instruction = instructions.get(i);
-            if (!NuvioAiringSeriesPatch.calls(instruction, NuvioLayout.current("Lja/i2;"), "<init>")) continue;
+            if (!NuvioAiringSeriesPatch.calls(instruction, "Loa/d2;", "<init>")) continue;
             MethodReference constructor = (MethodReference) ((ReferenceInstruction) instruction).getReference();
-            if (!constructor.getParameterTypes().contains("Lsa/j6;")) continue;
+            if (!constructor.getParameterTypes().contains("Lxa/o6;")) continue;
             int anchor = -1;
             for (int j = i + 1; j < Math.min(i + 12, instructions.size()); j++) {
                 if (NuvioAiringSeriesPatch.calls(instructions.get(j), "Lg0/i;", "q")) { anchor = j; break; }

@@ -36,7 +36,7 @@ import kotlin.Unit;
 public final class NuvioFinaleDatesPatch {
     public static final String NAME = "NuvioTV - Finale dates in library and collections";
     static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = NuvioLayout.BETA4;
+    static final String VERSION = NuvioLayout.BETA6;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuviofinale/NuvioFinaleDates;";
 
     private NuvioFinaleDatesPatch() {}
@@ -53,12 +53,12 @@ public final class NuvioFinaleDatesPatch {
                 builder.execute(context -> {
                     String version = context.getPackageMetadata().getVersionName();
                 NuvioLayout.use(version);
-                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || (!NuvioLayout.BETA4.equals(version) && !NuvioLayout.BETA5.equals(version)))
+                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.BETA6.equals(version))
                         throw unsupported("Expected " + PACKAGE + " " + VERSION);
-                    hookItems(context.mutableClassDefBy(NuvioLayout.current("Lba/i1;")));
-                    hookCard(context.mutableClassDefBy(NuvioLayout.current("Lba/n3;")));
-                    hookCard(context.mutableClassDefBy("Lba/q1;"));
-                    for (String type : List.of(NuvioLayout.current("Lba/n3;"), "Lba/q1;", NuvioLayout.current("Lba/o3;"), "Lba/s1;"))
+                    hookItems(context.mutableClassDefBy("Lfa/d1;"));
+                    hookCard(context.mutableClassDefBy("Lfa/e3;"));
+                    hookCard(context.mutableClassDefBy("Lfa/i1;"));
+                    for (String type : List.of("Lfa/e3;", "Lfa/i1;", "Lfa/f3;", "Lfa/k1;"))
                         hookContext(context.mutableClassDefBy(type));
                     return Unit.INSTANCE;
                 });
@@ -66,34 +66,7 @@ public final class NuvioFinaleDatesPatch {
             });
     }
 
-    static void hookSettings(MutableClass owner, int showUnairedSub) {
-        boolean beta4 = NuvioLayout.current("Lsa/o3;").equals(owner.getType());
-        MutableMethod match = null;
-        int insert = -1;
-        int composer = -1;
-        for (MutableMethod candidate : owner.getMethods()) {
-            List<Instruction> ins = instructions(candidate);
-            for (int i = 0; i < ins.size(); i++) {
-                if (!(ins.get(i) instanceof NarrowLiteralInstruction)
-                    || ((NarrowLiteralInstruction) ins.get(i)).getNarrowLiteral() != showUnairedSub) continue;
-                int localComposer = -1;
-                int localInsert = -1;
-                for (int j = i + 1; j < Math.min(ins.size(), i + 45); j++) {
-                    if (calls(ins.get(j), beta4 ? "Lc7/a;" : "Lt6/g;", beta4 ? "P" : "I") && ins.get(j) instanceof FiveRegisterInstruction)
-                        localComposer = ((FiveRegisterInstruction) ins.get(j)).getRegisterD();
-                    if (calls(ins.get(j), beta4 ? NuvioLayout.current("Lsa/eb;") : "Lfb/h3;", beta4 ? "m" : "t")) { localInsert = j + 1; break; }
-                }
-                if (localComposer >= 0 && localComposer <= 15 && localInsert >= 0) {
-                    if (match != null) throw unsupported("Multiple Continue Watching settings anchors found");
-                    match = candidate; insert = localInsert; composer = localComposer;
-                }
-            }
-        }
-        if (match == null) throw unsupported("Continue Watching settings anchor not found");
-        match.getImplementation().addInstruction(insert,
-            new BuilderInstruction35c(Opcode.INVOKE_STATIC, 1, composer, 0, 0, 0, 0,
-                method(EXTENSION, "renderSettings", Collections.singletonList("Ljava/lang/Object;"), "V")));
-    }
+
 
     static void hookItems(MutableClass owner) { hookItems(owner, EXTENSION); }
 
@@ -102,8 +75,8 @@ public final class NuvioFinaleDatesPatch {
         List<Instruction> ins = instructions(target);
         int matches = 0;
         for (int i = ins.size() - 1; i >= 0; i--) {
-            String hook = calls(ins.get(i), NuvioLayout.current("Lba/s3;"), "p") ? "libraryItem"
-                : calls(ins.get(i), NuvioLayout.current("Lba/a2;"), "a") ? "collectionItem" : null;
+            String hook = calls(ins.get(i), "Lfa/j3;", "p") ? "libraryItem"
+                : calls(ins.get(i), "Lfa/r1;", "a") ? "collectionItem" : null;
             if (hook == null) continue;
             if (!(ins.get(i) instanceof RegisterRangeInstruction)) throw unsupported("Item card invocation changed");
             int item = ((RegisterRangeInstruction) ins.get(i)).getStartRegister();
@@ -120,7 +93,7 @@ public final class NuvioFinaleDatesPatch {
 
     static void hookContext(MutableClass owner, String extension) {
         int constructors = 0;
-        boolean restart = NuvioLayout.current("Lba/o3;").equals(owner.getType()) || "Lba/s1;".equals(owner.getType());
+        boolean restart = "Lfa/f3;".equals(owner.getType()) || "Lfa/k1;".equals(owner.getType());
         for (MutableMethod target : owner.getMethods()) {
             if (target.getImplementation() == null) continue;
             boolean constructor = "<init>".equals(target.getName());
@@ -150,13 +123,13 @@ public final class NuvioFinaleDatesPatch {
     static void hookCard(MutableClass owner) { hookCard(owner, EXTENSION); }
 
     static void hookCard(MutableClass owner, String extension) {
-        boolean library = NuvioLayout.current("Lba/n3;").equals(owner.getType());
+        boolean library = "Lfa/e3;".equals(owner.getType());
         MutableMethod target = unique(owner, "invoke", 3);
-        if (target.getImplementation().getRegisterCount() != (library ? 34 : 58))
+        if (target.getImplementation().getRegisterCount() != (library ? 34 : 53))
             throw unsupported("Finale card register layout changed");
         List<Instruction> ins = instructions(target);
         List<Integer> images = new ArrayList<>();
-        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "Lc7/a;", "b")) images.add(i);
+        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "La/a;", "b")) images.add(i);
         if (images.size() != (library ? 2 : 3)) throw unsupported("Finale card image anchors changed");
         // The third collection image is the logo; only badge the two poster branches.
         for (int n = 1; n >= 0; n--) {
@@ -179,7 +152,7 @@ public final class NuvioFinaleDatesPatch {
                 && method.getImplementation() != null) {
                 // Beta4 has a 27-argument default-mask overload as well as the real
                 // model constructor. Register only fully initialized model instances.
-                if (NuvioLayout.current("Lla/aa;").equals(owner.getType()) && "<init>".equals(name)
+                if ("Lqa/y9;".equals(owner.getType()) && "<init>".equals(name)
                     && !"Lcom/nuvio/tv/domain/model/MDBListRatings;".contentEquals(
                         method.getParameterTypes().get(parameters - 1))) continue;
                 if (result != null) throw unsupported("Multiple " + owner.getType() + "->" + name + " matches");

@@ -675,3 +675,19 @@ Movie-date lookup optimization: a plain past release year skips catalog requests
 current/future years and ambiguous year ranges still require exact dates. Exact
 preview dates retain precedence. Setting-change diagnostics include the scope,
 while normal settings rendering stays silent. Runtime checks cover these rules.
+
+## Car Scanner 2.1.50 managed premium-status patch
+
+`CarScannerManagedPatch` is an optional raw-resource patch targeting only the
+verified original `com.ovz.carscanner` 2.1.50 APK. This .NET MAUI app keeps its
+central purchase-status getter in `CarScannerMaui.dll`, not in DEX.
+`CarScannerAssemblyStore` validates exact store/assembly/AOT hashes, decodes XALZ,
+rewrites `SharedSettings.get_AdsProductPurchased()` to `ldc.i4.1; ret`, and rebuilds
+the XABA/ELF payload with an uncompressed managed image. Preserve MVID/metadata,
+all other managed bytes, unrelated images, and native libraries. The getter's
+AOT table entry is the missing-method sentinel; do not infer that any other
+method lacks AOT code. See `docs/CarScannerHandoff.md` for offsets and evidence.
+Run `:patches:verifyCarScannerManaged` and `:patches:verifyCarScannerManagedBundle`
+alongside `:patches:buildAndroid :patches:generatePatchesList`. Host application
+and IL reload are verified; final APK rebuild/signing and device behavior remain
+untested. Do not extend older versions or claim all premium gates are covered.

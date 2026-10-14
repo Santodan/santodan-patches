@@ -85,6 +85,22 @@ tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
 }
 
 tasks {
+    register<JavaExec>("verifyCarScannerManaged") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyCarScannerManaged")
+        maxHeapSize = "1g"
+        args(file("../../OriginalApps/Car-Scanner-ELM-OBD2_2.1.50.apk").absolutePath)
+    }
+    register<JavaExec>("verifyCarScannerManagedBundle") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyCarScannerManagedBundleKt")
+        maxHeapSize = "2g"
+        args(file("../../OriginalApps/Car-Scanner-ELM-OBD2_2.1.50.apk").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/carscanner-managed-bundle").absolutePath)
+    }
     register<JavaExec>("verifyNuvioLauncherUi") {
         dependsOn("testClasses", ":extensions:nuvio-launcher-channels:compileReleaseKotlin")
         classpath = sourceSets["test"].runtimeClasspath + files(

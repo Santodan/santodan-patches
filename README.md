@@ -11,7 +11,24 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.10.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.10.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;20 patches total
+> **[v0.10.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.10.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;21 patches total
+<details>
+<summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
+<br>
+
+**Premium status** supports Car Scanner ELM OBD2 **2.1.50**. Select **Car Scanner - Premium status** when patching; it is disabled by default. The patch makes the app's central premium-status check return true. The user reported that the patched app appears to work on device; individual premium features and purchase/restore behavior have not all been verified. See [implementation and verification details](docs/CarScannerHandoff.md).
+
+**🎯 Supported versions:**
+
+| 2.1.50 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Car Scanner - Premium status](#car-scanner-premium-status) | Makes the managed premium-status getter return true in Car Scanner 2.1.50. |  |
+
+</details>
+
 <details>
 <summary>📦 MEO (Android TV)&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -204,6 +221,7 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 
 | App | Package | Supported version | Patch |
 | --- | --- | --- | --- |
+| Car Scanner ELM OBD2 | `com.ovz.carscanner` | `2.1.50` | Premium status |
 | MEO (Android TV) | `com.alticelabs.meo.androidtv` | `5.7.0` | Side-by-side installation; Spoof supported device |
 | NuvioTV | `com.nuvio.tv` | `1.1.0-beta.6` | Android TV launcher channels; Finale dates in library and collections; Keep airing series in Upcoming; Merge tracking progress; Preload streams for next episode; Preload streams in Continue Watching; Preload streams on detail page; Remaining episodes in Continue Watching; Upcoming movie dates in library and collections; Side-by-side installation |
 | Reddit | `com.reddit.frontpage` | `2026.37.0` | Content filters (Experimental); Show flairs in home feed (Experimental); Start as guest |

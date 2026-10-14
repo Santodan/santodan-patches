@@ -457,5 +457,6 @@ AOT table entry is the missing-method sentinel; do not infer that any other
 method lacks AOT code. See `docs/CarScannerHandoff.md` for offsets and evidence.
 Run `:patches:verifyCarScannerManaged` and `:patches:verifyCarScannerManagedBundle`
 alongside `:patches:buildAndroid :patches:generatePatchesList`. Host application
-and IL reload are verified; final APK rebuild/signing and device behavior remain
-untested. Do not extend older versions or claim all premium gates are covered.
+and IL reload are verified. The user reported that the patched app appears to
+work on device; individual premium gates and purchase/restore behavior have not
+all been verified. Do not extend older versions or claim all premium gates are covered.

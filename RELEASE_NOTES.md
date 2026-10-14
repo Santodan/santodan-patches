@@ -1,5 +1,6 @@
 ## Pending changes since v0.10.1
 
+- Add **Car Scanner - Premium status** for Car Scanner ELM OBD2 **2.1.50**. The optional patch makes the central premium-status getter return true. Original-input and packaged-bundle checks passed; the user reported that the patched app appears to work on device.
 - Fix beta.5 delayed preloading using the presentation content type instead of the native controller request type; normalize series/TV requests to the native series search key and log readiness diagnostics.
 - Fix next-episode stream reuse on NuvioTV beta.5 by guarding refresh at the native picker entry, including branches that could bypass the earlier call-site guard.
 - Suppress the separate native threshold preload while the next-episode patch setting is enabled. Keep explicit source refresh and the disabled native behavior available.

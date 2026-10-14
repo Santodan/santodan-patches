@@ -3,8 +3,9 @@
 The optional `Car Scanner - Premium status` raw-resource patch rewrites
 `SharedSettings.get_AdsProductPurchased()` to return true in the exact original
 2.1.50 input. It remains disabled by default. It does not fabricate billing
-responses or change purchase/restore writers. Device behavior remains untested;
-server-controlled features and any independent gates are not covered.
+responses or change purchase/restore writers. The user reported that the patched
+app appears to work on device. Individual features, server-controlled features,
+independent gates, and purchase/restore behavior have not all been verified.
 
 ## Verified input and artifact provenance
 
@@ -159,3 +160,7 @@ original declaring type/signature/RVA, and `ldc.i4.1; ret` at the method start.
 The patch was built and applied on the host; no final APK was rebuilt, signed,
 installed, or tested on a device. Device launch, premium UI/feature behavior,
 and purchase/restore lifecycle behavior remain to be checked.
+
+Subsequent user feedback: the patched app appears to work on device. This is
+user-reported validation; it does not establish every premium feature or the
+purchase/restore lifecycle.

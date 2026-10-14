@@ -5,7 +5,7 @@ group = "software.santodan.patches"
 patches {
     about {
         name = "Santodan Patches"
-        description = "Independent Morphe patches for MEO, NuvioTV, Reddit, Pillo, and Peafowl"
+        description = "Independent Morphe patches for Car Scanner, MEO, NuvioTV, Reddit, Pillo, and Peafowl"
         source = "https://github.com/Santodan/santodan-patches"
         author = "Santodan"
         contact = "https://github.com/Santodan"

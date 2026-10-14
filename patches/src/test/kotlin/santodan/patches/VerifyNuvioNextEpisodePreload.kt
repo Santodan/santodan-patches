@@ -23,6 +23,14 @@ fun main() = runBlocking {
     check(StreamTargets.player(PlayerState(k1 = PlayerNext("tt1:1:2", 1, 2, h = false)), 1, true).next == null)
     check(StreamTargets.player(PlayerState(k1 = PlayerNext("tt1:1:2", 1, 2, i = false, g = null)), 1, true).next == null)
     check(StreamTargets.player(PlayerState(g = "movie"), 1, true).next == null)
+    for (type in listOf("series", "SERIES", "Series", "tv", "TV")) {
+        val normalized = StreamTargets.player(PlayerState(g = ""), 1, true, normalizeType = true, requestType = type)
+        check(normalized.next == parsed.next && normalized.playing)
+    }
+    check(StreamTargets.player(PlayerState(), 1, true, normalizeType = true, requestType = "movie").next == null)
+    check(StreamTargets.player(PlayerState(), 1, true, normalizeType = true, requestType = "other").next == null)
+    check(StreamTargets.player(PlayerState(), 1, true, normalizeType = true, requestType = null).next == null)
+    println("PASS: beta5 series/TV playback aliases normalize to the native series search key")
     println("PASS: native player fields, exact next IDs, unavailable/unaired episodes and playback readiness")
 
     val ticks = Channel<Unit>()

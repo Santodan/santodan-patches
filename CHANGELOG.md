@@ -6,7 +6,7 @@
 
 ### ✨ New Features
 
-* **nuvio:** preload next episode sources after playback starts [skip ci] ([05ea0af](https://github.com/Santodan/santodan-patches/commit/05ea0af0da590127f73788981ea49b08df467264))
+* **nuviotv:** preload next episode sources after playback starts [skip ci] ([05ea0af](https://github.com/Santodan/santodan-patches/commit/05ea0af0da590127f73788981ea49b08df467264))
 
 ### 🔧 Improvements
 
@@ -17,15 +17,20 @@
 ### 🐛 Bug Fixes
 
 * **build:** resolve Android test SDK on CI runners ([957501c](https://github.com/Santodan/santodan-patches/commit/957501ca771aa5f64a71c62c1aced6bd7676d20f))
-* **nuvio:** defer merged progress work during playback [skip ci] ([e69eff2](https://github.com/Santodan/santodan-patches/commit/e69eff25705851433c7ac7e6b6e4a675b82dd66f))
+* **nuviotv:** defer merged progress work during playback [skip ci] ([e69eff2](https://github.com/Santodan/santodan-patches/commit/e69eff25705851433c7ac7e6b6e4a675b82dd66f))
 
 ### ✨ New Features
 
-* **nuvio:** show merged provider icons and refresh seeds [skip ci] ([7512085](https://github.com/Santodan/santodan-patches/commit/7512085bd6a7d9bad2fc32d32e4bf94517f3b18f))
+* **nuviotv:** show merged provider icons and refresh seeds [skip ci] ([7512085](https://github.com/Santodan/santodan-patches/commit/7512085bd6a7d9bad2fc32d32e4bf94517f3b18f))
 * **pillo:** add weight change summaries and selectable comparison date ([9a723a4](https://github.com/Santodan/santodan-patches/commit/9a723a4bbd3e0feec3a3dc4619b1d6282284ef28))
 * **pillo:** import weight history from JSON [skip ci] ([8079226](https://github.com/Santodan/santodan-patches/commit/807922648b4aee39659263ef712f586ac6546dd8))
 
 ## Unreleased
+
+### Bug Fixes
+
+* **nuviotv:** read the beta.5 native playback request type for delayed next-episode preloading, accepting series/TV aliases even when the presentation content type is empty
+* **nuviotv:** on beta.5, guard next-episode picker refresh at method entry so transition branches cannot bypass it; suppress the separate threshold preload while the delayed next-episode patch is enabled, preserving explicit refresh and the disabled native behavior
 
 ### New Features
 
@@ -117,13 +122,13 @@
 
 ### Features
 
-* **nuvio:** add an optional merged-provider icon to Continue Watching cards on beta.4 and beta.5.
+* **nuviotv:** add an optional merged-provider icon to Continue Watching cards on beta.4 and beta.5.
 
 ### Fixes and diagnostics
 
-* **nuvio:** defer merged refreshes and badge work during playback on beta.4 and beta.5.
-* **nuvio:** reread Next Up seeds after provider history loading to avoid publishing pre-refresh seeds.
-* **nuvio:** log provider seed counts and focused Rage of Bahamut / Virgin Soul merge decisions. The reported disappearing card still requires device verification; toggling merge restored it in the user's test.
+* **nuviotv:** defer merged refreshes and badge work during playback on beta.4 and beta.5.
+* **nuviotv:** reread Next Up seeds after provider history loading to avoid publishing pre-refresh seeds.
+* **nuviotv:** log provider seed counts and focused Rage of Bahamut / Virgin Soul merge decisions. The reported disappearing card still requires device verification; toggling merge restored it in the user's test.
 
 ## [0.9.0](https://github.com/Santodan/santodan-patches/compare/v0.8.0...v0.9.0) (2026-10-08)
 
@@ -133,9 +138,9 @@
 
 ### ✨ New Features
 
-* **nuvio:** label patch settings groups [skip ci] ([c434e81](https://github.com/Santodan/santodan-patches/commit/c434e81f568db2d2fbe19588dcfd3d0800111956))
-* **nuvio:** preload stream sources with diagnostics [skip ci] ([c645e4f](https://github.com/Santodan/santodan-patches/commit/c645e4fa65b743424a75908be15b2e07cc63a484))
-* **nuvio:** show upcoming movie dates in library and collections ([f8d6bd1](https://github.com/Santodan/santodan-patches/commit/f8d6bd1915a4412e0731a9ecb1aed805d9b6aa3f))
+* **nuviotv:** label patch settings groups [skip ci] ([c434e81](https://github.com/Santodan/santodan-patches/commit/c434e81f568db2d2fbe19588dcfd3d0800111956))
+* **nuviotv:** preload stream sources with diagnostics [skip ci] ([c645e4f](https://github.com/Santodan/santodan-patches/commit/c645e4fa65b743424a75908be15b2e07cc63a484))
+* **nuviotv:** show upcoming movie dates in library and collections ([f8d6bd1](https://github.com/Santodan/santodan-patches/commit/f8d6bd1915a4412e0731a9ecb1aed805d9b6aa3f))
 
 ### 🚀 Updated App Support
 
@@ -145,22 +150,22 @@
 
 ### 🐛 Bug Fixes
 
-* **nuvio:** restore merged watched badges without delaying startup ([f53abfa](https://github.com/Santodan/santodan-patches/commit/f53abfa9271461759f9bd6d7c80f7ba6a0c51462))
+* **nuviotv:** restore merged watched badges without delaying startup ([f53abfa](https://github.com/Santodan/santodan-patches/commit/f53abfa9271461759f9bd6d7c80f7ba6a0c51462))
 
 ### ✨ New Features
 
-* **nuvio:** add finale dates in library and collections [skip ci] ([66233a7](https://github.com/Santodan/santodan-patches/commit/66233a7b0253662e7c05c7a78b7964b49708b7b4))
-* **nuvio:** group patch settings under Layout menu [skip ci] ([744d480](https://github.com/Santodan/santodan-patches/commit/744d4807083f494a10ebcbbb56cdc1ac6dec7d6e))
+* **nuviotv:** add finale dates in library and collections [skip ci] ([66233a7](https://github.com/Santodan/santodan-patches/commit/66233a7b0253662e7c05c7a78b7964b49708b7b4))
+* **nuviotv:** group patch settings under Layout menu [skip ci] ([744d480](https://github.com/Santodan/santodan-patches/commit/744d4807083f494a10ebcbbb56cdc1ac6dec7d6e))
 
 ## [0.7.0](https://github.com/Santodan/santodan-patches/compare/v0.6.0...v0.7.0) (2026-10-06)
 
 ### 🐛 Bug Fixes
 
-* **nuvio:** support beta4 and correct progress flow mapping [skip ci] ([7c3d025](https://github.com/Santodan/santodan-patches/commit/7c3d025d4afce7fd7803e0616ca5197c74b21bda))
+* **nuviotv:** support beta4 and correct progress flow mapping [skip ci] ([7c3d025](https://github.com/Santodan/santodan-patches/commit/7c3d025d4afce7fd7803e0616ca5197c74b21bda))
 
 ### ✨ New Features
 
-* **nuvio:** keep airing series in Upcoming with finale date badges ([1fcf816](https://github.com/Santodan/santodan-patches/commit/1fcf8165a15e29e102628135c10f2939dbde4fa5))
+* **nuviotv:** keep airing series in Upcoming with finale date badges ([1fcf816](https://github.com/Santodan/santodan-patches/commit/1fcf8165a15e29e102628135c10f2939dbde4fa5))
 
 ## [0.6.0](https://github.com/Santodan/santodan-patches/compare/v0.5.0...v0.6.0) (2026-10-01)
 

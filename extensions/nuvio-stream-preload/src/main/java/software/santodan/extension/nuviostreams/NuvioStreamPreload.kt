@@ -142,11 +142,17 @@ object NuvioStreamPreload {
         try {
             @Suppress("UNCHECKED_CAST")
             val flow = get(model, "f") as StateFlow<Any>
+            val beta5 = app().packageManager.getPackageInfo(app().packageName, 0).versionName == "1.1.0-beta.5"
+            // Native mb.p searches using k8.Q, not the presentation state's g field.
+            val requestType = if (beta5) field(field(model, "W")!!, "Q") as? String else null
             synchronized(nextObservers) {
                 if (nextObservers.containsKey(model)) return
+                Log.d(TAG, "Next episode playback observer ready")
                 val token = Any()
                 nextObservers[model] = scope.launch {
-                    fun snapshot() = StreamTargets.player(flow.value, profile(), enabled(NEXT))
+                    var lastDiagnostic: String? = null
+                    fun snapshot() = StreamTargets.player(flow.value, profile(), enabled(NEXT),
+                        normalizeType = beta5, requestType = requestType)
                     NextEpisodePreloader(::snapshot, { state ->
                         synchronized(nextPermits) {
                             nextPermits.value = if (state == null) nextPermits.value - token
@@ -164,7 +170,25 @@ object NuvioStreamPreload {
                         }
                         Log.d(TAG, "Preload ${if (result) "completed" else "empty-or-unavailable"} ${targetLabel(target)}")
                         result
-                    }, onError = { Log.e(TAG, "Next episode preload failed", it) }).run()
+                    }, onError = { Log.e(TAG, "Next episode preload failed", it) }, onState = { state, playedMs ->
+                        // Only booleans and elapsed time: never dump native state containing stream URLs.
+                        // Emit changes and five-second milestones up to the buffer grace period.
+                        val native = flow.value
+                        val next = field(native, "k1")
+                        val diagnostic = "enabled=${state.enabled} playing=${state.playing} " +
+                            "nativePlaying=${field(native, "a") == true} buffering=${field(native, "b") == true} " +
+                            "ended=${field(native, "c") == true} exiting=${field(native, "d") != null} " +
+                            "error=${!(field(native, "Y0") as? String).isNullOrBlank()} " +
+                            "series=${if (beta5) requestType.equals("series", true) || requestType.equals("tv", true) else field(native, "g") == "series"} nextPresent=${next != null} " +
+                            "nextAired=${next != null && field(next, "h") == true} " +
+                            "profileReady=${state.profile != null} currentReady=${!state.currentVideoId.isNullOrBlank()} " +
+                            "nextReady=${state.next != null} sameEpisode=${state.next?.videoId == state.currentVideoId} " +
+                            "playedSeconds=${(playedMs.coerceAtMost(30_000) / 5_000) * 5}"
+                        if (diagnostic != lastDiagnostic) {
+                            lastDiagnostic = diagnostic
+                            Log.d(TAG, "Next episode state $diagnostic")
+                        }
+                    }).run()
                 }
             }
         } catch (error: Exception) { Log.e(TAG, "Player observation failed", error) }
@@ -174,7 +198,13 @@ object NuvioStreamPreload {
         synchronized(nextObservers) { nextObservers.remove(model)?.cancel() }
     }
 
-    @JvmStatic fun nextEpisodePickerRefresh(requested: Boolean): Boolean = requested && !enabled(NEXT)
+    @JvmStatic fun nextEpisodePickerRefresh(requested: Boolean): Boolean {
+        val refresh = requested && !enabled(NEXT)
+        if (requested && !refresh) Log.d(TAG, "Next episode picker forceRefresh=false")
+        return refresh
+    }
+
+    @JvmStatic fun useNativeNextEpisodeThresholdPreload(): Boolean = !enabled(NEXT)
 
     /** Allow local scrapers only for the exact next episode during its delayed search. */
     @JvmStatic fun nextEpisodePluginPause(request: Any): Flow<Boolean> {

@@ -1,3 +1,9 @@
+## Pending changes since v0.10.1
+
+- Fix beta.5 delayed preloading using the presentation content type instead of the native controller request type; normalize series/TV requests to the native series search key and log readiness diagnostics.
+- Fix next-episode stream reuse on NuvioTV beta.5 by guarding refresh at the native picker entry, including branches that could bypass the earlier call-site guard.
+- Suppress the separate native threshold preload while the next-episode patch setting is enabled. Keep explicit source refresh and the disabled native behavior available.
+
 ## v0.10.1
 
 - Speed up Reddit startup with home flairs enabled by batching post-detail requests, removing per-card waits, and briefly retaining completed lookups. Emulator feed-availability median improved from approximately 10.8 to 7.0 seconds in three runs per build.

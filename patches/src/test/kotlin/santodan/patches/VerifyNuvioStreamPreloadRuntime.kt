@@ -27,8 +27,10 @@ private class RuntimePlayerNext(@JvmField val a: String, @JvmField val b: Int, @
 private class RuntimePlayerState(@JvmField val w0: String, @JvmField val k1: RuntimePlayerNext?,
                                 @JvmField val a: Boolean = true, @JvmField val b: Boolean = false,
                                 @JvmField val c: Boolean = false, @JvmField val d: Any? = null,
-                                @JvmField val Y0: String? = null, @JvmField val g: String = "series")
+                                @JvmField val Y0: String? = null, @JvmField val g: String = "")
+private class RuntimePlayerController { @JvmField val Q: String = "SERIES" }
 private class RuntimePlayerModel(private val flow: MutableStateFlow<RuntimePlayerState>) {
+    @JvmField val W = RuntimePlayerController()
     fun f(): StateFlow<RuntimePlayerState> = flow
 }
 private class RuntimePluginRequest(@JvmField val o: RuntimeRepository, @JvmField val p: String,
@@ -44,8 +46,11 @@ private class RuntimeRepository(private val profile: RuntimeProfile, private val
     // This fixture models the native session boundary, not the patch's queue or target selection.
     fun j(type: String, id: String, season: Int?, episode: Int?, force: Boolean): Flow<Any> = flow {
         if (Thread.currentThread().name == "main") mainThreadSearches.incrementAndGet()
-        if (force) forceRefreshes.incrementAndGet()
         val key = "${profile.f.value}|$type|$id|$season|$episode"
+        if (force) {
+            forceRefreshes.incrementAndGet()
+            sessions.remove(key)?.cancel() // Native force-refresh really discards the warmed session.
+        }
         val session = sessions.computeIfAbsent(key) {
             scope.async {
                 networkCalls.incrementAndGet()
@@ -118,8 +123,10 @@ fun main() = runBlocking {
         check(repository.networkCalls.get() == 4)
         check(NuvioStreamPreload.nextEpisodePickerRefresh(true))
         check(!NuvioStreamPreload.nextEpisodePickerRefresh(false))
+        check(NuvioStreamPreload.useNativeNextEpisodeThresholdPreload())
         prefs.edit().putBoolean("next_episode", true).apply()
         check(!NuvioStreamPreload.nextEpisodePickerRefresh(true))
+        check(!NuvioStreamPreload.useNativeNextEpisodeThresholdPreload())
         repeat(10) { NuvioStreamPreload.observeNextEpisode(playerModel) }
         delay(1_000)
         check("ttnext:1:2" !in repository.seen)
@@ -141,5 +148,12 @@ fun main() = runBlocking {
         check(repository.forceRefreshes.get() == 0 && repository.mainThreadSearches.get() == 0)
         check(Log.errors.isEmpty()) { Log.errors.joinToString() }
         println("PASS: real delayed player observer, next-episode cache reuse, scoped local-scraper permission, duplicate observers and disposal")
+        repository.k.value = false
+        withContext(Dispatchers.Default) { repository.j("series", "ttnext:1:2", 1, 2, true).first() }
+        check(repository.networkCalls.get() == 6 && repository.forceRefreshes.get() == 1)
+        prefs.edit().putBoolean("next_episode", false).apply()
+        check(NuvioStreamPreload.useNativeNextEpisodeThresholdPreload())
+        check(NuvioStreamPreload.nextEpisodePickerRefresh(true))
+        println("PASS: enabled patch suppresses threshold preload and manual picker refresh; explicit refresh and disabled native behavior remain available")
     } finally { nativeScope.cancel() }
 }

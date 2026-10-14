@@ -9,7 +9,8 @@ class NextEpisodePreloader(
     private val search: suspend (Snapshot) -> Boolean,
     private val now: () -> Long = { System.nanoTime() / 1_000_000 },
     private val tick: suspend () -> Unit = { delay(250) },
-    private val onError: (Throwable) -> Unit = {}
+    private val onError: (Throwable) -> Unit = {},
+    private val onState: (Snapshot, Long) -> Unit = { _, _ -> }
 ) {
     data class Snapshot(val profile: Any?, val currentVideoId: String?, val next: StreamTargets.Media?,
                         val enabled: Boolean, val playing: Boolean)
@@ -29,6 +30,7 @@ class NextEpisodePreloader(
                     state.currentVideoId == previous?.currentVideoId && state.enabled && previous?.enabled == true
                 if (!sameEpisode) playedMs = 0
                 else if (state.playing && previous.playing) playedMs += (time - lastTick).coerceAtLeast(0)
+                onState(state, playedMs)
                 val ready = state.enabled && state.playing && state.profile != null &&
                     !state.currentVideoId.isNullOrBlank() && state.next != null &&
                     state.next.videoId != state.currentVideoId && playedMs >= 30_000

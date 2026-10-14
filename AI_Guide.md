@@ -388,6 +388,13 @@ switch. It hooks the player ViewModel (`na.le`/`na.me`) constructor and `onClear
 observing `f()` without retaining the ViewModel. PlayerUiState (`na.ie`/`na.je`) fields
 `a`/`b`/`c` mean playing/buffering/ended; `d` is pending exit, `Y0` is error, `g` is
 content type, `w0` is current video ID and `k1` is the native resolved NextEpisodeInfo.
+For the explicitly requested beta.5 fix, normalize player content types with
+`Locale.ROOT`: accept case-insensitive `series`/`tv` and search as `series`.
+Read that request type from `na.me.W -> na.k8.Q:String`, matching the native
+`na.mb.p` episode loader; do not gate beta.5 on presentation field `na.je.g`.
+Case normalization of the UI field alone still rejected available episodes on a Xiaomi box.
+Keep beta.4's existing dispatch unchanged. `Next episode state` logs readiness
+flags and five-second playing-time milestones without exposing native stream URLs.
 Read the next ID/season/episode from its `a`/`b`/`c`, and check aired (`h`) and
 availability/release (`i`/`g`). Never calculate the next episode number manually.
 A monotonic timer counts 30 seconds of actual playing time, excluding buffering and
@@ -400,12 +407,17 @@ pausing/buffering, target/profile changes, disabling, or a 45-second timeout.
 Successful searches are re-observed once per minute without force-refresh, so native
 15-minute expiry can refresh the source list during long episodes. Failed searches
 retry after 15 seconds. Native producers retain their own session lifecycle.
-The next-episode transition coroutine (`na.cb`/`na.fb`) has three native picker
-calls to `na.jb.C`/`na.mb.C`. Guard their force-refresh argument with the new setting:
-manual next-episode selection otherwise discards the warmed session. Only these
-transition calls reuse the cache; explicit refresh controls keep their original behavior.
+Beta.5 guards the force-refresh parameter at `na.mb.C(na.k8, Video, boolean)` entry.
+All three callers in the original APK are next-episode transitions in `na.fb`.
+Call-site guards can be skipped by branches targeting the original invoke, so the
+entry hook always runs before the native picker delegates to `na.mb.p`. Explicit
+refresh controls call the loader directly and retain their original behavior.
+The native threshold preloader `na.mb.w(na.k8)` returns early while the independent
+patch switch is enabled; the 30-second observer owns background preloading and
+native cache expiry/retry instead. With the switch disabled, both methods execute
+their original behavior. Earlier-version hooks are preserved without modification.
 Run `:patches:verifyNuvioNextEpisodePreload`, `:patches:verifyNuvioStreamPreloadRuntime`,
-beta4/beta5 DEX checks, and `:patches:verifyNuvioNextEpisodeBundle` for timing/reset,
+the existing beta5 DEX check, and `:patches:verifyNuvioNextEpisodeBundle` for timing/reset,
 local-scraper isolation, cache reuse, standalone/combined selection and assembled DEX.
 Device checks must confirm ExoPlayer and MPV, resume/seeking, crossing seasons,
 shuffle, leaving playback during the delay, and opening the next episode's sources.
@@ -620,8 +632,11 @@ Morphe JAR, extracted DEX files, and build dependencies are not redistributed.
 ## Release and versioning
 
 Do not manually bump `version` in `gradle.properties` for a normal release. Commits use
-Conventional Commit prefixes such as `feat:` and `fix:`. After a non-skipped commit is
-pushed, `.github/workflows/release.yml` runs semantic-release, determines the next
+Conventional Commit prefixes such as `feat:` and `fix:`.
+Use scope `nuviotv` for NuvioTV (`com.nuvio.tv`) changes, for example
+`fix(nuviotv): reuse next episode sources`. Reserve `nuvio` for the original mobile
+Nuvio app. Do not rewrite existing Git history to rename historical scopes.
+After a non-skipped commit is pushed, `.github/workflows/release.yml` runs semantic-release, determines the next
 version from commit history, updates release-owned metadata, builds the `.mpp`, creates
 the GitHub release and tag, and publishes provenance. Commits containing `[skip ci]`
 do not start that workflow.

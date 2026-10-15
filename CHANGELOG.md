@@ -1,3 +1,20 @@
+## [0.11.0](https://github.com/Santodan/santodan-patches/compare/v0.10.1...v0.11.0) (2026-10-15)
+
+### 🐛 Bug Fixes
+
+* **nuvio:** synchronize merged provider updates and remaining counts [skip ci] ([72d7578](https://github.com/Santodan/santodan-patches/commit/72d757875b83be7492f9f5111cbfbd1ba8c1de94))
+* **nuviotv:** preload and reuse next episode sources on beta5 [skip ci] ([1721211](https://github.com/Santodan/santodan-patches/commit/17212111d9b9eb936488e6c835c12a2e4b06184f))
+
+### ✨ New Features
+
+* add Car Scanner premium status patch [skip ci] ([9fda041](https://github.com/Santodan/santodan-patches/commit/9fda041a9ee840a829562c7d68d523dbe0b16517))
+* **nuvio:** add configurable Android TV launcher channels [skip ci] ([0157fce](https://github.com/Santodan/santodan-patches/commit/0157fce049252872d92d6b9eca1fe1f6ed9561a8))
+* **nuvio:** customize shared date label appearance [skip ci] ([21fab08](https://github.com/Santodan/santodan-patches/commit/21fab08312ac49c760df84916f9efb848c21d588))
+* **nuvio:** optionally show finale dates only for airing series [skip ci] ([c5f813f](https://github.com/Santodan/santodan-patches/commit/c5f813f62eb3b9918d20c91b1c2119c92f7cffe3))
+* **nuviotv:** add tracking sync controls and Home-only merging [skip ci] ([bd17c41](https://github.com/Santodan/santodan-patches/commit/bd17c4177e177253f9aed029a0562cc1bc5f91f4))
+* **nuviotv:** support beta6 exclusively [skip ci] ([bd3cc75](https://github.com/Santodan/santodan-patches/commit/bd3cc756dac05d18f01a4b65cc2bbb1a1ceb4b6d))
+* **tfd:** add illegal-app detection compatibility patches ([7d4caf9](https://github.com/Santodan/santodan-patches/commit/7d4caf94f83616190cab6d6b8dfee27c4a580b60))
+
 ## [0.10.1](https://github.com/Santodan/santodan-patches/compare/v0.10.0...v0.10.1) (2026-10-10)
 
 ### 🐛 Bug Fixes

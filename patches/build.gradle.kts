@@ -86,6 +86,34 @@ tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
 }
 
 tasks {
+    register<JavaExec>("verifyFirstDescendantVisibility") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyFirstDescendantVisibilityKt")
+        maxHeapSize = "2g"
+        args(file("../../OriginalApps/The-First-Descendant-Companion_1.1.5.apks").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/first-descendant-visibility").absolutePath,
+            rootProject.file("..").absolutePath)
+    }
+    register<JavaExec>("verifyFirstDescendantDiagnostics") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyFirstDescendantDiagnosticsKt")
+        maxHeapSize = "2g"
+        args(file("../../OriginalApps/The-First-Descendant-Companion_1.1.5.apks").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/first-descendant-diagnostics").absolutePath)
+    }
+    register<JavaExec>("verifyFirstDescendantBundle") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyFirstDescendantBundleKt")
+        maxHeapSize = "2g"
+        args(file("../../OriginalApps/The-First-Descendant-Companion_1.1.5.apks").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/first-descendant-bundle").absolutePath)
+    }
     register<JavaExec>("verifyCarScannerManaged") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath

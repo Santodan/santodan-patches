@@ -613,6 +613,58 @@
         }
       ],
       "options": []
+    },
+    {
+      "name": "TFD Companion - NGSM validation diagnostics - Troubleshooting purpose",
+      "description": "Logs NGSM token-result codes and failed validation values under TFD-NGSM. Does not log tokens or change authentication results.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nexon.tfdc",
+          "name": "TFD Companion",
+          "description": null,
+          "apkFileType": "APKS",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.5",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 24,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "TFD Companion - Remove illegal apps detection",
+      "description": "Removes broad MAIN/VIEW package queries while preserving specific app integrations. For Android 11+. Leaves NGSM and authentication unchanged; other detections may still occur.",
+      "default": true,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nexon.tfdc",
+          "name": "TFD Companion",
+          "description": null,
+          "apkFileType": "APKS",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.5",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 30,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
     }
   ]
 }

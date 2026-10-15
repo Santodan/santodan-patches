@@ -11,7 +11,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.10.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.10.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;21 patches total
+> **[v0.10.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.10.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;23 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -184,6 +184,22 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 | [Reddit - Content filters (Experimental)](#reddit-content-filters-experimental) | Adds keyword and per-community flair filters under Morphe > Filters. Home-feed flair filtering requires Show flairs in home feed, which is installed automatically. |  |
 | [Reddit - Show flairs in home feed (Experimental)](#reddit-show-flairs-in-home-feed-experimental) | Shows native post flair badges below titles in the home feed, including cached and joined-community posts. Controlled by Morphe > Layout. |  |
 | [Reddit - Start as guest](#reddit-start-as-guest) | Skips the forced startup login screen using Reddit's native browse-logged-out action. Login remains available from the account menu. Already included upstream in Morphe Patches PR #3109: https://github.com/MorpheApp/morphe-patches/pull/3109 |  |
+
+</details>
+
+<details>
+<summary>📦 TFD Companion&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<br>
+
+**🎯 Supported versions:**
+
+| 1.1.5 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [TFD Companion - NGSM validation diagnostics - Troubleshooting purpose](#tfd-companion-ngsm-validation-diagnostics-troubleshooting-purpose) | Logs NGSM token-result codes and failed validation values under TFD-NGSM. Does not log tokens or change authentication results. |  |
+| [TFD Companion - Remove illegal apps detection](#tfd-companion-remove-illegal-apps-detection) | Removes broad MAIN/VIEW package queries while preserving specific app integrations. For Android 11+. Leaves NGSM and authentication unchanged; other detections may still occur. |  |
 
 </details>
 

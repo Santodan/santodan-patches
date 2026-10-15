@@ -1,5 +1,19 @@
 # Santodan Patches
 
+## TFD Companion
+
+For `com.nexon.tfdc` 1.1.5, use the default-enabled **TFD Companion - Remove illegal
+apps detection** resource patch (Android 11+). It removes the two broad
+MAIN/VIEW package queries while preserving NGSM and authentication. The user
+reported successful tests with Shizuku and an autoclicker installed. Optional
+**NGSM validation diagnostics - Troubleshooting purpose** stays disabled by default. The failed native
+shutdown-suppression implementation was removed after causing validation 5000;
+do not restore it as the supported approach. Read
+[FirstDescendantCompanion.md](docs/FirstDescendantCompanion.md) for the single
+app reference and current verification tasks. Preserve the original APKS splits
+and package identity; the successful setup also used the separate Google Play
+installer-source spoof.
+
 ## Start here: creating or modifying a patch
 
 This is the working guide for coding agents, including local models in LM Studio.

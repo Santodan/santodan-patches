@@ -139,6 +139,11 @@ retain the target contracts within its context window.
 
 ## NuvioTV launcher channels
 
+For merged tracking progress, see `docs/NuvioMergedProgress.md`. Its automatic
+sync gate follows the root navigation flow and activity lifecycle, not stream-search
+pause signals. Main-service playback writes and service inclusion are configured
+in the Tracking progress submenu; verify standalone and combined bundles.
+
 NuvioTV patches target only `com.nuvio.tv` `1.1.0-beta.6`. See
 `docs/NuvioBeta6.md` for native contracts, input provenance, and verification.
 Launcher channels are opt-in and use native repositories, per-profile settings,

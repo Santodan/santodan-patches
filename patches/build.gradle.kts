@@ -70,6 +70,7 @@ tasks.withType<org.gradle.api.tasks.testing.Test>().configureEach {
 
 // Exercise the exact Android runtime accessor table against original app DEX files.
 tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
+    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioMergePolicy.java"))
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioSourceContinuation.java"))
     source(file("../extensions/nuvio-remaining-episodes/src/main/java/software/santodan/extension/nuvioremaining/NuvioBadgeComposition.java"))
     source(file("../extensions/nuvio-airing-series/src/main/java/software/santodan/extension/nuvioairing/NuvioBadgeComposition.java"))
@@ -362,7 +363,8 @@ tasks.register<JavaExec>("verifyNuvioBeta6Bundle") {
     maxHeapSize = "3g"
     args(file("../../OriginalApps/NuvioTV-1.1.0-beta6.apk").absolutePath,
         file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
-        file("${layout.buildDirectory.get()}/verification/nuvio-beta6-bundle").absolutePath)
+        file("${layout.buildDirectory.get()}/verification/nuvio-beta6-bundle").absolutePath,
+        file(androidSdkDirectory.get()).absolutePath)
 }
 
 tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {

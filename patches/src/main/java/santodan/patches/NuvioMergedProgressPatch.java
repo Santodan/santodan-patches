@@ -34,10 +34,13 @@ public final class NuvioMergedProgressPatch {
                     NuvioLayout.modern(version);
                     MutableClass repository = context.mutableClassDefBy("Lz9/zc;");
                     hookRepository(repository);
+                    hookLocalProgressWrites(repository);
                     {
                         NuvioRemainingEpisodesPatch.hookCard(context.mutableClassDefBy("Lfa/v1;"),
                             "Lc7/a;", EXT, "prepareProviderBadge", "renderProviderBadge");
-                        hookPlaybackPause(context.mutableClassDefBy("Lz9/k4;"));
+                        hookNavigation(context.mutableClassDefBy("Lp8/m;"));
+                        hookActivity(context.mutableClassDefBy("Lcom/nuvio/tv/MainActivity;"));
+                        hookPlaybackScrobblers(context.mutableClassDefBy("Lo9/h0;"));
                         hookInlinedCutoff(context.mutableClassDefBy("Lqa/g5;"));
                         hookInlinedCutoff(context.mutableClassDefBy("Lqa/y1;"));
                         hookBadgeCacheHit(context.mutableClassDefBy("Ln9/k0;"));
@@ -60,25 +63,91 @@ public final class NuvioMergedProgressPatch {
             });
     }
 
-    /** Observe the native signal used to suspend source searches during playback. */
-    static void hookPlaybackPause(MutableClass owner) {
-        List<MutableMethod> matches = new ArrayList<>();
+    static void hookActivity(MutableClass owner) {
+        Map<String, String> hooks = Map.of("onResume", "activityResumed", "onPause", "activityPaused", "onDestroy", "activityDestroyed");
+        for (var entry : hooks.entrySet()) {
+            MutableMethod target = unique(owner, entry.getKey(), 0);
+            if (!target.getReturnType().equals("V") || instructions(target).stream()
+                    .noneMatch(i -> i.getOpcode() == Opcode.INVOKE_SUPER && calls(i,
+                        entry.getKey().equals("onDestroy") ? "Lp8/k;" : "Landroid/app/Activity;", entry.getKey())))
+                throw unsupported("MainActivity lifecycle changed: " + entry.getKey());
+            if (instructions(target).stream().anyMatch(i -> calls(i, EXT, entry.getValue())))
+                throw unsupported("MainActivity lifecycle already hooked");
+        }
+        for (var entry : hooks.entrySet()) {
+            MutableMethod target = unique(owner, entry.getKey(), 0);
+            target.getImplementation().addInstruction(0, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
+                parameterStart(target), 1, method(EXT, entry.getValue(), List.of("Ljava/lang/Object;"), "V")));
+        }
+    }
+
+    /** Both native progress-save routes persist locally; only the main tracker writes remotely. */
+    static void hookLocalProgressWrites(MutableClass owner) {
+        List<MutableMethod> targets = new ArrayList<>();
         for (MutableMethod candidate : owner.getMethods()) {
-            if (!candidate.getParameterTypes().equals(List.of("Z")) || !candidate.getReturnType().equals("V")
-                || candidate.getImplementation() == null) continue;
-            for (Instruction instruction : instructions(candidate)) {
-                if (instruction instanceof ReferenceInstruction && ((ReferenceInstruction) instruction).getReference()
-                    .toString().equals(owner.getType() + ("->l:") + "Lkotlinx/coroutines/flow/MutableStateFlow;")) {
-                    matches.add(candidate);
-                    break;
-                }
+            if (!List.of("C", "s").contains(candidate.getName())) continue;
+            if (!candidate.getParameterTypes().equals(List.of("I", "Lcom/nuvio/tv/domain/model/WatchProgress;",
+                    "Lkotlin/coroutines/jvm/internal/ContinuationImpl;", "Z")) ||
+                !candidate.getReturnType().equals("Ljava/lang/Object;") || candidate.getImplementation() == null)
+                throw unsupported("Native progress save signature changed");
+            List<Instruction> ins = instructions(candidate);
+            if (ins.stream().anyMatch(i -> calls(i, EXT, "syncLocalProgress"))) throw unsupported("Progress writes already hooked");
+            if (ins.stream().noneMatch(i -> calls(i, "Lcom/nuvio/tv/data/local/cc;", "C")) ||
+                ins.stream().noneMatch(i -> calls(i, "Lk9/d6;", "o"))) throw unsupported("Native progress save body changed");
+            if (candidate.getImplementation().getRegisterCount() > 256) throw unsupported("Progress save register layout changed");
+            targets.add(candidate);
+        }
+        if (targets.size() != 2) throw unsupported("Missing native progress save routes");
+        for (MutableMethod target : targets) {
+            int register = target.getImplementation().getRegisterCount() - 1;
+            target.getImplementation().addInstruction(0, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
+                register, 1, method(EXT, "syncLocalProgress", List.of("Z"), "Z")));
+            target.getImplementation().addInstruction(1, new BuilderInstruction11x(Opcode.MOVE_RESULT, register));
+        }
+    }
+
+    /** MainActivity's remembered NavController feeds its real back-stack entry flow. */
+    static void hookNavigation(MutableClass owner) {
+        MutableMethod target = unique(owner, "invoke", 3);
+        List<Instruction> ins = instructions(target);
+        int anchor = -1;
+        int register = -1;
+        for (int i = 0; i + 1 < ins.size(); i++) {
+            if (ins.get(i) instanceof ReferenceInstruction &&
+                ((ReferenceInstruction) ins.get(i)).getReference().toString().equals(
+                    "Lio/sentry/o;->V([Ll5/b1;Lg1/p;)Ll5/n0;")) {
+                if (anchor >= 0 || ins.get(i + 1).getOpcode() != Opcode.MOVE_RESULT_OBJECT)
+                    throw unsupported("Navigation controller anchor changed or ambiguous");
+                anchor = i + 2;
+                register = ((OneRegisterInstruction) ins.get(i + 1)).getRegisterA();
+            }
+            if (calls(ins.get(i), EXT, "registerNavigation")) throw unsupported("Navigation already hooked");
+        }
+        if (anchor < 0) throw unsupported("MainActivity navigation controller not found");
+        target.getImplementation().addInstruction(anchor, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
+            register, 1, method(EXT, "registerNavigation", List.of("Ljava/lang/Object;"), "V")));
+    }
+
+    /** Filter only the scrobbler list, preserving native connections and all read providers. */
+    static void hookPlaybackScrobblers(MutableClass owner) {
+        MutableMethod target = unique(owner, "a", 0);
+        if (!target.getReturnType().equals("Ljava/util/ArrayList;"))
+            throw unsupported("Connected scrobbler result changed");
+        List<Instruction> ins = instructions(target);
+        int anchor = -1;
+        for (int i = 0; i < ins.size(); i++) {
+            if (calls(ins.get(i), EXT, "playbackScrobblers")) throw unsupported("Scrobblers already hooked");
+            if (ins.get(i).getOpcode() == Opcode.RETURN_OBJECT) {
+                if (anchor >= 0) throw unsupported("Ambiguous connected scrobbler return");
+                anchor = i;
             }
         }
-        if (matches.size() != 1) throw unsupported("Native playback pause setter changed");
-        MutableMethod target = matches.get(0);
-        target.getImplementation().addInstruction(0, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
-            target.getImplementation().getRegisterCount() - 1, 1,
-            method(EXT, "setPlaybackPaused", List.of("Z"), "V")));
+        boolean hasScrobbler = ins.stream().anyMatch(i -> calls(i, "Lo9/e0;", "a"));
+        if (anchor < 0 || !hasScrobbler) throw unsupported("Connected scrobbler layout changed");
+        int register = ((OneRegisterInstruction) ins.get(anchor)).getRegisterA();
+        target.getImplementation().addInstruction(anchor++, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
+            register, 1, method(EXT, "playbackScrobblers", List.of("Ljava/util/ArrayList;"), "Ljava/util/ArrayList;")));
+        target.getImplementation().addInstruction(anchor, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, register));
     }
 
     static void hookSettingsStore(MutableClass owner) {
@@ -186,21 +255,21 @@ public final class NuvioMergedProgressPatch {
     private static void hookMergedProvider(MutableClass owner) {
         MutableMethod target = unique(owner, "invokeSuspend", 1);
         List<Instruction> ins = instructions(target);
-        int hook = -1;
-        int result = -1;
-        for (int i = 0; i + 1 < ins.size(); i++) {
-            if (!calls(ins.get(i), "Lo9/a0;", "a") || !(ins.get(i + 1) instanceof OneRegisterInstruction)) continue;
-            if (hook >= 0) throw unsupported("Multiple provider-registry lookup anchors found");
-            hook = i + 2;
-            result = ((OneRegisterInstruction) ins.get(i + 1)).getRegisterA();
+        long lookups = ins.stream().filter(i -> calls(i, "Lo9/a0;", "a")).count();
+        long returns = ins.stream().filter(i -> i.getOpcode() == Opcode.RETURN_OBJECT).count();
+        if (lookups != 1 || returns != 2 || ins.stream().anyMatch(i -> calls(i, EXT, "mergedProvider")))
+            throw unsupported("Provider mapper lookup/return layout changed or already hooked");
+        // Nuvio Sync and disconnected main trackers use the native null-provider branch.
+        // Both branches must install the aggregate proxy.
+        for (int i = ins.size() - 1; i >= 0; i--) {
+            if (ins.get(i).getOpcode() != Opcode.RETURN_OBJECT) continue;
+            int result = ((OneRegisterInstruction) ins.get(i)).getRegisterA();
+            target.getImplementation().addInstruction(i, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
+                result, 1, method(EXT, "mergedProvider", List.of("Ljava/lang/Object;"), "Ljava/lang/Object;")));
+            target.getImplementation().addInstruction(i + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, result));
+            target.getImplementation().addInstruction(i + 2, new BuilderInstruction21c(Opcode.CHECK_CAST, result,
+                new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lo9/z;")));
         }
-        if (hook < 0) throw unsupported("Provider-registry lookup anchor not found");
-        target.getImplementation().addInstruction(hook++, new BuilderInstruction35c(Opcode.INVOKE_STATIC, 1,
-            result, 0, 0, 0, 0,
-            method(EXT, "mergedProvider", List.of("Ljava/lang/Object;"), "Ljava/lang/Object;")));
-        target.getImplementation().addInstruction(hook++, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, result));
-        target.getImplementation().addInstruction(hook, new BuilderInstruction21c(Opcode.CHECK_CAST, result,
-            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lo9/z;")));
     }
 
     private static void hookRepository(MutableClass owner) {

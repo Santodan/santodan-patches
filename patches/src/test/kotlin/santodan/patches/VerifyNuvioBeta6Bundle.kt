@@ -19,14 +19,18 @@ import app.morphe.patcher.util.proxy.mutableTypes.MutableMethod
 import java.io.File
 import java.util.zip.ZipFile
 import kotlinx.coroutines.runBlocking
+import app.morphe.patcher.dex.SdkDexVerifier
+import java.lang.reflect.InvocationTargetException
 
 /** Verify packaged standalone and combined patches against the original beta6 APK. */
 fun main(args: Array<String>) = runBlocking {
     NuvioLayout.use("1.1.0-beta.6")
     val originals = mutableMapOf<String, ClassDef>()
     val pickerCallers = mutableListOf<String>()
+    val originalDex = File(args[2], "original-dex").apply { mkdirs() }
     ZipFile(args[0]).use { zip ->
         for (entry in zip.entries().asSequence().filter { it.name.matches(Regex("classes\\d*\\.dex")) }) {
+            zip.getInputStream(entry).use { input -> File(originalDex, entry.name).outputStream().use { input.copyTo(it) } }
             zip.getInputStream(entry).buffered().use { input ->
                 for (owner in DexBackedDexFile.fromInputStream(null, input).classes) {
                     if (owner.type in setOf("Lsa/ec;", "Lsa/df;", "Lsa/p8;")) originals[owner.type] = owner
@@ -70,15 +74,27 @@ fun main(args: Array<String>) = runBlocking {
     rejected(installed)
     println("PASS: beta6 picker callers are exclusively next-episode transitions; missing, changed, ambiguous and duplicate route hooks rejected")
     val available = loadPatchesFromJar(setOf(File(args[1])))
+    val hierarchy = SdkDexVerifier(File(args[3]), null)
+    val hierarchyMethod = SdkDexVerifier::class.java.getDeclaredMethod("verifyClassHierarchy", File::class.java).apply { isAccessible = true }
+    fun hierarchyIssues(directory: File): List<String> {
+        val report = try { hierarchyMethod.invoke(hierarchy, directory); return emptyList() }
+        catch (error: InvocationTargetException) { error.cause?.message ?: throw error }
+        val issues = report.split(Regex("\\n\\s*\\d+\\. ")).drop(1)
+        check(issues.isNotEmpty()) { "Unexpected hierarchy verification failure: $report" }
+        return issues.map { it.replace(Regex("\\(classes\\d*\\.dex\\)"), "(DEX)").replace(Regex("\\s+"), " ").trim() }.sorted()
+    }
+    val baselineIssues = hierarchyIssues(originalDex)
     val nextName = "NuvioTV - Preload streams for next episode"
     check(available.count { it.name == nextName } == 1)
-    for (combined in listOf(false, true)) {
+    for (mode in listOf("next", "merged", "combined")) {
+        val combined = mode == "combined"
+        val mergeOnly = mode == "merged"
         val selected = available.filter {
             if (combined) it.name?.startsWith("NuvioTV - ") == true && it.name != "NuvioTV - Side-by-side installation"
-            else it.name == nextName
+            else it.name == if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
         }.toSet()
         check(selected.size == if (combined) 9 else 1)
-        val output = File(args[2], if (combined) "combined" else "standalone").apply { mkdirs() }
+        val output = File(args[2], mode).apply { mkdirs() }
         Patcher(PatcherConfig(apkFile = File(args[0]), temporaryFilesPath = File(output, "work"))).use { patcher ->
             patcher += selected
             patcher().collect { result ->
@@ -91,6 +107,7 @@ fun main(args: Array<String>) = runBlocking {
             val coroutineCalls = mutableSetOf<String>()
             val classes = mutableSetOf<String>()
             val nativeHooks = mutableMapOf<String, Int>()
+            val mergeHooks = mutableMapOf<String, Int>()
             for (dex in patcher.get().dexFiles) {
                 val target = File(output, dex.name)
                 dex.stream.use { input -> target.outputStream().use { input.copyTo(it) } }
@@ -101,10 +118,31 @@ fun main(args: Array<String>) = runBlocking {
                         for (method in owner.methods) {
                             definitions += method.toString()
                             val instructions = method.implementation?.instructions ?: continue
+                            if ((combined || mergeOnly) && owner.type == "Lz9/zc;" && method.name in setOf("C", "s")) {
+                                val entry = instructions.toList()
+                                check((entry[0] as ReferenceInstruction).reference.toString().endsWith("->syncLocalProgress(Z)Z"))
+                                check((entry[0] as RegisterRangeInstruction).startRegister == method.implementation!!.registerCount - 1)
+                                check(entry[1].opcode == Opcode.MOVE_RESULT &&
+                                    (entry[1] as OneRegisterInstruction).registerA == method.implementation!!.registerCount - 1)
+                            }
+                            if ((combined || mergeOnly) && owner.type == "Lz9/sb;" && method.name == "invokeSuspend") {
+                                val entry = instructions.toList()
+                                for (at in entry.indices.filter { entry[it].opcode == Opcode.RETURN_OBJECT }) {
+                                    val register = (entry[at] as OneRegisterInstruction).registerA
+                                    check((entry[at - 3] as ReferenceInstruction).reference.toString().contains("->mergedProvider("))
+                                    check((entry[at - 3] as RegisterRangeInstruction).startRegister == register)
+                                    check(entry[at - 2].opcode == Opcode.MOVE_RESULT_OBJECT && entry[at - 1].opcode == Opcode.CHECK_CAST)
+                                }
+                            }
                             for (instruction in instructions) {
                                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
-                                if (owner.type.startsWith("Lsoftware/santodan/extension/nuviostreams/") &&
+                                if ((owner.type.startsWith("Lsoftware/santodan/extension/nuviostreams/") ||
+                                    owner.type.startsWith("Lsoftware/santodan/extension/nuviomerged/")) &&
                                     ref.definingClass.startsWith("Lkotlinx/coroutines/")) coroutineCalls += ref.toString()
+                                if (ref.definingClass == "Lsoftware/santodan/extension/nuviomerged/NuvioMergedProgress;" &&
+                                    !owner.type.startsWith("Lsoftware/santodan/extension/")) {
+                                    mergeHooks[ref.name] = (mergeHooks[ref.name] ?: 0) + 1
+                                }
                                 if (!ref.definingClass.startsWith("Lsoftware/santodan/extension/")) continue
                                 extensionCalls += ref.toString()
                                 if (ref.definingClass == NuvioStreamPreloadPatch.EXTENSION &&
@@ -116,6 +154,7 @@ fun main(args: Array<String>) = runBlocking {
                     }
                 }
             }
+            if (!mergeOnly) {
             for (hook in listOf("registerComponent", "observeNextEpisode", "stopNextEpisode", "nextEpisodePluginPause"))
                 check(nativeHooks[hook] == 1) { "Expected one $hook hook, found ${nativeHooks[hook]}" }
             check(nativeHooks["nextEpisodePickerRefresh"] == 1) { "Next-episode picker entry must reuse the warmed search" }
@@ -137,6 +176,14 @@ fun main(args: Array<String>) = runBlocking {
                     }
                 }
             }
+            }
+            if (combined || mergeOnly) {
+                for (hook in listOf("registerNavigation", "activityResumed", "activityPaused", "activityDestroyed", "playbackScrobblers"))
+                    check(mergeHooks[hook] == 1) { "Expected one merge $hook hook: $mergeHooks" }
+                check(mergeHooks["syncLocalProgress"] == 2 && mergeHooks["mergedProvider"] == 2)
+                check("setPlaybackPaused" !in mergeHooks) { "Search pause must not control merged sync" }
+                check("Lsoftware/santodan/extension/nuviomerged/NuvioMergePolicy;" in classes)
+            }
             val frameworkAccessor = "Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;->getContext()Landroid/content/Context;"
             check(extensionCalls.all { it in definitions || (it == frameworkAccessor &&
                 parents["Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;"]?.contains("Landroid/content/ContentProvider;") == true) }) {
@@ -152,10 +199,12 @@ fun main(args: Array<String>) = runBlocking {
             check(coroutineCalls.all { resolves(it) }) {
                 "Missing native coroutine APIs: ${coroutineCalls.filter { !resolves(it) }}"
             }
-            check("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes)
+            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == !mergeOnly)
             check(("Lsoftware/santodan/extension/nuviocwstreams/NuvioContinueWatchingStreams;" in classes) == combined)
             check(("Lsoftware/santodan/extension/nuviodetailstreams/NuvioDetailStreams;" in classes) == combined)
-            println("PASS: ${if (combined) "all nine Nuvio runtime patches coexist" else "standalone next-episode patch"}; assembled DEX reloads and hooks resolve")
+            println("PASS: ${if (combined) "all nine Nuvio runtime patches coexist" else if (mergeOnly) "standalone merged-progress patch" else "standalone next-episode patch"}; assembled DEX reloads and hooks resolve")
+            check(hierarchyIssues(output) == baselineIssues) { "Patched cross-DEX hierarchy findings differ from original" }
+            println("PASS: $mode cross-DEX hierarchy has no new findings (${baselineIssues.size} original optional-library findings)")
         }
     }
 }

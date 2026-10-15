@@ -8,6 +8,7 @@ import com.android.tools.smali.dexlib2.iface.instruction.Instruction;
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction;
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference;
 import software.santodan.extension.nuviomerged.NuvioProviderLayout;
+import software.santodan.extension.nuviomerged.NuvioMergePolicy;
 import com.android.tools.smali.dexlib2.immutable.ImmutableDexFile;
 import com.android.tools.smali.dexlib2.writer.pool.DexPool;
 import java.io.*;
@@ -62,6 +63,7 @@ public final class VerifyNuvioBeta6 {
         hook(name, new Class<?>[]{MutableClass.class}, target);
     }
     public static void main(String[] args) throws Exception {
+        verifyMergeNavigation();
         String version = args[0];
         if (!NuvioLayout.BETA6.equals(version)) throw new AssertionError("This verifier targets beta.6 only");
         NuvioRemainingEpisodesPatch.validateTarget("com.nuvio.tv", version);
@@ -137,6 +139,7 @@ public final class VerifyNuvioBeta6 {
         for (Field f : owner(repository).getFields()) if (f.getName().equals("j")) profileType = f.getType();
         field(profileType, "f", "Lkotlinx/coroutines/flow/StateFlow;");
         String watchedModel = "Lcom/nuvio/tv/domain/model/WatchedItem;";
+        method("Lcom/nuvio/tv/domain/model/WatchProgress;", "isCompleted$default", 4);
         method(watchedModel, "<init>", 11);
         for (String getter : List.of("getContentId", "getContentType", "getTitle", "getSeason",
             "getEpisode", "getWatchedAt", "getPoster", "getReleaseInfo", "getTrackingProviderId",
@@ -175,7 +178,17 @@ public final class VerifyNuvioBeta6 {
         }
         hook("hookRepository", owner(repository));
         if (newer) {
-            NuvioMergedProgressPatch.hookPlaybackPause(owner("Lz9/k4;"));
+            verifyMergeHooks();
+            NuvioMergedProgressPatch.hookNavigation(owner("Lp8/m;"));
+            NuvioMergedProgressPatch.hookActivity(owner("Lcom/nuvio/tv/MainActivity;"));
+            NuvioMergedProgressPatch.hookPlaybackScrobblers(owner("Lo9/h0;"));
+            NuvioMergedProgressPatch.hookLocalProgressWrites(owner(repository));
+            field("Ll5/y;", "F", "Lkotlinx/coroutines/flow/SharedFlow;");
+            field("Ll5/m;", "e", "Ll5/g0;");
+            field("Ll5/g0;", "o", "Ljava/lang/String;");
+            method("Lo9/s0;", "a", 0);
+            method("Lxa/bd;", "a", 11);
+            method("Lxa/bd;", "d", 6);
             NuvioRemainingEpisodesPatch.hookCard(owner("Lfa/v1;"), "Lc7/a;",
                 "Lsoftware/santodan/extension/nuviomerged/NuvioMergedProgress;", "prepareProviderBadge", "renderProviderBadge");
             field("Lfa/v1;", "x", "Lcom/nuvio/tv/domain/model/WatchProgress;");
@@ -333,6 +346,79 @@ public final class VerifyNuvioBeta6 {
             if (reloaded.getClasses().size() != used.size()) throw new AssertionError("DEX round trip changed class count");
         }
         System.out.println("PASS: modified DEX writes and reloads");
+    }
+
+    private static void verifyMergeNavigation() {
+        NuvioMergePolicy policy = new NuvioMergePolicy();
+        if (policy.allowed(false) || policy.allowed(true)) throw new AssertionError("Unknown startup route permitted");
+        if (!policy.navigate("home") || !policy.allowed(false)) throw new AssertionError("Home startup blocked");
+        long home = policy.revision();
+        if (policy.navigate("home") || !policy.current(home, false)) throw new AssertionError("Recomposition retriggers sync");
+        policy.navigate("player/{streamUrl}/{title}");
+        if (policy.allowed(false) || policy.allowed(true) || policy.current(home, false)) throw new AssertionError("Playback permits merge or stale publication");
+        policy.navigate("stream/{videoId}");
+        if (policy.allowed(false)) throw new AssertionError("Returning to stream picker starts automatic merge");
+        policy.navigate("settings/layout");
+        if (policy.allowed(false) || !policy.allowed(true)) throw new AssertionError("Manual sync cannot run in settings");
+        long manual = policy.revision();
+        policy.foreground(false);
+        if (policy.current(manual, true) || policy.allowed(true)) throw new AssertionError("Background/external player permits merge");
+        policy.foreground(true);
+        if (!policy.allowed(true) || policy.allowed(false)) throw new AssertionError("Settings resume starts automatic merge");
+        if (!policy.navigate("home") || !policy.allowed(false)) throw new AssertionError("Home return cannot sync");
+        ArrayList<String> connected = new ArrayList<>(List.of("TRAKT", "SIMKL", "MDBLIST"));
+        for (String main : List.of("NUVIO_SYNC", "TRAKT", "SIMKL", "MDBLIST")) {
+            List<String> expected = main.equals("NUVIO_SYNC") ? List.of() : List.of(main);
+            if (!NuvioMergePolicy.scrobblers(connected, true, main, value -> value).equals(expected))
+                throw new AssertionError("Playback writes escaped main tracker " + main);
+            if (NuvioMergePolicy.scrobblers(connected, false, main, value -> value) != connected)
+                throw new AssertionError("Disabled patch changes native dispatcher");
+            if (NuvioMergePolicy.syncLocal(true, true, main) != main.equals("NUVIO_SYNC") ||
+                !NuvioMergePolicy.syncLocal(true, false, main) || NuvioMergePolicy.syncLocal(false, false, main))
+                throw new AssertionError("Nuvio Sync write gating changed native requested state");
+        }
+        if (connected.size() != 3 || !NuvioMergePolicy.scrobblers(new ArrayList<String>(), true, "TRAKT", value -> value).isEmpty())
+            throw new AssertionError("Main routing mutates authentication input or invents a disconnected service");
+        System.out.println("PASS: Home/startup gate, manual settings sync, playback/background deferral and stale-publication rejection");
+    }
+
+    private static void verifyMergeHooks() {
+        verifyMergeHook("Lp8/m;", NuvioMergedProgressPatch::hookNavigation, "invoke");
+        verifyMergeHook("Lo9/h0;", NuvioMergedProgressPatch::hookPlaybackScrobblers, "a");
+        verifyMergeHook("Lz9/zc;", NuvioMergedProgressPatch::hookLocalProgressWrites, "C");
+        verifyMergeHook("Lcom/nuvio/tv/MainActivity;", NuvioMergedProgressPatch::hookActivity, "onResume");
+        System.out.println("PASS: merge navigation, lifecycle, scrobbler and local-write hooks reject missing, ambiguous, changed and already-patched inputs");
+    }
+
+    private static void verifyMergeHook(String type, java.util.function.Consumer<MutableClass> apply, String name) {
+        MutableClass original = owner(type);
+        MutableClass missing = new MutableClass(original);
+        missing.getMethods().removeIf(m -> m.getName().equals(name));
+        rejectMergeHook(apply, missing);
+        MutableClass changed = new MutableClass(original);
+        changed.getMethods().stream().filter(m -> m.getName().equals(name)).forEach(m -> {
+            if (m.getImplementation() != null) {
+                var implementation = m.getImplementation();
+                for (int i = implementation.getInstructions().size() - 1; i >= 0; i--)
+                    implementation.replaceInstruction(i, new com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction10x(com.android.tools.smali.dexlib2.Opcode.NOP));
+            }
+        });
+        rejectMergeHook(apply, changed);
+        MutableClass ambiguous = new MutableClass(original);
+        var target = original.getMethods().stream().filter(m -> m.getName().equals(name)).findFirst().orElseThrow();
+        ambiguous.getMethods().add(new app.morphe.patcher.util.proxy.mutableTypes.MutableMethod(
+            new com.android.tools.smali.dexlib2.immutable.ImmutableMethod(type, target.getName(), target.getParameters(),
+                target.getReturnType().equals("V") ? "Ljava/lang/Object;" : "V", target.getAccessFlags(),
+                target.getAnnotations(), target.getHiddenApiRestrictions(), target.getImplementation())));
+        rejectMergeHook(apply, ambiguous);
+        MutableClass installed = new MutableClass(original);
+        apply.accept(installed);
+        rejectMergeHook(apply, installed);
+    }
+    private static void rejectMergeHook(java.util.function.Consumer<MutableClass> apply, MutableClass target) {
+        try { apply.accept(target); }
+        catch (IllegalStateException expected) { return; }
+        throw new AssertionError("Invalid or duplicate merge hook accepted: " + target.getType());
     }
 
     private static void verifyCoordinatorProvider(MutableClass provider) {

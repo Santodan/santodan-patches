@@ -3,6 +3,10 @@
 All ten public NuvioTV patches advertise exact compatibility with `com.nuvio.tv`
 `1.1.0-beta.6` (version code `1069`). Older versions are unsupported.
 
+The merged-progress submenu, Home/startup scheduling, main-service playback write
+routing, and its additional native contracts are documented in
+[NuvioMergedProgress.md](NuvioMergedProgress.md).
+
 Inspection input: `../OriginalApps/NuvioTV-1.1.0-beta6.apk`, SHA-256
 `ac10b6c336a7b21e4f70b8c3d47478ef46d1289ed0d87510941e5a417994a9dd`.
 The five original DEX files are extracted to `../.inspect-nuvio-beta6/` for the

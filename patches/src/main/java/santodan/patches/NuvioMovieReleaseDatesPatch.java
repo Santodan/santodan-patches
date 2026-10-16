@@ -19,7 +19,7 @@ import kotlin.Unit;
 public final class NuvioMovieReleaseDatesPatch {
     public static final String NAME = "NuvioTV - Upcoming movie dates in library and collections";
     static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = NuvioLayout.BETA6;
+    static final String VERSION = NuvioLayout.BETA7;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuviomovierelease/NuvioMovieReleaseDates;";
 
     private NuvioMovieReleaseDatesPatch() {}
@@ -36,12 +36,13 @@ public final class NuvioMovieReleaseDatesPatch {
                 builder.execute(context -> {
                     String version = context.getPackageMetadata().getVersionName();
                     NuvioLayout.use(version);
-                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.BETA6.equals(version))
+                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.recent(version))
                         throw NuvioFinaleDatesPatch.unsupported("Expected " + PACKAGE + " " + VERSION);
-                    NuvioFinaleDatesPatch.hookItems(context.mutableClassDefBy("Lfa/d1;"), EXTENSION);
-                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy("Lfa/e3;"), EXTENSION);
-                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy("Lfa/i1;"), EXTENSION);
-                    for (String type : List.of("Lfa/e3;", "Lfa/i1;", "Lfa/f3;", "Lfa/k1;"))
+                    for (String type : NuvioFinaleDatesPatch.itemOwners())
+                        NuvioFinaleDatesPatch.hookItems(context.mutableClassDefBy(type), EXTENSION);
+                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy("Lha/h2;"), EXTENSION);
+                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy("Lha/s0;"), EXTENSION);
+                    for (String type : List.of("Lha/h2;", "Lha/s0;", "Lha/i2;", "Lha/t0;"))
                         NuvioFinaleDatesPatch.hookContext(context.mutableClassDefBy(type), EXTENSION);
                     return Unit.INSTANCE;
                 });

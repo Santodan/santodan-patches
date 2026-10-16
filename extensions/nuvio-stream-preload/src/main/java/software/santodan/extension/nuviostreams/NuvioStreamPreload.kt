@@ -28,8 +28,13 @@ object NuvioStreamPreload {
     @Volatile private var component: Any? = null
     @Volatile private var repository: Any? = null
     private val heroResolver by lazy {
-        val beta6 = NuvioBeta6.active()
-        method(Class.forName(NuvioBeta6.name("ka.e1")), "C", 3)
+        Class.forName("ra.t0").getDeclaredMethod("D",
+            Class.forName("com.nuvio.tv.domain.model.Meta"),
+            Class.forName("com.nuvio.tv.domain.model.NextToWatch"), List::class.java).apply {
+            check(java.lang.reflect.Modifier.isStatic(modifiers) &&
+                returnType.name == "com.nuvio.tv.domain.model.Video")
+            isAccessible = true
+        }
     }
     private val queue by lazy {
         StreamPreloadQueue(scope, ::profile, ::enabled, ::paused, { search(it) },
@@ -55,14 +60,14 @@ object NuvioStreamPreload {
     private fun get(owner: Any, name: String) = StreamTargets.get(owner, name)
     private fun profileFlow(): StateFlow<*>? {
         val current = component ?: return null
-        val provider = field(current, "y") ?: return null
+        val provider = field(current, "B") ?: return null
         val manager = get(provider, "get") ?: return null
         return field(manager, "f") as StateFlow<*>
     }
     private fun profile(): Any? = profileFlow()?.value
     private fun paused(): Boolean {
         val current = repository ?: return false
-        return (field(current, "k") as StateFlow<*>).value == true
+        return (field(current, "l") as StateFlow<*>).value == true
     }
 
     @JvmStatic fun registerComponent(value: Any) {
@@ -74,14 +79,18 @@ object NuvioStreamPreload {
         val current = repository ?: run {
             val owner = component ?: return false
             // Scoped Hilt provider: obtain the native singleton without opening the stream screen.
-            val provider = field(owner, "K2") ?: return false
+            val provider = field(owner, "Y2") ?: return false
             (get(provider, "get") ?: return false).also { repository = it }
         }
         fun allowed() = enabled(target.mode) && profile() == target.profile &&
             (target.mode == NEXT || !paused()) && valid()
         if (!allowed()) return false
         @Suppress("UNCHECKED_CAST")
-        val results = method(current.javaClass, "j", 5).invoke(current,
+        val search = current.javaClass.getDeclaredMethod("l", String::class.java, String::class.java,
+            Int::class.javaObjectType, Int::class.javaObjectType, Boolean::class.javaPrimitiveType)
+            .apply { isAccessible = true }
+        check(Flow::class.java.isAssignableFrom(search.returnType)) { "Native stream search must return Flow" }
+        val results = search.invoke(current,
             target.type, target.videoId, target.season, target.episode, false) as Flow<Any>
         var success = false
         var groups = 0
@@ -89,9 +98,9 @@ object NuvioStreamPreload {
         results.collect { result ->
             if (!allowed())
                 throw CancellationException("Preload is no longer needed")
-            // Verified native NetworkResult.Success on beta4 and beta6.
-            success = result.javaClass.name == "a9.n" && (field(result, "a") as? List<*>)?.isNotEmpty() == true
-            if (result.javaClass.name == "a9.n") {
+            // Verified native NetworkResult.Success on beta7.
+            success = result.javaClass.name == "b9.l" && (field(result, "a") as? List<*>)?.isNotEmpty() == true
+            if (result.javaClass.name == "b9.l") {
                 val addons = field(result, "a") as List<*>
                 groups = addons.size
                 sources = addons.sumOf { addon -> (get(addon!!, "getStreams") as List<*>).size }
@@ -142,9 +151,8 @@ object NuvioStreamPreload {
         try {
             @Suppress("UNCHECKED_CAST")
             val flow = get(model, "f") as StateFlow<Any>
-            val beta6 = NuvioBeta6.active()
-            // Native mb.p searches using k8.Q, not the presentation state's g field.
-            val requestType = if (beta6) field(field(model, "W")!!, "Q") as? String else null
+            // Beta7 ub.q reads controller k8.T for the native request type.
+            val requestType = field(field(model, "Y")!!, "T") as? String
             synchronized(nextObservers) {
                 if (nextObservers.containsKey(model)) return
                 Log.d(TAG, "Next episode playback observer ready")
@@ -152,7 +160,7 @@ object NuvioStreamPreload {
                 nextObservers[model] = scope.launch {
                     var lastDiagnostic: String? = null
                     fun snapshot() = StreamTargets.player(flow.value, profile(), enabled(NEXT),
-                        normalizeType = beta6, requestType = requestType)
+                        normalizeType = true, requestType = requestType)
                     NextEpisodePreloader(::snapshot, { state ->
                         synchronized(nextPermits) {
                             nextPermits.value = if (state == null) nextPermits.value - token
@@ -174,12 +182,12 @@ object NuvioStreamPreload {
                         // Only booleans and elapsed time: never dump native state containing stream URLs.
                         // Emit changes and five-second milestones up to the buffer grace period.
                         val native = flow.value
-                        val next = field(native, "k1")
+                        val next = field(native, "r1")
                         val diagnostic = "enabled=${state.enabled} playing=${state.playing} " +
                             "nativePlaying=${field(native, "a") == true} buffering=${field(native, "b") == true} " +
                             "ended=${field(native, "c") == true} exiting=${field(native, "d") != null} " +
-                            "error=${!(field(native, "Y0") as? String).isNullOrBlank()} " +
-                            "series=${if (beta6) requestType.equals("series", true) || requestType.equals("tv", true) else field(native, "g") == "series"} nextPresent=${next != null} " +
+                            "error=${!(field(native, "f1") as? String).isNullOrBlank()} " +
+                            "series=${requestType.equals("series", true) || requestType.equals("tv", true)} nextPresent=${next != null} " +
                             "nextAired=${next != null && field(next, "h") == true} " +
                             "profileReady=${state.profile != null} currentReady=${!state.currentVideoId.isNullOrBlank()} " +
                             "nextReady=${state.next != null} sameEpisode=${state.next?.videoId == state.currentVideoId} " +
@@ -210,7 +218,7 @@ object NuvioStreamPreload {
     @JvmStatic fun nextEpisodePluginPause(request: Any): Flow<Boolean> {
         val owner = field(request, "o")!!
         @Suppress("UNCHECKED_CAST")
-        val native = field(owner, "k") as StateFlow<Boolean>
+        val native = field(owner, "l") as StateFlow<Boolean>
         return try {
             val media = StreamTargets.Media(field(request, "q") as String, field(request, "p") as String,
                 field(request, "r") as? Int, field(request, "s") as? Int)
@@ -228,7 +236,7 @@ object NuvioStreamPreload {
         try {
             val loader = composer.javaClass.classLoader!!
             val state = states.getOrPut(mode) {
-                method(loader.loadClass("g1.j"), "r", 1).invoke(null, enabled(mode))
+                method(loader.loadClass("h1.h"), "s", 1).invoke(null, enabled(mode))
             }
             fun callback(action: () -> Unit): Any {
                 val contract = loader.loadClass("kotlin.jvm.functions.Function0")
@@ -250,8 +258,7 @@ object NuvioStreamPreload {
                 settings.value += 1
                 Log.d(TAG, "Preload setting mode=$mode enabled=$value")
             }
-            val beta6 = NuvioBeta6.active()
-            val title = when (mode) {
+                val title = when (mode) {
                 CW -> "Preload streams in Continue Watching"
                 NEXT -> "Preload streams for next episode"
                 else -> "Preload streams on detail page"
@@ -261,7 +268,7 @@ object NuvioStreamPreload {
                 NEXT -> "Fetch the next episode's source list after 30 seconds of playback."
                 else -> "Search sources for the detail page's Play or Resume episode or movie."
             }
-            method(loader.loadClass(NuvioBeta6.name("sa.db")), "m", 13).invoke(null,
+            method(loader.loadClass("ab.uh"), "m", 13).invoke(null,
                 title, description, get(state, "getValue"), toggle, null, callback {}, false,
                 null, 0L, false, composer, 0, 1008)
         } catch (error: Exception) { Log.e(TAG, "Stream settings rendering failed", error) }

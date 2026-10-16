@@ -36,7 +36,7 @@ import kotlin.Unit;
 public final class NuvioFinaleDatesPatch {
     public static final String NAME = "NuvioTV - Finale dates in library and collections";
     static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = NuvioLayout.BETA6;
+    static final String VERSION = NuvioLayout.BETA7;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuviofinale/NuvioFinaleDates;";
 
     private NuvioFinaleDatesPatch() {}
@@ -53,12 +53,12 @@ public final class NuvioFinaleDatesPatch {
                 builder.execute(context -> {
                     String version = context.getPackageMetadata().getVersionName();
                 NuvioLayout.use(version);
-                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.BETA6.equals(version))
+                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.recent(version))
                         throw unsupported("Expected " + PACKAGE + " " + VERSION);
-                    hookItems(context.mutableClassDefBy("Lfa/d1;"));
-                    hookCard(context.mutableClassDefBy("Lfa/e3;"));
-                    hookCard(context.mutableClassDefBy("Lfa/i1;"));
-                    for (String type : List.of("Lfa/e3;", "Lfa/i1;", "Lfa/f3;", "Lfa/k1;"))
+                    for (String type : itemOwners()) hookItems(context.mutableClassDefBy(type));
+                    hookCard(context.mutableClassDefBy("Lha/h2;"));
+                    hookCard(context.mutableClassDefBy("Lha/s0;"));
+                    for (String type : List.of("Lha/h2;", "Lha/s0;", "Lha/i2;", "Lha/t0;"))
                         hookContext(context.mutableClassDefBy(type));
                     return Unit.INSTANCE;
                 });
@@ -68,15 +68,19 @@ public final class NuvioFinaleDatesPatch {
 
 
 
+    static List<String> itemOwners() {
+        return List.of("Lha/n0;", "Lha/c0;", "Lha/t0;");
+    }
+
     static void hookItems(MutableClass owner) { hookItems(owner, EXTENSION); }
 
     static void hookItems(MutableClass owner, String extension) {
-        MutableMethod target = unique(owner, "invoke", 4);
+        MutableMethod target = unique(owner, "invoke", owner.getType().equals("Lha/t0;") ? 2 : 4);
         List<Instruction> ins = instructions(target);
         int matches = 0;
         for (int i = ins.size() - 1; i >= 0; i--) {
-            String hook = calls(ins.get(i), "Lfa/j3;", "p") ? "libraryItem"
-                : calls(ins.get(i), "Lfa/r1;", "a") ? "collectionItem" : null;
+            String hook = calls(ins.get(i), "Lha/m2;", "p") ? "libraryItem"
+                : calls(ins.get(i), "Lha/x0;", "a") ? "collectionItem" : null;
             if (hook == null) continue;
             if (!(ins.get(i) instanceof RegisterRangeInstruction)) throw unsupported("Item card invocation changed");
             int item = ((RegisterRangeInstruction) ins.get(i)).getStartRegister();
@@ -86,14 +90,15 @@ public final class NuvioFinaleDatesPatch {
                 item, 1, method(extension, hook, List.of("Ljava/lang/Object;"), "V")));
             matches++;
         }
-        if (matches != 2) throw unsupported("Library/collection card anchors changed");
+        if (matches != (!owner.getType().equals("Lha/n0;") ? 1 : 2))
+            throw unsupported("Library/collection card anchors changed");
     }
 
     static void hookContext(MutableClass owner) { hookContext(owner, EXTENSION); }
 
     static void hookContext(MutableClass owner, String extension) {
         int constructors = 0;
-        boolean restart = "Lfa/f3;".equals(owner.getType()) || "Lfa/k1;".equals(owner.getType());
+        boolean restart = "Lha/i2;".equals(owner.getType()) || "Lha/t0;".equals(owner.getType());
         for (MutableMethod target : owner.getMethods()) {
             if (target.getImplementation() == null) continue;
             boolean constructor = "<init>".equals(target.getName());
@@ -123,13 +128,13 @@ public final class NuvioFinaleDatesPatch {
     static void hookCard(MutableClass owner) { hookCard(owner, EXTENSION); }
 
     static void hookCard(MutableClass owner, String extension) {
-        boolean library = "Lfa/e3;".equals(owner.getType());
+        boolean library = "Lha/h2;".equals(owner.getType());
         MutableMethod target = unique(owner, "invoke", 3);
-        if (target.getImplementation().getRegisterCount() != (library ? 34 : 53))
+        if (target.getImplementation().getRegisterCount() != (library ? (36) : 53))
             throw unsupported("Finale card register layout changed");
         List<Instruction> ins = instructions(target);
         List<Integer> images = new ArrayList<>();
-        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "La/a;", "b")) images.add(i);
+        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "Leb/m;", "b")) images.add(i);
         if (images.size() != (library ? 2 : 3)) throw unsupported("Finale card image anchors changed");
         // The third collection image is the logo; only badge the two poster branches.
         for (int n = 1; n >= 0; n--) {
@@ -152,7 +157,7 @@ public final class NuvioFinaleDatesPatch {
                 && method.getImplementation() != null) {
                 // Beta4 has a 27-argument default-mask overload as well as the real
                 // model constructor. Register only fully initialized model instances.
-                if ("Lqa/y9;".equals(owner.getType()) && "<init>".equals(name)
+                if ("Lsa/q9;".equals(owner.getType()) && "<init>".equals(name)
                     && !"Lcom/nuvio/tv/domain/model/MDBListRatings;".contentEquals(
                         method.getParameterTypes().get(parameters - 1))) continue;
                 if (result != null) throw unsupported("Multiple " + owner.getType() + "->" + name + " matches");

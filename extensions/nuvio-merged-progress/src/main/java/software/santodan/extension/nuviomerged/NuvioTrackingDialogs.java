@@ -8,14 +8,14 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.function.Consumer;
 
-/** Original beta.6 Compose controls, rendered inside the app's current theme. */
+/** Original beta.7 Compose controls, rendered inside the app's current theme. */
 public final class NuvioTrackingDialogs {
     private NuvioTrackingDialogs() {}
 
     public static void picker(Object composer, String title, List<String> ids, List<String> labels,
             String selected, Consumer<String> select, Runnable dismiss) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
-        var constructors = java.util.Arrays.stream(loader.loadClass("xa.cc").getDeclaredConstructors())
+        var constructors = java.util.Arrays.stream(loader.loadClass("ab.fi").getDeclaredConstructors())
             .filter(candidate -> candidate.getParameterCount() == 6).toArray(java.lang.reflect.Constructor<?>[]::new);
         if (constructors.length != 1) throw new IllegalStateException("Native picker option changed");
         var constructor = constructors[0];
@@ -23,7 +23,7 @@ public final class NuvioTrackingDialogs {
         List<Object> options = new ArrayList<>();
         for (int index = 0; index < ids.size(); index++)
             options.add(constructor.newInstance(ids.get(index), labels.get(index), null, null, null, 28));
-        method(loader.loadClass("xa.ub"), "j", 11).invoke(null, title, options, selected,
+        method(loader.loadClass("ab.uh"), "j", 11).invoke(null, title, options, selected,
             callback(loader, "Function1", args -> { select.accept((String) args[0]); return unit(loader); }),
             click(loader, dismiss), null, 520f, 320f, composer, 0, 32);
     }
@@ -31,7 +31,7 @@ public final class NuvioTrackingDialogs {
     public static void dialog(Object composer, String title, String subtitle, Runnable dismiss,
             Consumer<Object> render) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
-        method(loader.loadClass("fa.j3"), "z", 19).invoke(null,
+        method(loader.loadClass("ha.m2"), "z", 19).invoke(null,
             click(loader, dismiss), title, subtitle, 560f, 0, false, false, null, null,
             0f, 0f, 0f, 0f, null, content(loader, 0x534d4744, render), composer, 0, 24576, 16336);
     }
@@ -39,7 +39,7 @@ public final class NuvioTrackingDialogs {
     public static void services(Object composer, List<String> ids, List<String> labels,
             List<String> selected, String main, Consumer<Set<String>> select, Runnable dismiss) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
-        var constructors = java.util.Arrays.stream(loader.loadClass("xa.cc").getDeclaredConstructors())
+        var constructors = java.util.Arrays.stream(loader.loadClass("ab.fi").getDeclaredConstructors())
             .filter(candidate -> candidate.getParameterCount() == 6).toArray(java.lang.reflect.Constructor<?>[]::new);
         if (constructors.length != 1) throw new IllegalStateException("Native picker option changed");
         constructors[0].setAccessible(true);
@@ -48,7 +48,7 @@ public final class NuvioTrackingDialogs {
             options.add(constructors[0].newInstance(ids.get(index), labels.get(index), null, null, null, 28));
         String mainLabel = labels.get(ids.indexOf(main));
         List<String> optional = new ArrayList<>(selected); optional.remove(main);
-        method(loader.loadClass("xa.ub"), "g", 12).invoke(null,
+        method(loader.loadClass("ab.uh"), "g", 12).invoke(null,
             "Services to merge", options, optional,
             callback(loader, "Function1", args -> {
                 Set<String> values = new LinkedHashSet<>();
@@ -61,9 +61,9 @@ public final class NuvioTrackingDialogs {
 
     public static void action(Object composer, String title, Runnable action) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
-        method(loader.loadClass("xa.ub"), "e", 5).invoke(null, null,
+        method(loader.loadClass("ab.uh"), "e", 5).invoke(null, null,
             content(loader, 0x534d4741, nested -> {
-                try { method(loader.loadClass("xa.ub"), "d", 7).invoke(null,
+                try { method(loader.loadClass("ab.uh"), "d", 7).invoke(null,
                     title, click(loader, action), false, true, nested, 0, 0); }
                 catch (Exception error) { throw new IllegalStateException("Native dialog action failed", error); }
             }), composer, 0, 1);
@@ -71,20 +71,20 @@ public final class NuvioTrackingDialogs {
 
     public static void label(Object composer, String text) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
-        method(loader.loadClass("xa.bd"), "b", 6).invoke(null, text, value(loader, "w1.n", "b"), null, composer, 0, 6);
+        method(loader.loadClass("ab.kj"), "b", 6).invoke(null, text, value(loader, "x1.n", "b"), null, composer, 0, 6);
     }
 
     /** A non-interactive bar built from the same theme colors, rounded shape and Box primitives. */
     public static void progress(Object composer, int step, int total) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
-        Object colors = method(composer.getClass(), "j", 1).invoke(composer, value(loader, "ab.z0", "a"));
+        Object colors = method(composer.getClass(), "j", 1).invoke(composer, value(loader, "db.x0", "a"));
         var accentField = colors.getClass().getDeclaredField("h");
         var trackField = colors.getClass().getDeclaredField("e");
         accentField.setAccessible(true); trackField.setAccessible(true);
         long accent = accentField.getLong(colors), track = trackField.getLong(colors);
         float fraction = Math.max(0f, Math.min(1f, step / (float) Math.max(1, total)));
         Object modifier = bar(loader, 1f, track);
-        // beta.6's optimized BoxWithConstraints remembers its content using only the
+        // beta.7's optimized BoxWithConstraints remembers its content using only the
         // track modifier. Replace that remembered scope when the captured fill changes.
         int fillKey = 31 * Float.floatToIntBits(fraction) + Long.hashCode(accent);
         method(composer.getClass(), "d0", 1).invoke(composer, fillKey);
@@ -102,14 +102,14 @@ public final class NuvioTrackingDialogs {
 
     private static Object bar(ClassLoader loader, float fraction, long color) throws Exception {
         Class<?> size = loader.loadClass("androidx.compose.foundation.layout.b");
-        Object modifier = method(size, "e", 2).invoke(null, value(loader, "w1.n", "b"), fraction);
-        modifier = method(size, "g", 2).invoke(null, modifier, 6f);
+        Object modifier = method(size, "f", 2).invoke(null, value(loader, "x1.n", "b"), fraction);
+        modifier = method(size, "h", 2).invoke(null, modifier, 6f);
         Object shape = method(loader.loadClass("l0.g"), "b", 1).invoke(null, 3f);
-        return method(loader.loadClass("y.l"), "g", 3).invoke(null, modifier, color, shape);
+        return method(loader.loadClass("y.n"), "g", 3).invoke(null, modifier, color, shape);
     }
 
     private static Object content(ClassLoader loader, int key, Consumer<Object> render) throws Exception {
-        return loader.loadClass("q1.s").getDeclaredConstructor(int.class, Object.class, boolean.class)
+        return loader.loadClass("r1.s").getDeclaredConstructor(int.class, Object.class, boolean.class)
             .newInstance(key, callback(loader, "Function3", args -> { render.accept(args[1]); return unit(loader); }), true);
     }
     private static Object click(ClassLoader loader, Runnable action) throws Exception {

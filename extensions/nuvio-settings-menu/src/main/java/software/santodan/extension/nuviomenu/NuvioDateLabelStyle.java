@@ -26,13 +26,13 @@ public final class NuvioDateLabelStyle {
             set(expanded, !((Boolean) get(expanded))); return unit(loader);
         });
         Object noop = callback(loader, "Function0", args -> unit(loader));
-        Object body = Class.forName("q1.s", false, loader).getDeclaredConstructor(int.class, Object.class, boolean.class)
+        Object body = Class.forName("r1.s", false, loader).getDeclaredConstructor(int.class, Object.class, boolean.class)
             .newInstance(scope.hashCode(), callback(loader, "Function3", args -> {
                 renderRows(args[1], scope, dialog); return unit(loader);
             }), true);
-        method(Class.forName(NuvioBeta6.name("sa.kc"), false, loader), "a", 11).invoke(null,
+        method(Class.forName("ab.kj", false, loader), "a", 11).invoke(null,
             title, "Position, label size and color, font size and color", get(expanded),
-            toggle, staticValue(loader, "w1.n", "b"), null, null, noop, body, composer, 0);
+            toggle, staticValue(loader, "x1.n", "b"), null, null, noop, body, composer, 0);
         int property = ((Number) get(dialog)).intValue();
         if (property < 0 || property >= DateLabelStyle.KEYS.length) return;
         if (property == 2 || property == 4) {
@@ -41,7 +41,7 @@ public final class NuvioDateLabelStyle {
         }
         String[] choices = DateLabelStyle.choices(property);
         java.util.ArrayList<Object> options = new java.util.ArrayList<>();
-        Class<?> optionType = Class.forName(NuvioBeta6.name("sa.db").equals(rowsOwner()) ? NuvioBeta6.name("sa.lb") : NuvioBeta6.name("sa.mb"), false, loader);
+        Class<?> optionType = Class.forName("ab.uh".equals(rowsOwner()) ? "ab.fi" : "ab.fi", false, loader);
         java.lang.reflect.Constructor<?> option = Arrays.stream(optionType.getDeclaredConstructors())
             .filter(value -> value.getParameterCount() == 6).findFirst().orElseThrow();
         option.setAccessible(true);
@@ -73,15 +73,15 @@ public final class NuvioDateLabelStyle {
                     preferences(scope).edit().putInt(percentKey(selected), ((Number) args[0]).intValue()).apply();
                     revise(loader, scope); return unit(loader);
                 });
-                method(Class.forName(playbackOwner(), false, loader), "y0", 14).invoke(null,
+                method(Class.forName(playbackOwner(), false, loader), "h", 14).invoke(null,
                     DateLabelStyle.TITLES[property], percent, percent + "%", 50, 200, 10, change,
-                    null, noop, true, staticValue(loader, "w1.n", "b"), composer, 0, 128);
+                    null, noop, true, staticValue(loader, "x1.n", "b"), composer, 0, 128);
                 continue;
             }
             Object click = callback(loader, "Function0", args -> { set(dialog, selected); return unit(loader); });
             if (property == 2 || property == 4) {
                 long color = color(scope, property);
-                method(Class.forName(playbackOwner(), false, loader), "r", 9).invoke(null,
+                method(Class.forName(playbackOwner(), false, loader), "c", 9).invoke(null,
                     DateLabelStyle.TITLES[property], color, property == 2 && color == 0L,
                     click, noop, true, composer, 0, 0);
             } else {
@@ -110,22 +110,22 @@ public final class NuvioDateLabelStyle {
     public static Object[] build(ClassLoader loader, Object boxScope, Object composer, String shapeOwner, String ignored) throws Exception {
         String scope = PREFS;
         subscribe(loader, scope);
-        Object typography = method(composer.getClass(), "j", 1).invoke(composer, staticValue(loader, NuvioBeta6.name("x5.i2"), "a"));
+        Object typography = method(composer.getClass(), "j", 1).invoke(composer, staticValue(loader, "y5.g2", "a"));
         Object textStyle = field(typography.getClass(), "o").get(typography);
-        Object modifier = staticValue(loader, "w1.n", "b");
+        Object modifier = staticValue(loader, "x1.n", "b");
         modifier = method(boxScope.getClass(), "a", 2).invoke(boxScope, modifier,
-            staticValue(loader, "w1.b", DateLabelStyle.alignment(choice(scope, 0))));
-        Class<?> modifierType = Class.forName("w1.q", false, loader);
-        java.lang.reflect.Constructor<?> layer = Class.forName("w1.v", false, loader).getDeclaredConstructor(float.class);
+            staticValue(loader, "x1.b", DateLabelStyle.alignment(choice(scope, 0))));
+        Class<?> modifierType = Class.forName("x1.q", false, loader);
+        java.lang.reflect.Constructor<?> layer = Class.forName("x1.v", false, loader).getDeclaredConstructor(float.class);
         layer.setAccessible(true);
         modifier = modifierType.getMethod("d", modifierType).invoke(modifier, layer.newInstance(10f));
         // Fixed inset from the card edge; only inner padding changes label size.
         modifier = method(Class.forName("e0.b", false, loader), "u", 2).invoke(null, modifier, 6f);
-        modifier = method(Class.forName("a2.j", false, loader), "b", 2).invoke(null, modifier, staticValue(loader, shapeOwner, "a"));
-        modifier = method(Class.forName("y.l", false, loader), "g", 3).invoke(null, modifier,
-            color(scope, 2), staticValue(loader, "d2.g0", "b"));
+        modifier = method(Class.forName("b2.j", false, loader), "b", 2).invoke(null, modifier, staticValue(loader, shapeOwner, "a"));
+        modifier = method(Class.forName("y.n", false, loader), "g", 3).invoke(null, modifier,
+            color(scope, 2), staticValue(loader, "e2.g0", "b"));
         float scale = percent(scope, 1) / 100f;
-        Object spacing = staticValue(loader, NuvioBeta6.name("va.l0"), "a");
+        Object spacing = staticValue(loader, "db.l0", "a");
         float horizontal = field(spacing.getClass(), "e").getFloat(spacing);
         float vertical = field(spacing.getClass(), "d").getFloat(spacing);
         Object span = field(textStyle.getClass(), "a").get(textStyle);
@@ -137,7 +137,7 @@ public final class NuvioDateLabelStyle {
         return new Object[]{modifier, color(scope, 4), fontSize, textStyle};
     }
 
-    private static String playbackOwner() throws Exception { return NuvioBeta6.name("sa.db").equals(rowsOwner()) ? NuvioBeta6.name("sa.p3") : NuvioBeta6.name("sa.o3"); }
+    private static String playbackOwner() { return "ab.og"; }
     private static String percentKey(int property) { return "date_label_" + DateLabelStyle.KEYS[property] + "_percent"; }
     private static String colorKey(int property) { return "date_label_" + DateLabelStyle.KEYS[property] + "_color"; }
     private static int percent(String scope, int property) throws Exception {
@@ -155,7 +155,7 @@ public final class NuvioDateLabelStyle {
         ClassLoader loader = composer.getClass().getClassLoader();
         int[] palette = new int[]{0xffffffff, 0xffd9d9d9, 0xffffff00, 0xff00ffff, 0xff00ff00,
                 0xffff00ff, 0xffff6b6b, 0xffffa500, 0xff90ee90};
-        java.lang.reflect.Constructor<?> box = Class.forName("d2.z", false, loader).getDeclaredConstructor(long.class);
+        java.lang.reflect.Constructor<?> box = Class.forName("e2.z", false, loader).getDeclaredConstructor(long.class);
         box.setAccessible(true);
         java.util.ArrayList<Object> colors = new java.util.ArrayList<>();
         if (property == 2) colors.add(box.newInstance(0L));
@@ -166,7 +166,7 @@ public final class NuvioDateLabelStyle {
             revise(loader, scope); set(dialog, -1); return unit(loader);
         });
         Object dismiss = callback(loader, "Function0", args -> { set(dialog, -1); return unit(loader); });
-        method(Class.forName(playbackOwner(), false, loader), "q", 9).invoke(null,
+        method(Class.forName(playbackOwner(), false, loader), "b", 9).invoke(null,
             DateLabelStyle.TITLES[property], colors, color(scope, property), property == 2,
             select, dismiss, composer, 0, 0);
     }
@@ -178,14 +178,14 @@ public final class NuvioDateLabelStyle {
     private static void subscribe(ClassLoader loader, String scope) throws Exception { get(state(loader, scope + ":revision", 0)); }
     private static synchronized Object state(ClassLoader loader, String key, Object initial) throws Exception {
         Object state = STATES.get(key);
-        if (state == null) { state = method(Class.forName("g1.j", false, loader), "r", 1).invoke(null, initial); STATES.put(key, state); }
+        if (state == null) { state = method(Class.forName("h1.h", false, loader), "s", 1).invoke(null, initial); STATES.put(key, state); }
         return state;
     }
     private static Object get(Object state) throws Exception { return method(state.getClass(), "getValue", 0).invoke(state); }
     private static void set(Object state, Object value) throws Exception { method(state.getClass(), "setValue", 1).invoke(state, value); }
     private static Application application() throws Exception { return (Application) Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null); }
     private static SharedPreferences preferences(String scope) throws Exception { return application().getSharedPreferences(scope, Context.MODE_PRIVATE); }
-    private static String rowsOwner() { return NuvioBeta6.name("sa.db"); }
+    private static String rowsOwner() { return "ab.uh"; }
     private interface Callback { Object invoke(Object[] args) throws Exception; }
     private static Object callback(ClassLoader loader, String type, Callback action) throws Exception {
         return Proxy.newProxyInstance(loader, new Class<?>[]{Class.forName("kotlin.jvm.functions." + type, false, loader)}, (proxy, method, args) -> {
@@ -202,7 +202,7 @@ public final class NuvioDateLabelStyle {
     private static Object staticValue(ClassLoader loader, String owner, String name) throws Exception { return field(Class.forName(owner, false, loader), name).get(null); }
     private static Field field(Class<?> owner, String name) throws Exception { Field field = owner.getDeclaredField(name); field.setAccessible(true); return field; }
     private static Method method(Class<?> owner, String name, int count) throws Exception {
-        for (Method method : owner.getDeclaredMethods()) if (method.getName().equals(NuvioBeta6.method(owner, name)) && method.getParameterCount() == count) { method.setAccessible(true); return method; }
+        for (Method method : owner.getDeclaredMethods()) if (method.getName().equals(name) && method.getParameterCount() == count) { method.setAccessible(true); return method; }
         throw new NoSuchMethodException(owner.getName() + '.' + name);
     }
 }

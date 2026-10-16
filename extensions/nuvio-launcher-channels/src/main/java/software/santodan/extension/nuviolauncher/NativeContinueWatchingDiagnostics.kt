@@ -6,7 +6,7 @@ import android.util.Log
 import java.io.File
 import org.json.JSONArray
 
-/** Read-only beta6 diagnostics. Never log credentials, complete artwork URLs or watch-history lists. */
+/** Read-only beta7 diagnostics. Never log credentials, complete artwork URLs or watch-history lists. */
 object NativeContinueWatchingDiagnostics {
     private data class Ui(val profile: String, val total: Int, val nextUp: Int, val aired: Int)
     @Volatile private var ui: Ui? = null
@@ -17,7 +17,7 @@ object NativeContinueWatchingDiagnostics {
         var aired = 0
         for (item in items) {
             val data = item.javaClass.getDeclaredField("a").apply { isAccessible = true }.get(item) ?: continue
-            if (data.javaClass.name != NuvioBeta6.name("la.ba")) continue // beta6 NextUpInfo
+            if (data.javaClass.name != "sa.q9") continue // beta7 NextUpInfo
             nextUp++
             if (data.javaClass.getDeclaredField("n").apply { isAccessible = true }.getBoolean(data)) aired++
         }

@@ -57,7 +57,7 @@ Paths below are relative to `E:\Morphe\santodan-patches` unless stated otherwise
 | `../.morphe-template-reference/`, `../.morphe-patches-reference/` | Local API/example references; check against installed dependency versions |
 | `../Apps/` | Patched app outputs; do not use as original patch inputs |
 
-At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.6`,
+At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.7`,
 Pillo `0.6.20`, Reddit `2026.37.0`, MEO Android TV `5.7.0`, and Peafowl
 `GMS_27.5.1`. These are discovery hints, not a permanent version allowlist.
 Rescan inputs for each task. Apps without existing patches need their own inspection.
@@ -108,8 +108,8 @@ rg --files patches/src/main extensions patches/src/test
 rg -n 'register<JavaExec>|verify' patches/build.gradle.kts
 .\build-local.ps1 :patches:tasks --all
 .\build-local.ps1 :patches:buildAndroid
-# Example for a Nuvio beta.6 hook change; add the relevant feature/runtime tasks:
-.\build-local.ps1 :patches:verifyNuvioBeta6
+# Example for a Nuvio beta.7 hook change; add the relevant feature/runtime tasks:
+.\build-local.ps1 :patches:verifyNuvioBeta7
 # When patch names/descriptions/options/compatibility change:
 .\build-local.ps1 :patches:generatePatchesList
 git diff --check
@@ -158,8 +158,8 @@ sync gate follows the root navigation flow and activity lifecycle, not stream-se
 pause signals. Main-service playback writes and service inclusion are configured
 in the Tracking progress submenu; verify standalone and combined bundles.
 
-NuvioTV patches target only `com.nuvio.tv` `1.1.0-beta.6`. See
-`docs/NuvioBeta6.md` for native contracts, input provenance, and verification.
+NuvioTV patches target `com.nuvio.tv` `1.1.0-beta.7` only. See
+`docs/NuvioBeta7.md` for native contracts, input provenance, and verification.
 Launcher channels are opt-in and use native repositories, per-profile settings,
 and the shared Layout menu. Their artwork-provider authority follows side-by-side
 package renaming. Device checks are documented in `docs/NuvioLauncherChannels.md`.
@@ -271,24 +271,24 @@ mutation scope, rejection cases, and DEX write/reload. Full release verification
 also patch and rebuild the original app bundle. Users must select Pillo's Banner/Light
 notification mode for the hybrid routing to apply.
 
-## NuvioTV 1.1.0-beta.6
+## NuvioTV 1.1.0-beta.7
 
-All ten NuvioTV patches support only `1.1.0-beta.6`. Original DEX descriptors are
-used directly in the patch implementations; there are no historical type tables.
-`NuvioLayout` rejects every other version and declares a single compatibility
-entry. Runtime reflection helpers map their local semantic aliases to beta.6
-symbols and reject unsupported installed versions.
+The ten published NuvioTV patches target only beta.7 (version code 1070).
+Use verified beta.7 symbols directly, without compatibility adapters. Validate full
+reflection signatures: `h1.h.s(Object):h1.t1` and
+`ba.d5.l(String,String,Integer,Integer,boolean):Flow`, and static
+`ra.t0.D(Meta,NextToWatch,List):Video`; same-arity methods are incompatible.
 
-The optional features retain native provider authentication, profile isolation,
-source-search sessions, lifecycle disposal, and disabled paths. Stream preloading
-uses the native `z9.k4` repository and its `l` pause flow. The next-episode player
-uses `sa.df.Y`, controller request type `sa.p8.S`, and the `sa.ec.C/w` entry hooks.
-Provider aggregation uses `z9.zc` and `o9.z` and observes local watched flow
-`com.nuvio.tv.data.local.sc.i`. Shared controls use `xa.ub`, `xa.bd`, and `xa.za`.
+Read `docs/NuvioBeta7.md` for the current contracts and verification commands.
+Beta.7 merges the provider-selection lambda with watch-party state: hook only
+the provider branch's final return, preserving incoming labels and the party branch.
+The player has 53 constructor parameters, request type `va.k8.T`, state flow
+`va.k8.F0`, next episode `va.re.r1`, and error `va.re.f1`.
+Library/collection item hooks now cover three native lambdas.
 
-Run the latest-only tasks in `docs/NuvioBeta6.md`; historical DEX tasks are retired.
-The generic launcher/source and date-style tasks also use the beta.6 fixtures.
-Always regenerate compatibility metadata with `:patches:generatePatchesList`.
+Use the beta.7 bundle verifier for the published set. The backup under
+`../backups/nuvio-beta7-20261016-174310/` retains every original changed file and hash.
+Regenerate compatibility metadata with `:patches:generatePatchesList`.
 
 ## Reddit 2026.37.0
 
@@ -437,15 +437,15 @@ per two minutes, and throttle incremental progress logs to 30 seconds. Run
 and cache-eviction regression coverage.
 
 All injected badge renderers must open their own replace group with composer `d0`
-and close it with `p(false)` (beta.6 `g1.m0`). Native text has a
+and close it with `p(false)` (beta.7 `h1.l0`). Native text has a
 restart group but the badge's placement can still collide with the host's remembered
 slots without this wrapper. Use stable distinct keys for the three extensions and
 close groups on early returns. `q()` ends defaults; do not use it for this wrapper.
 Run `:patches:verifyNuvioBadgeComposition` for all three production wrappers, alongside
-the beta.6 DEX checks for the start/end contracts.
+the beta.7 DEX checks for the start/end contracts.
 
 **NuvioTV - Upcoming movie dates in library and collections** is independent of the
-series finale patch and supports beta.6. Two disabled-by-default switches appear
+series finale patch and supports beta.7. Two disabled-by-default switches appear
 under UI. It reuses the verified poster/scope hooks with a distinct extension and
 Compose group key, and skips series and released movies. Exact preview `released`
 then `releaseInfo` values take precedence; year-only data never invents a date.
@@ -454,7 +454,7 @@ a bounded queue, request timeouts, and a six-hour persistent cache. Other IDs ca
 show their exact preview dates without a catalog lookup. Date-only releases use UTC
 midnight, zoned releases use their exact instant, and timestamp badges use the local
 date, matching Nuvio's native release rules. `verifyNuvioMovieReleaseDates` checks
-these rules; beta.6 DEX checks exercise both movie and series hooks together.
+these rules; beta.7 DEX checks exercise both movie and series hooks together.
 Use `SantodanMovieRelease:V` for diagnostics. Release dates describe metadata releases,
 not a guarantee that a streaming source exists.
 

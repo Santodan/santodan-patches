@@ -391,7 +391,6 @@ tasks.register<JavaExec>("verifyNuvioBeta6") {
 }
 
 sourceSets["test"].java.srcDir("../extensions/nuvio-stream-preload/src/main/java")
-
 tasks.register<JavaExec>("verifyNuvioBeta6Bundle") {
     dependsOn("testClasses", "buildAndroid")
     classpath = sourceSets["test"].runtimeClasspath
@@ -401,10 +400,6 @@ tasks.register<JavaExec>("verifyNuvioBeta6Bundle") {
         file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
         file("${layout.buildDirectory.get()}/verification/nuvio-beta6-bundle").absolutePath,
         file(androidSdkDirectory.get()).absolutePath)
-}
-
-tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
-    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioBeta6.java"))
 }
 
 tasks.register<JavaExec>("verifyNuvioBeta6DateStyleRuntime") {
@@ -428,6 +423,80 @@ tasks.register<JavaExec>("verifyNuvioBeta6Player") {
     args(file("${layout.buildDirectory.get()}/verification").absolutePath)
 }
 
-tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
-    source(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu/NuvioBeta6.java"))
+
+tasks.register<JavaExec>("verifyNuvioBeta7") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta7")
+    maxHeapSize = "2g"
+    args("1.1.0-beta.7", file("../../.inspect-nuvio-beta7").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-beta7.dex").absolutePath)
+}
+
+
+tasks.register<JavaExec>("verifyNuvioBeta7Bundle") {
+    dependsOn("testClasses", "buildAndroid")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta7BundleKt")
+    maxHeapSize = "3g"
+    args(file("../../OriginalApps/NuvioTV-1.1.0-beta7.apk").absolutePath,
+        file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-beta7-bundle").absolutePath,
+        file(androidSdkDirectory.get()).absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioBeta7Launcher") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta7LauncherKt")
+    args(file("../../.inspect-nuvio-beta7").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioBeta7Player") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta7PlayerKt")
+    args(file("${layout.buildDirectory.get()}/verification").absolutePath)
+}
+
+// Historical bundle verifiers remain disabled; use the beta.7 bundle verifier.
+kotlin.sourceSets.named("test") {
+    kotlin.exclude("**/VerifyNuvioBeta6Bundle.kt")
+}
+for (taskName in listOf("verifyNuvioBeta6Bundle", "verifyNuvioNextEpisodeBundle")) {
+    tasks.named(taskName) { enabled = false }
+}
+
+tasks.register<JavaExec>("verifyNuvioBeta7DateStyleRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta7DateStyleRuntime")
+    args(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu").absolutePath,
+        file("${layout.buildDirectory.get()}/verification").absolutePath)
+}
+
+
+tasks.register<JavaExec>("verifyNuvioBeta7TrackingDialogs") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta7TrackingDialogs")
+    args(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioTrackingDialogs.java").absolutePath,
+        file("${layout.buildDirectory.get()}/verification").absolutePath)
+}
+
+// Historical fixtures remain on disk; the active verification targets beta7 only.
+sourceSets["test"].java.exclude("**/VerifyNuvioBeta6*.java")
+kotlin.sourceSets.named("test") { kotlin.exclude("**/VerifyNuvioBeta6*.kt") }
+for (taskName in listOf("verifyNuvioBeta6", "verifyNuvioBeta6Launcher", "verifyNuvioBeta6Player", "verifyNuvioBeta6DateStyleRuntime")) {
+    tasks.named(taskName) { enabled = false }
+}
+
+
+tasks.register<JavaExec>("verifyNuvioBeta7SettingsMenuRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioBeta7SettingsMenuRuntime")
+    args(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu/NuvioSettingsMenu.java").absolutePath,
+        file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioSourceContinuation.java").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/beta7-menu-runtime").absolutePath)
 }

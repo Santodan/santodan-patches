@@ -29,13 +29,13 @@ public final class NuvioLauncherChannelsPatch {
             builder.execute(context -> {
                 NuvioStreamPreloadPatch.validateTarget(context.getPackageMetadata().getPackageName(),
                     context.getPackageMetadata().getVersionName());
-                hookContinueWatching(context.mutableClassDefBy("Ll9/k;"));
-                hookReturn(NuvioRemainingEpisodesPatch.unique(context.mutableClassDefBy("Lp8/e;"), "<init>", 1), "registerComponent");
-                MutableClass home = context.mutableClassDefBy("Lqa/a4;");
+                hookContinueWatching(context.mutableClassDefBy("Ln9/k;"));
+                hookReturn(NuvioRemainingEpisodesPatch.unique(context.mutableClassDefBy("Lq8/e;"), "<init>", 1), "registerComponent");
+                MutableClass home = context.mutableClassDefBy("Lsa/x3;");
                 hookReturn(NuvioRemainingEpisodesPatch.unique(home, "<init>", 27), "observeHome");
                 insert(NuvioRemainingEpisodesPatch.unique(home, "onCleared", 0), 0, "stopHome");
                 hookReturn(NuvioRemainingEpisodesPatch.unique(context.mutableClassDefBy(
-                    "Lz9/u0;"), "<init>", 8), "observeLibrary");
+                    "Lba/h1;"), "<init>", 8), "observeLibrary");
                 return Unit.INSTANCE;
             });
             return Unit.INSTANCE;

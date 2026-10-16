@@ -36,7 +36,7 @@ import kotlin.Unit;
 public final class NuvioAiringSeriesPatch {
     public static final String NAME = "NuvioTV - Keep airing series in Upcoming";
     static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = NuvioLayout.BETA6;
+    static final String VERSION = NuvioLayout.BETA7;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuvioairing/NuvioAiringSeries;";
 
     private NuvioAiringSeriesPatch() {}
@@ -53,12 +53,12 @@ public final class NuvioAiringSeriesPatch {
                 builder.execute(context -> {
                     String version = context.getPackageMetadata().getVersionName();
                 NuvioLayout.use(version);
-                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.BETA6.equals(version))
+                    if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.recent(version))
                         throw unsupported("Expected " + PACKAGE + " " + VERSION);
-                    hookNextUpModel(context.mutableClassDefBy("Lqa/y9;"));
-                    hookUpcomingSplit(context.mutableClassDefBy("Lqa/s5;"));
-                    hookCard(context.mutableClassDefBy("Lfa/v1;"), "Lc7/a;");
-                    hookWide(context.mutableClassDefBy("Lfa/q2;"));
+                    hookNextUpModel(context.mutableClassDefBy("Lsa/q9;"));
+                    hookUpcomingSplit(context.mutableClassDefBy("Lsa/m5;"));
+                    hookCard(context.mutableClassDefBy("Lha/b1;"), "Lc7/a;");
+                    hookWide(context.mutableClassDefBy("Lha/u1;"));
                     return Unit.INSTANCE;
                 });
                 return Unit.INSTANCE;
@@ -75,7 +75,7 @@ public final class NuvioAiringSeriesPatch {
             Object reference = ((ReferenceInstruction) instruction).getReference();
             if (!(reference instanceof FieldReference)) continue;
             FieldReference field = (FieldReference) reference;
-            if (!"Lqa/y9;".equals(field.getDefiningClass()) || !"n".equals(field.getName()) || !"Z".equals(field.getType())) continue;
+            if (!"Lsa/q9;".equals(field.getDefiningClass()) || !"n".equals(field.getName()) || !"Z".equals(field.getType())) continue;
             if (match >= 0) throw unsupported("Multiple Upcoming split predicates found");
             match = i; value = ((TwoRegisterInstruction) instruction).getRegisterA();
             model = ((TwoRegisterInstruction) instruction).getRegisterB();
@@ -110,11 +110,11 @@ public final class NuvioAiringSeriesPatch {
         MutableMethod target = unique(owner, "invoke", 3);
         List<Instruction> ins = instructions(target);
         int imageCall = -1;
-        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "La/a;", "b")) {
+        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "Leb/m;", "b")) {
             if (imageCall >= 0) throw unsupported("Multiple Continue Watching image anchors found");
             imageCall = i;
         }
-        if (imageCall < 0 || target.getImplementation().getRegisterCount() != 65)
+        if (imageCall < 0 || target.getImplementation().getRegisterCount() != (62))
             throw unsupported("Continue Watching card layout changed");
         Instruction image = ins.get(imageCall);
         if (!(image instanceof RegisterRangeInstruction))
@@ -133,20 +133,20 @@ public final class NuvioAiringSeriesPatch {
 
     static void hookWide(MutableClass owner) {
         MutableMethod target = unique(owner, "e", 22);
-        if (target.getImplementation().getRegisterCount() != 64)
+        if (target.getImplementation().getRegisterCount() != (65))
             throw unsupported("Wide card register layout changed");
         List<Instruction> ins = instructions(target);
         int imageCall = -1;
-        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "La/a;", "b")) {
+        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "Leb/m;", "b")) {
             if (imageCall >= 0) throw unsupported("Multiple Wide image anchors found");
             imageCall = i;
         }
         if (imageCall < 0 || !(ins.get(imageCall) instanceof RegisterRangeInstruction))
             throw unsupported("Wide image anchor changed");
         int composer = ((RegisterRangeInstruction) ins.get(imageCall)).getStartRegister() + 11;
-        // Wide's image content description is its title parameter, v42.
+        // Use the second static parameter (title), accounting for the verified register layout.
         target.getImplementation().addInstruction(imageCall + 1,
-            new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 42, 1,
+            new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 43, 1,
                 method(EXTENSION, "prepareTitle", List.of("Ljava/lang/String;"), "V")));
         target.getImplementation().addInstruction(imageCall + 2,
             new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, composer, 1,
@@ -160,7 +160,7 @@ public final class NuvioAiringSeriesPatch {
                 && method.getImplementation() != null) {
                 // Beta4 has a 27-argument default-mask overload as well as the real
                 // model constructor. Register only fully initialized model instances.
-                if ("Lqa/y9;".equals(owner.getType()) && "<init>".equals(name)
+                if ("Lsa/q9;".equals(owner.getType()) && "<init>".equals(name)
                     && !"Lcom/nuvio/tv/domain/model/MDBListRatings;".contentEquals(
                         method.getParameterTypes().get(parameters - 1))) continue;
                 if (result != null) throw unsupported("Multiple " + owner.getType() + "->" + name + " matches");

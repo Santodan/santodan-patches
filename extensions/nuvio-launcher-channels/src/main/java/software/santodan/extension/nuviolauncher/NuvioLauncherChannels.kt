@@ -35,14 +35,13 @@ object NuvioLauncherChannels {
     @Volatile private var choices: List<Source> = emptyList()
     @Volatile private var menuRevision: Any? = null
     private val publisher by lazy { LauncherPublisher(app()) { tile ->
-        if (latest()) LauncherArtwork.uri(app(), tile, ::requestPublish) else tile.background ?: tile.poster
+        LauncherArtwork.uri(app(), tile, ::requestPublish)
     } }
     private val artworkSettingsListener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> requestPublish() }
-    private fun latest() = NuvioBeta6.active()
 
     private fun app(): Application = Class.forName("android.app.ActivityThread")
         .getMethod("currentApplication").invoke(null) as Application
-    private fun field(owner: Any, name: String): Any? = owner.javaClass.getDeclaredField(NuvioBeta6.field(owner.javaClass, name))
+    private fun field(owner: Any, name: String): Any? = owner.javaClass.getDeclaredField(name)
         .apply { isAccessible = true }.get(owner)
     private fun method(owner: Class<*>, name: String, count: Int) = owner.declaredMethods
         .single { it.name == name && it.parameterCount == count }.apply { isAccessible = true }
@@ -68,9 +67,9 @@ object NuvioLauncherChannels {
     @JvmStatic fun registerComponent(component: Any) {
         try {
             if (profileJob != null || !publisher.supported()) return
-            val manager = call(field(component, "y")!!, "get")!!
+            val manager = call(field(component, "B")!!, "get")!!
             profileFlow = field(manager, "f") as StateFlow<*>
-            if (latest()) for (name in listOf("santodan_nuvio_airing_series", "santodan_nuvio_date_label_style"))
+            for (name in listOf("santodan_nuvio_airing_series", "santodan_nuvio_date_label_style"))
                 app().getSharedPreferences(name, 0).registerOnSharedPreferenceChangeListener(artworkSettingsListener)
             app().registerActivityLifecycleCallbacks(object : Application.ActivityLifecycleCallbacks {
                 private var started = 0
@@ -125,7 +124,7 @@ object NuvioLauncherChannels {
         try {
             val enabled = selected(profile)
             val desired = sources.values.filter { it.key in enabled }.map { source ->
-                if (latest() && source.group == "upcoming") source.copy(tiles = source.tiles.map { tile ->
+                if (source.group == "upcoming") source.copy(tiles = source.tiles.map { tile ->
                     val airing = app().getSharedPreferences("santodan_nuvio_airing_series", 0)
                     val finale = airing.getLong("finale_v1_" + tile.id, 0L)
                     if (airing.getBoolean("enabled", false) && finale > System.currentTimeMillis())
@@ -135,7 +134,7 @@ object NuvioLauncherChannels {
             }
             publisher.reconcile(desired)
             writeCache(profile)
-            if (latest()) NativeContinueWatchingDiagnostics.report(app(), profile)
+            NativeContinueWatchingDiagnostics.report(app(), profile)
         } catch (error: Exception) { Log.e(TAG, "Launcher synchronization failed", error) }
     }
 
@@ -144,7 +143,7 @@ object NuvioLauncherChannels {
             if (!publisher.supported()) return
             synchronized(homes) {
                 if (homes.containsKey(model)) return
-                val state = field(model, "x") as StateFlow<*>
+                val state = field(model, "z") as StateFlow<*>
                 val addonFlow = flow(field(model, "b")!!, "r")
                 val repository = field(model, "d")!!
                 homes[model] = scope.launch {
@@ -163,7 +162,7 @@ object NuvioLauncherChannels {
                                     if (value == null || (switching && value === previousState)) return@collect
                                     @Suppress("UNCHECKED_CAST")
                                     val upcoming = field(value, "c") as List<Any>
-                                    if (latest()) {
+                                    {
                                         @Suppress("UNCHECKED_CAST")
                                         NativeContinueWatchingDiagnostics.observe(profile, field(value, "b") as List<Any>)
                                     }
@@ -193,7 +192,7 @@ object NuvioLauncherChannels {
                                             val results = fetch.invoke(repository, *args, screen) as Flow<Any>
                                             withTimeout(30_000) {
                                                 results.collect { result ->
-                                                    if (result.javaClass.name == "a9.n") {
+                                                    if (result.javaClass.name == "b9.l") {
                                                         val row = field(result, "a")!!
                                                         val tiles = list(row, "getItems").map { mediaTile(it) }
                                                         lock.withLock {
@@ -256,19 +255,19 @@ object NuvioLauncherChannels {
         try {
             if (!publisher.supported() || libraryJob != null) return
             libraryJob = scope.launch {
-                val profiles = field(field(repository, "f")!!, "f") as StateFlow<*>
+                val profiles = field(field(repository, "g")!!, "f") as StateFlow<*>
                 profiles.collectLatest { profileValue ->
                     val profile = profileValue.toString()
                     delay(600)
                     coroutineScope {
                         launch {
-                            flow(repository, "m").collect { value ->
+                            flow(repository, "n").collect { value ->
                                 @Suppress("UNCHECKED_CAST")
                                 replace(profile, "library", listOf(Source("library", "Library", "library",
                                     (value as List<Any>).map { mediaTile(it) })))
                             }
                         }
-                        val registry = field(repository, "e")!!
+                        val registry = field(repository, "f")!!
                         val providers = list(registry, "b")
                         val providerFlows = providers.map { provider ->
                             flowCall(provider, "b").flatMapLatest { authenticated ->
@@ -319,7 +318,7 @@ object NuvioLauncherChannels {
         // Upcoming contains native NextUp items; model fields verified against both supported APKs.
         val nativeLabel = field(info, "o") as? String
         val released = field(info, "m") as? String
-        val date = if (latest() && field(info, "n") == false)
+        val date = if (field(info, "n") == false)
             LauncherDates.label(released, nativeLabel) else null
         return Tile(field(info, "a") as String, field(info, "b") as String, field(info, "c") as String,
             field(info, "d") as? String, field(info, "e") as? String, nativeLabel, date)
@@ -329,12 +328,11 @@ object NuvioLauncherChannels {
         try {
             val loader = composer.javaClass.classLoader!!
             val profile = active() ?: return
-            val stateFactory = method(loader.loadClass("g1.j"), "r", 1)
+            val stateFactory = method(loader.loadClass("h1.h"), "s", 1)
             val redraw = menuRevision ?: stateFactory.invoke(null, 0).also { menuRevision = it }
             call(redraw, "getValue") // register Compose's observation of changing source choices
             val selected = selected(profile)
-            val beta6 = NuvioBeta6.active()
-            val toggleRow = method(loader.loadClass(NuvioBeta6.name("sa.db")), "m", 13)
+            val toggleRow = method(loader.loadClass("ab.uh"), "m", 13)
             fun renderSource(source: Source, rowComposer: Any) {
                 val stateKey = profile + ":" + source.key
                 val state = uiStates.getOrPut(stateKey) { stateFactory.invoke(null, source.key in selected) }
@@ -352,16 +350,13 @@ object NuvioLauncherChannels {
                     }
                 }
                 val group = when (source.group) { "catalog" -> "Catalog"; "tracking" -> "Tracking list"; else -> source.title }
-                val title = if (beta6 && source.sourceName.isNotBlank()) source.title.replace(" · ${source.sourceName}", "") else source.title
+                val title = if (source.sourceName.isNotBlank()) source.title.replace(" · ${source.sourceName}", "") else source.title
                 toggleRow.invoke(null, title, "$group channel on the Android TV launcher", call(state, "getValue"),
                     toggle, null, callback(loader) {}, false, null, 0L, false, rowComposer, 0, 1008)
             }
             renderSource(Source("library", "Library", "library", emptyList()), composer)
             renderSource(Source("upcoming", "Upcoming", "upcoming", emptyList()), composer)
-            if (!beta6) {
-                choices.filter { it.group == "catalog" || it.group == "tracking" }
-                    .sortedWith(compareBy({ it.group }, { it.title })).forEach { renderSource(it, composer) }
-            } else for ((group, title) in listOf("catalog" to "Catalogs", "tracking" to "Tracking lists")) {
+            for ((group, title) in listOf("catalog" to "Catalogs", "tracking" to "Tracking lists")) {
                 val groups = LauncherModels.sourceGroups(choices, group)
                 section(composer, profile + ":" + group, title, "Choose channels by source") { parent ->
                     for (source in groups) section(parent, profile + ":" + group + ":" + source.key,
@@ -374,7 +369,7 @@ object NuvioLauncherChannels {
     }
     private fun section(composer: Any, key: String, title: String, description: String, body: (Any) -> Unit) {
         val loader = composer.javaClass.classLoader!!
-        val state = uiStates.getOrPut("expanded:" + key) { method(loader.loadClass("g1.j"), "r", 1).invoke(null, false) }
+        val state = uiStates.getOrPut("expanded:" + key) { method(loader.loadClass("h1.h"), "s", 1).invoke(null, false) }
         val toggle = callback(loader) { method(state.javaClass, "setValue", 1).invoke(state, !(call(state, "getValue") as Boolean)) }
         val contentFunction = Proxy.newProxyInstance(loader, arrayOf(loader.loadClass("kotlin.jvm.functions.Function3"))) { proxy, invoked, args ->
             when (invoked.name) {
@@ -385,10 +380,10 @@ object NuvioLauncherChannels {
                 else -> null
             }
         }
-        val content = loader.loadClass("q1.s").getDeclaredConstructor(Int::class.javaPrimitiveType, Any::class.java, Boolean::class.javaPrimitiveType)
+        val content = loader.loadClass("r1.s").getDeclaredConstructor(Int::class.javaPrimitiveType, Any::class.java, Boolean::class.javaPrimitiveType)
             .newInstance(key.hashCode(), contentFunction, true)
-        val modifier = loader.loadClass("w1.n").getDeclaredField("b").apply { isAccessible = true }.get(null)
-        method(loader.loadClass(NuvioBeta6.name("sa.kc")), "a", 11).invoke(null,
+        val modifier = loader.loadClass("x1.n").getDeclaredField("b").apply { isAccessible = true }.get(null)
+        method(loader.loadClass("ab.kj"), "a", 11).invoke(null,
             title, description, call(state, "getValue"), toggle, modifier, null, null, callback(loader) {}, content, composer, 0)
     }
     private fun callback(loader: ClassLoader, action: () -> Unit): Any =

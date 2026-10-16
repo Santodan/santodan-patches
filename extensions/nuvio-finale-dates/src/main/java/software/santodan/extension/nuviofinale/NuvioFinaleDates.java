@@ -96,7 +96,7 @@ public final class NuvioFinaleDates {
             });
             Object noop = Proxy.newProxyInstance(loader, new Class<?>[]{function0}, (proxy, method, args) ->
                 "invoke".equals(method.getName()) ? kotlinUnit(loader) : objectMethod(proxy, method, args));
-            Method row = findStatic(Class.forName(NuvioBeta6.name("sa.eb"), false, loader), "m", 13);
+            Method row = findStatic(Class.forName("ab.uh", false, loader), "m", 13);
             row.invoke(null, title,
                 description,
                 stateValue(state), toggle, null, noop, false, null, 0L, false, composer, 0, 1008);
@@ -111,7 +111,7 @@ public final class NuvioFinaleDates {
         PREPARED_BADGE.remove();
         if (cardLambda == null) return;
         try {
-            boolean library = cardLambda.getClass().getName().equals(NuvioBeta6.name("ba.n3"));
+            boolean library = cardLambda.getClass().getName().equals("ha.h2");
             Object item = field(cardLambda, library ? "m" : "o").get(cardLambda);
             String context = CARDS.get(cardLambda);
             if (context == null || !enabled(context)) return;
@@ -141,7 +141,7 @@ public final class NuvioFinaleDates {
             findMethod(revision.getClass(), "getValue", 0).invoke(revision);
             // Subscribe every card so asynchronously loaded finale dates recompose.
             if (badge == null) return;
-            Class<?> text = Class.forName(NuvioBeta6.name("x5.g2"), false, loader);
+            Class<?> text = Class.forName("y5.e2", false, loader);
             Method method = findStatic(text, "b", 19);
             Object boxScope = staticField(Class.forName("e0.v", false, loader), "a").get(null);
             Object[] style = badgeStyle(loader, boxScope, composer);
@@ -158,7 +158,7 @@ public final class NuvioFinaleDates {
     private static Object[] badgeStyle(ClassLoader loader, Object boxScope, Object composer) throws Exception {
         return (Object[]) findStatic(Class.forName("software.santodan.extension.nuviomenu.NuvioDateLabelStyle",
             false, loader), "build", 5).invoke(null, loader, boxScope, composer,
-                NuvioBeta6.name("ba.d3"), PREFS);
+                "ha.u1", PREFS);
     }
 
     private static void fetchFinale(String id) {
@@ -234,8 +234,8 @@ public final class NuvioFinaleDates {
         synchronized (NuvioFinaleDates.class) {
             result = STATES.get(key);
             if (result == null) {
-                Class<?> compose = Class.forName("g1.j", false, loader);
-                result = findStatic(compose, "r", 1).invoke(null, Boolean.valueOf(enabled(key)));
+                Class<?> compose = Class.forName("h1.h", false, loader);
+                result = findStatic(compose, "s", 1).invoke(null, Boolean.valueOf(enabled(key)));
                 STATES.put(key, result);
             }
         }
@@ -248,8 +248,8 @@ public final class NuvioFinaleDates {
         synchronized (NuvioFinaleDates.class) {
             result = revisionState;
             if (result == null) {
-                Class<?> compose = Class.forName("g1.j", false, loader);
-                result = findStatic(compose, "r", 1).invoke(null, Integer.valueOf(0));
+                Class<?> compose = Class.forName("h1.h", false, loader);
+                result = findStatic(compose, "s", 1).invoke(null, Integer.valueOf(0));
                 revisionState = result;
             }
         }

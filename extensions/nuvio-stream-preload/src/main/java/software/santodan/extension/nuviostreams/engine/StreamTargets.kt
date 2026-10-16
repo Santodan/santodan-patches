@@ -1,6 +1,5 @@
 package software.santodan.extension.nuviostreams.engine
 
-import software.santodan.extension.nuviostreams.NuvioBeta6
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.Locale
@@ -12,7 +11,7 @@ object StreamTargets {
     private val fields = ConcurrentHashMap<Pair<Class<*>, String>, Field>()
     private val methods = ConcurrentHashMap<Pair<Class<*>, String>, Method>()
     fun field(owner: Any, name: String): Any? = fields.getOrPut(owner.javaClass to name) {
-        owner.javaClass.getDeclaredField(NuvioBeta6.field(owner.javaClass, name)).apply { isAccessible = true }
+        owner.javaClass.getDeclaredField(name).apply { isAccessible = true }
     }.get(owner)
     fun get(owner: Any, name: String): Any? = methods.getOrPut(owner.javaClass to name) {
         owner.javaClass.getDeclaredMethod(name).apply { isAccessible = true }
@@ -51,8 +50,8 @@ object StreamTargets {
 
     fun player(state: Any, profile: Any?, enabled: Boolean, normalizeType: Boolean = false,
                requestType: String? = null): NextEpisodePreloader.Snapshot {
-        val current = field(state, "w0") as? String
-        val next = field(state, "k1")
+        val current = field(state, "z0") as? String
+        val next = field(state, "r1")
         val nativeType = if (normalizeType) requestType else field(state, "g") as? String
         val type = if (normalizeType) nativeType?.lowercase(Locale.ROOT).let {
             if (it == "tv") "series" else it
@@ -62,6 +61,6 @@ object StreamTargets {
             media(type, field(next, "a"), field(next, "b"), field(next, "c")) else null
         return NextEpisodePreloader.Snapshot(profile, current, target, enabled,
             field(state, "a") == true && field(state, "b") == false && field(state, "c") == false &&
-                field(state, "d") == null && (field(state, "Y0") as? String).isNullOrBlank())
+                field(state, "d") == null && (field(state, "f1") as? String).isNullOrBlank())
     }
 }

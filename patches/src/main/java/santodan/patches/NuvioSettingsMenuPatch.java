@@ -33,13 +33,22 @@ public final class NuvioSettingsMenuPatch {
                 NuvioLayout.use(version);
                 if (!"com.nuvio.tv".equals(context.getPackageMetadata().getPackageName()))
                     throw NuvioAiringSeriesPatch.unsupported("Expected com.nuvio.tv");
+                validateStateFactory(new MutableClass(context.classDefBy("Lh1/h;")));
                 // Install the shared collapsible Layout section.
-                hookLayoutList(context.mutableClassDefBy("Loa/m;"));
+                hookLayoutList(context.mutableClassDefBy("Lab/y9;"));
                 return Unit.INSTANCE;
             });
             return Unit.INSTANCE;
         });
         return patch;
+    }
+
+    static void validateStateFactory(MutableClass owner) {
+        MutableMethod method = NuvioRemainingEpisodesPatch.unique(owner, "s", 1);
+        if (!owner.getType().equals("Lh1/h;") ||
+            !method.getParameterTypes().equals(List.of("Ljava/lang/Object;")) ||
+            !method.getReturnType().equals("Lh1/t1;") || (method.getAccessFlags() & 8) == 0)
+            throw NuvioAiringSeriesPatch.unsupported("Compose state factory must be h1.h.s(Object):h1.t1");
     }
 
     static void hookLayoutList(MutableClass owner) {
@@ -48,9 +57,9 @@ public final class NuvioSettingsMenuPatch {
         int matches = 0;
         for (int i = instructions.size() - 1; i >= 0; i--) {
             Instruction instruction = instructions.get(i);
-            if (!NuvioAiringSeriesPatch.calls(instruction, "Loa/d2;", "<init>")) continue;
+            if (!NuvioAiringSeriesPatch.calls(instruction, "Lab/da;", "<init>")) continue;
             MethodReference constructor = (MethodReference) ((ReferenceInstruction) instruction).getReference();
-            if (!constructor.getParameterTypes().contains("Lxa/o6;")) continue;
+            if (!constructor.getParameterTypes().contains("Lab/ra;")) continue;
             int anchor = -1;
             for (int j = i + 1; j < Math.min(i + 12, instructions.size()); j++) {
                 if (NuvioAiringSeriesPatch.calls(instructions.get(j), "Lg0/i;", "q")) { anchor = j; break; }

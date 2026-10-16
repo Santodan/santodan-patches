@@ -15,13 +15,12 @@ class RefreshFixture {
     val watched = MutableStateFlow<Any?>("cached history")
     var completion: Continuation<Any?>? = null
     var intent: RefreshIntent? = null
-    fun o(value: RefreshIntent, continuation: NuvioSourceContinuation): Any {
+    fun v(value: RefreshIntent, continuation: NuvioSourceContinuation): Any {
         intent = value
         completion = continuation
         return COROUTINE_SUSPENDED
     }
-    fun y(value: RefreshIntent, continuation: NuvioSourceContinuation): Any = o(value, continuation)
-    fun r(): Flow<Any?> = progress
+    fun q(): Flow<Any?> = progress
     fun f(): Flow<Any?> = seeds
     fun d(): Flow<Any?> = watched
 }
@@ -65,7 +64,7 @@ fun main() = runBlocking {
         startupNative.value = listOf("cached episode")
         check(startup.await() == listOf("cached episode")) { "Home startup lost the cached native fallback" }
         println("PASS: empty completed snapshots and playback resume never collect refresh-on-start flows; Home startup fallback and live snapshot updates retained")
-        for (method in listOf("o", "y")) {
+        for (method in listOf("v")) {
             val provider = RefreshFixture()
             val refresh = async(start = CoroutineStart.UNDISPATCHED) {
                 NuvioProviderRefresh.await(provider, method)
@@ -91,7 +90,7 @@ fun main() = runBlocking {
 
         val provider = RefreshFixture()
         val changed = kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.UNLIMITED)
-        val observer = launch { NuvioProviderRefresh.observe(provider, listOf("r", "f", "d")) { changed.trySend(Unit) } }
+        val observer = launch { NuvioProviderRefresh.observe(provider, listOf("q", "f", "d")) { changed.trySend(Unit) } }
         yield(); yield()
         check(changed.tryReceive().isFailure) { "Initial cached emissions caused a refresh loop" }
         for (flow in listOf(provider.progress, provider.seeds, provider.watched)) {

@@ -1,15 +1,26 @@
 package software.santodan.extension.nuviomerged;
 
-/** Verified beta.6 provider accessors; erased Flow types still carry different values. */
+/** Verified version-specific provider accessors; erased Flow types carry different values. */
 public final class NuvioProviderLayout {
-    public final String providerInterface = "o9.z";
-    public final String allProgressMethod = "r";
-    public final String siblingsMethod = "w";
+    public final String providerInterface;
+    public final String allProgressMethod;
+    public final String siblingsMethod;
     public final String localWatchedField = "i";
-    public final String refreshMethod = "o";
-    private NuvioProviderLayout() {}
+    public final String refreshMethod;
+    public final String progressWriteMethod;
+    public final String snapshotReadyMethod;
+    public final String itemProgressMethod;
+    private NuvioProviderLayout() {
+        progressWriteMethod = "r";
+        snapshotReadyMethod = "p";
+        itemProgressMethod = "o";
+        providerInterface = "q9.z";
+        allProgressMethod = "q";
+        siblingsMethod = "w";
+        refreshMethod = "v";
+    }
     public static NuvioProviderLayout forRepository(String repositoryClass) {
-        if (!"z9.zc".equals(repositoryClass))
+        if (!"ba.ze".equals(repositoryClass))
             throw new IllegalStateException("Unsupported Nuvio repository: " + repositoryClass);
         return new NuvioProviderLayout();
     }

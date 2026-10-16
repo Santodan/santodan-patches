@@ -50,9 +50,9 @@ public final class NuvioSettingsMenu {
                 renderInstalled(args[1]);
                 return unit(loader);
             });
-            Field modifier = Class.forName("w1.n", false, loader).getDeclaredField("b");
+            Field modifier = Class.forName("x1.n", false, loader).getDeclaredField("b");
             modifier.setAccessible(true);
-            method(Class.forName(NuvioBeta6.name("sa.kc"), false, loader), "a", 11).invoke(null,
+            method(Class.forName("ab.kj", false, loader), "a", 11).invoke(null,
                 "Santodan-Patches", "Settings for installed Santodan patches", expanded,
                 toggle, modifier.get(null), null, null, noop, content, composer, 0);
         } catch (Throwable error) { Log.e(TAG, "Layout menu rendering failed", error); }
@@ -83,9 +83,9 @@ public final class NuvioSettingsMenu {
                 Method render = Class.forName(bridge, false, loader).getMethod("renderSettings", Object.class);
                 if (!labelled) {
                     // Native SettingsSectionLabel: non-focusable text with the app's spacing and typography.
-                    Field modifier = Class.forName("w1.n", false, loader).getDeclaredField("b");
+                    Field modifier = Class.forName("x1.n", false, loader).getDeclaredField("b");
                     modifier.setAccessible(true);
-                    method(Class.forName(NuvioBeta6.name("sa.kc"), false, loader), "e", 6)
+                    method(Class.forName("ab.kj", false, loader), "e", 6)
                         .invoke(null, 0, 4, composer, label, null, modifier.get(null));
                     labelled = true;
                 }
@@ -97,8 +97,11 @@ public final class NuvioSettingsMenu {
     }
 
     private static synchronized Object expandedState(ClassLoader loader) throws Exception {
-        if (expandedState == null)
-            expandedState = method(Class.forName("g1.j", false, loader), "r", 1).invoke(null, false);
+        if (expandedState == null) {
+            Method factory = Class.forName("h1.h", false, loader).getDeclaredMethod("s", Object.class);
+            factory.setAccessible(true);
+            expandedState = factory.invoke(null, false);
+        }
         return expandedState;
     }
 
@@ -114,7 +117,7 @@ public final class NuvioSettingsMenu {
         });
     }
     private static Object composable(ClassLoader loader, String function, int key, Callback content) throws Exception {
-        return Class.forName("q1.s", false, loader).getDeclaredConstructor(int.class, Object.class, boolean.class)
+        return Class.forName("r1.s", false, loader).getDeclaredConstructor(int.class, Object.class, boolean.class)
             .newInstance(key, callback(loader, function, content), true);
     }
     private static Object unit(ClassLoader loader) throws Exception {

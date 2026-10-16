@@ -1,5 +1,7 @@
 # NuvioTV 1.1.0-beta.6
 
+> Historical beta.6 notes. See [beta.7](NuvioBeta7.md) for the active patch set and verification.
+
 All ten public NuvioTV patches advertise exact compatibility with `com.nuvio.tv`
 `1.1.0-beta.6` (version code `1069`). Older versions are unsupported.
 

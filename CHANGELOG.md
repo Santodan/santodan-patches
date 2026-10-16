@@ -1,3 +1,13 @@
+## [0.11.1](https://github.com/Santodan/santodan-patches/compare/v0.11.0...v0.11.1) (2026-10-16)
+
+### 🐛 Bug Fixes
+
+* **nuviotv:** correct tracking playback reads and themed sync progress [skip ci] ([3ab9681](https://github.com/Santodan/santodan-patches/commit/3ab9681361fed5c253922155cbcbfb7141bbd852))
+
+### 🚀 Updated App Support
+
+* **nuviotv:** target beta7 and fix settings and stream hooks ([2c79251](https://github.com/Santodan/santodan-patches/commit/2c7925167e561bc37ae4a9efeccd051611b524c9))
+
 ## [0.11.0](https://github.com/Santodan/santodan-patches/compare/v0.10.1...v0.11.0) (2026-10-15)
 
 ### 🐛 Bug Fixes

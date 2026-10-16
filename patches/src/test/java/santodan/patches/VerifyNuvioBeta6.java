@@ -189,6 +189,21 @@ public final class VerifyNuvioBeta6 {
             method("Lo9/s0;", "a", 0);
             method("Lxa/bd;", "a", 11);
             method("Lxa/bd;", "d", 6);
+            method("Lxa/ub;", "j", 11);
+            method("Lxa/ub;", "g", 12);
+            method("Lxa/ub;", "d", 7);
+            method("Lxa/ub;", "e", 5);
+            method("Lxa/bd;", "b", 6);
+            method("Lxa/cc;", "<init>", 6);
+            method("Lfa/j3;", "z", 19);
+            method("Le0/b;", "a", 6);
+            method("Le0/q;", "a", 3);
+            method("Landroidx/compose/foundation/layout/b;", "e", 2);
+            method("Landroidx/compose/foundation/layout/b;", "g", 2);
+            method("Ll0/g;", "b", 1);
+            field("Lab/z0;", "a", "Lg1/h3;");
+            field("Lab/e;", "h", "J");
+            field("Lab/e;", "e", "J");
             NuvioRemainingEpisodesPatch.hookCard(owner("Lfa/v1;"), "Lc7/a;",
                 "Lsoftware/santodan/extension/nuviomerged/NuvioMergedProgress;", "prepareProviderBadge", "renderProviderBadge");
             field("Lfa/v1;", "x", "Lcom/nuvio/tv/domain/model/WatchProgress;");

@@ -28,6 +28,43 @@ class RefreshFixture {
 
 fun main() = runBlocking {
     withTimeout(5_000) {
+        // MDBList progress/seed flows run ensureLoaded/refreshAsync on collection.
+        // A complete but empty snapshot is valid, especially without Nuvio Sync.
+        for ((ready, allowNative) in listOf(true to false, false to false, true to true)) {
+            val snapshot = MutableStateFlow<List<Any>>(emptyList())
+            var nativeReads = 0
+            val networkBacked = flow<Any?> {
+                nativeReads++
+                awaitCancellation()
+            }
+            val result = NuvioProviderRefresh.retainedSnapshot(networkBacked, snapshot,
+                MutableStateFlow(ready)) { allowNative }.first()
+            check(result.isEmpty() && nativeReads == 0) {
+                "Playback resume collected a native refresh flow for an empty snapshot (ready=$ready, nativeReads=$nativeReads)"
+            }
+        }
+        val emptySnapshot = MutableStateFlow<List<Any>>(emptyList())
+        val snapshotReady = MutableStateFlow(true)
+        val snapshotValues = kotlinx.coroutines.channels.Channel<List<Any>>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+        val snapshotReader = launch {
+            NuvioProviderRefresh.retainedSnapshot(flow { error("Unexpected native refresh") }, emptySnapshot,
+                snapshotReady) { false }.collect { snapshotValues.send(it) }
+        }
+        check(snapshotValues.receive().isEmpty())
+        emptySnapshot.value = listOf("episode 7")
+        check(snapshotValues.receive() == listOf("episode 7")) { "Snapshot reader stopped observing Home sync publication" }
+        snapshotReader.cancelAndJoin()
+
+        val startupNative = MutableStateFlow<Any?>(emptyList<Any>())
+        val startup = async {
+            NuvioProviderRefresh.retainedSnapshot(startupNative, MutableStateFlow(emptyList()),
+                MutableStateFlow(false)) { true }.first()
+        }
+        yield(); yield()
+        check(!startup.isCompleted) { "Startup fallback forwarded the provider's temporary empty value" }
+        startupNative.value = listOf("cached episode")
+        check(startup.await() == listOf("cached episode")) { "Home startup lost the cached native fallback" }
+        println("PASS: empty completed snapshots and playback resume never collect refresh-on-start flows; Home startup fallback and live snapshot updates retained")
         for (method in listOf("o", "y")) {
             val provider = RefreshFixture()
             val refresh = async(start = CoroutineStart.UNDISPATCHED) {

@@ -46,6 +46,9 @@
 
 ### Bug Fixes
 
+* **nuviotv:** prevent merged progress reads from collecting refresh-on-start tracking flows during playback, including empty snapshots with MDBList as the main service
+* **nuviotv:** use native themed tracking dialogs and update the sync bar through every stage to 100% on completion
+
 * **nuviotv:** read the beta.5 native playback request type for delayed next-episode preloading, accepting series/TV aliases even when the presentation content type is empty
 * **nuviotv:** on beta.5, guard next-episode picker refresh at method entry so transition branches cannot bypass it; suppress the separate threshold preload while the delayed next-episode patch is enabled, preserving explicit refresh and the disabled native behavior
 

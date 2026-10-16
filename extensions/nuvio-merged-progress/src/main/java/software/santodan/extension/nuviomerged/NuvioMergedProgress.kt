@@ -2,10 +2,6 @@ package software.santodan.extension.nuviomerged
 
 import android.app.Application
 import android.app.Activity
-import android.app.AlertDialog
-import android.widget.LinearLayout
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -28,10 +24,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
@@ -70,9 +64,8 @@ object NuvioMergedProgress {
     @Volatile private var syncProfile: String? = null
     @Volatile private var syncStep = 0
     @Volatile private var syncSteps = 1
-    private var syncDialog: AlertDialog? = null
-    private var syncText: TextView? = null
-    private var syncBar: ProgressBar? = null
+    private var activeDialog: String? = null
+    private var dialogProfile: String? = null
     @Volatile private var playbackPaused = false
     private val playbackRevision = java.util.concurrent.atomic.AtomicLong()
     private val refreshDeferred = AtomicBoolean(false)
@@ -131,8 +124,8 @@ object NuvioMergedProgress {
 
     @JvmStatic fun activityDestroyed(value: Any) {
         if (activity.get() !== value) return
-        syncDialog?.dismiss()
-        syncDialog = null; syncText = null; syncBar = null
+        activeDialog = null
+        dialogProfile = null
         activity.clear()
         navigation.foreground(false)
         navigation.navigate(null)
@@ -151,7 +144,9 @@ object NuvioMergedProgress {
                 entries.collect { entry ->
                     val destination = field(entry, "e").get(entry)
                     val route = field(destination, "o").get(destination) as? String
+                    val previousRoute = navigation.revision()
                     val enteredHome = navigation.navigate(route)
+                    if (navigation.revision() != previousRoute && activeDialog != null) dismissTrackingDialog()
                     playbackPaused = route?.startsWith("player/") == true
                     if (!navigation.allowed(manualMerge)) mergeJob?.cancel()
                     if (!navigation.allowed(false)) {
@@ -215,9 +210,6 @@ object NuvioMergedProgress {
         if (syncProfile != null && syncProfile != snapshotKey()) return
         syncMessage = message; syncStep = step; syncSteps = total.coerceAtLeast(1)
         Handler(Looper.getMainLooper()).post {
-            syncText?.text = syncMessage
-            syncBar?.max = syncSteps
-            syncBar?.progress = syncStep
             refreshMenu()
         }
     }
@@ -247,6 +239,7 @@ object NuvioMergedProgress {
                 "Tracking progress", "Merge services, choose the main tracker and sync", settingsExpanded,
                 toggle, fieldStatic(loader.loadClass("w1.n"), "b"), null, null,
                 menuCallback(loader) {}, content, composer, 0)
+            renderTrackingDialog(composer)
         } catch (error: Throwable) { Log.e(TAG, "Merged settings rendering failed", error) }
     }
 
@@ -293,54 +286,81 @@ object NuvioMergedProgress {
             fieldStatic(loader.loadClass("w1.n"), "b"), menuCallback(loader) {}, composer, 0)
     }
 
-    private fun chooseMainTracking() {
-        val owner = activity.get() ?: return
-        val profile = snapshotKey()
-        val ids = listOf("NUVIO_SYNC", "TRAKT", "SIMKL", "MDBLIST")
-        AlertDialog.Builder(owner).setTitle("Main tracking service")
-            .setSingleChoiceItems(ids.map(::trackingLabel).toTypedArray(), ids.indexOf(mainTracking())) { dialog, index ->
-                if (profile != snapshotKey()) { dialog.dismiss(); return@setSingleChoiceItems }
-                preferences().edit().putString(trackingKey("main"), ids[index]).apply()
-                playbackRevision.incrementAndGet(); mergeJob?.cancel()
-                refreshDeferred.set(true)
-                // Re-select through Nuvio's persistence route to switch the native carrier too.
-                if (enabled()) configureMerge(true, preferences().getString(STRATEGY, "highest") ?: "highest")
-                dialog.dismiss(); refreshMenu()
-            }.setNegativeButton("Cancel", null).show()
+    private fun openDialog(mode: String) {
+        dialogProfile = snapshotKey()
+        activeDialog = mode
+        refreshMenu()
     }
 
-    private fun chooseTrackings() {
-        val owner = activity.get() ?: return
-        val profile = snapshotKey()
-        val ids = listOf("NUVIO_SYNC", "TRAKT", "SIMKL", "MDBLIST")
-        val selected = selectedTrackings().toMutableSet()
-        AlertDialog.Builder(owner).setTitle("Services to merge (connected accounts)")
-            .setMultiChoiceItems(ids.map { trackingLabel(it) + if (it == mainTracking()) " (main, always included)" else "" }.toTypedArray(),
-                ids.map { it in selected }.toBooleanArray()) { _, index, checked ->
-                if (checked) selected.add(ids[index]) else selected.remove(ids[index])
-            }.setPositiveButton("Save") { _, _ ->
-                if (profile != snapshotKey()) return@setPositiveButton
-                preferences().edit().putStringSet(trackingKey("services"), selected + mainTracking()).apply()
-                playbackRevision.incrementAndGet(); mergeJob?.cancel()
-                refreshDeferred.set(true); refreshMenu()
-            }.setNegativeButton("Cancel", null).show()
+    private fun dismissTrackingDialog() {
+        activeDialog = null
+        dialogProfile = null
+        refreshMenu()
     }
+
+    private fun chooseMainTracking() = openDialog("main")
+
+    private fun chooseTrackings() = openDialog("services")
 
     private fun showSync() {
-        val owner = activity.get() ?: return
-        if (!enabled()) { Toast.makeText(owner, "Enable merged tracking progress first", Toast.LENGTH_SHORT).show(); return }
-        if (syncDialog?.isShowing == true) return
-        val layout = LinearLayout(owner).apply { orientation = LinearLayout.VERTICAL; setPadding(32, 24, 32, 24) }
-        syncText = TextView(owner).also { it.text = syncMessage; layout.addView(it) }
-        syncBar = ProgressBar(owner, null, android.R.attr.progressBarStyleHorizontal).also {
-            it.max = syncSteps; it.progress = syncStep; layout.addView(it)
-        }
-        syncDialog = AlertDialog.Builder(owner).setTitle("Sync tracking progress").setView(layout)
-            .setPositiveButton("Close", null).create().also { dialog ->
-                dialog.setOnDismissListener { syncDialog = null; syncText = null; syncBar = null }
-                dialog.show()
-            }
+        if (!enabled()) { openDialog("disabled"); return }
+        if (activeDialog == "sync") return
+        openDialog("sync")
         if (!merging.get()) mergeAsync(true)
+    }
+
+    private fun renderTrackingDialog(composer: Any) {
+        val mode = activeDialog ?: return
+        if (dialogProfile != snapshotKey()) { dismissTrackingDialog(); return }
+        val ids = listOf("NUVIO_SYNC", "TRAKT", "SIMKL", "MDBLIST")
+        val profile = dialogProfile
+        findMethod(composer.javaClass, "d0", 1).invoke(composer, 0x534d4757)
+        try {
+            if (mode == "main") {
+                NuvioTrackingDialogs.picker(composer, "Main tracking service", ids, ids.map(::trackingLabel),
+                    mainTracking(), { id ->
+                        if (profile == snapshotKey()) {
+                            preferences().edit().putString(trackingKey("main"), id).apply()
+                            playbackRevision.incrementAndGet(); mergeJob?.cancel()
+                            refreshDeferred.set(true)
+                            if (enabled()) configureMerge(true, preferences().getString(STRATEGY, "highest") ?: "highest")
+                        }
+                        dismissTrackingDialog()
+                    }, ::dismissTrackingDialog)
+            } else if (mode == "services") {
+                NuvioTrackingDialogs.services(composer, ids, ids.map(::trackingLabel), selectedTrackings().toList(),
+                    mainTracking(), { values ->
+                        if (profile == snapshotKey()) {
+                            preferences().edit().putStringSet(trackingKey("services"), values).apply()
+                            playbackRevision.incrementAndGet(); mergeJob?.cancel()
+                            refreshDeferred.set(true)
+                        }
+                        dismissTrackingDialog()
+                    }, ::dismissTrackingDialog)
+            } else {
+                val title = when (mode) {
+                    "disabled" -> "Tracking progress"
+                    else -> "Sync tracking progress"
+                }
+                NuvioTrackingDialogs.dialog(composer, title, null, ::dismissTrackingDialog) { nested ->
+                    // Subscribe inside the dialog composition too, so sync stages update while it is open.
+                    menuRevision?.let { findMethod(it.javaClass, "getValue", 0).invoke(it) }
+                    when (mode) {
+                        "disabled" -> {
+                            NuvioTrackingDialogs.label(nested, "Enable merged tracking progress before syncing.")
+                            NuvioTrackingDialogs.action(nested, "Close", ::dismissTrackingDialog)
+                        }
+                        else -> {
+                            NuvioTrackingDialogs.label(nested, if (syncProfile == snapshotKey()) syncMessage else
+                                preferences().getString(trackingKey("last_sync"), "Not synced yet"))
+                            NuvioTrackingDialogs.progress(nested, syncStep, syncSteps)
+                            NuvioTrackingDialogs.label(nested, "Stage ${syncStep.coerceIn(0, syncSteps)} of $syncSteps")
+                            NuvioTrackingDialogs.action(nested, "Close", ::dismissTrackingDialog)
+                        }
+                    }
+                }
+            }
+        } finally { findMethod(composer.javaClass, "p", 1).invoke(composer, false) }
     }
 
     @JvmStatic fun prepareProviderBadge(card: Any) { preparedProviderCard.set(card) }
@@ -1263,19 +1283,8 @@ object NuvioMergedProgress {
             if (provider == null) null
             else findMethod(provider.javaClass, methodName, 0).invoke(provider) as? Flow<Any>
         }.getOrNull()
-        if (native == null) return merged
-        return flow {
-            // Do not forward the provider's startup empty value. Nuvio keeps its
-            // existing Home state until a provider has a real update; mirror that
-            // behavior, then hand the stream over to the merged snapshot.
-            val initial = merged.value.takeIf { it.isNotEmpty() } ?: merge(
-                native.mapNotNull { value ->
-                    (value as? Collection<*>)?.filterNotNull()?.takeIf { it.isNotEmpty() }
-                },
-                mergedSnapshotReady.filter { it }.map { merged.value },
-            ).first()
-            emit(initial)
-            emitAll(merged)
+        return NuvioProviderRefresh.retainedSnapshot(native, merged, mergedSnapshotReady) {
+            navigation.allowed(false)
         }
     }
 

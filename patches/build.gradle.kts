@@ -187,6 +187,14 @@ tasks {
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyNuvioProviderRefreshRuntimeKt")
     }
+    register<JavaExec>("verifyNuvioTrackingDialogs") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyNuvioTrackingDialogs")
+        doFirst { file("${layout.buildDirectory.get()}/verification").mkdirs() }
+        args(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioTrackingDialogs.java").absolutePath,
+            file("${layout.buildDirectory.get()}/verification").absolutePath)
+    }
     register<JavaExec>("verifyPilloWeightSummaryBundle") {
         dependsOn("testClasses", "buildAndroid")
         classpath = sourceSets["test"].runtimeClasspath

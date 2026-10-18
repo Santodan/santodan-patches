@@ -16,16 +16,16 @@ https://github.com/Santodan/santodan-patches
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
 
-**Premium status** supports Car Scanner ELM OBD2 **2.1.50**. Select **Car Scanner - Premium status** when patching; it is disabled by default. The patch makes the app's central premium-status check return true. The user reported that the patched app appears to work on device; individual premium features and purchase/restore behavior have not all been verified. See [implementation and verification details](docs/CarScannerHandoff.md).
+**Premium status** supports Car Scanner ELM OBD2 **2.2.21**, with existing **2.1.50** support preserved. Select **Car Scanner - Premium status** when patching; it is disabled by default. On 2.2.21, the patch also preserves profile decoding and ECU initialization after repackaging and prevents the native delayed exit. The user reported successful emulator navigation and subsequent device operation, including ECU connection. This is user-reported validation; individual premium features and purchase/restore behavior have not all been verified. See [implementation and verification details](docs/CarScanner221.md).
 
 **🎯 Supported versions:**
 
-| 2.1.50 |
-| :---: |
+| 2.1.50 | 2.2.21 |
+| :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Car Scanner - Premium status](#car-scanner-premium-status) | Makes the managed premium-status getter return true in Car Scanner 2.1.50. |  |
+| [Car Scanner - Premium status](#car-scanner-premium-status) | Enables premium status in Car Scanner 2.1.50 and 2.2.21; preserves profile decoding and ECU initialization and prevents the repackaging exit in 2.2.21. |  |
 
 </details>
 
@@ -227,7 +227,7 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 
 | App | Package | Supported version | Patch |
 | --- | --- | --- | --- |
-| Car Scanner ELM OBD2 | `com.ovz.carscanner` | `2.1.50` | Premium status |
+| Car Scanner ELM OBD2 | `com.ovz.carscanner` | `2.2.21`, `2.1.50` | Premium status; profile and ECU compatibility fixes on 2.2.21 |
 | MEO (Android TV) | `com.alticelabs.meo.androidtv` | `5.7.0` | Side-by-side installation; Spoof supported device |
 | NuvioTV | `com.nuvio.tv` | `1.1.0-beta.7` | Android TV launcher channels; Finale dates in library and collections; Keep airing series in Upcoming; Merge tracking progress; Preload streams for next episode; Preload streams in Continue Watching; Preload streams on detail page; Remaining episodes in Continue Watching; Upcoming movie dates in library and collections; Side-by-side installation |
 | Reddit | `com.reddit.frontpage` | `2026.37.0` | Content filters (Experimental); Show flairs in home feed (Experimental); Start as guest |

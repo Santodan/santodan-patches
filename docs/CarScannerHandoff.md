@@ -1,5 +1,10 @@
 # Car Scanner 2.1.50 inspection and implementation handoff
 
+For the latest local 2.2.21 input, see [CarScanner221.md](CarScanner221.md).
+Later device tests exposed 2.1.50's separate ECU certificate gate (`ATSF`);
+the universal spoof patch did not resolve it. Existing 2.1.50 hooks remain
+unchanged; initial premium-UI success below did not validate ECU connection.
+
 The optional `Car Scanner - Premium status` raw-resource patch rewrites
 `SharedSettings.get_AdsProductPurchased()` to return true in the exact original
 2.1.50 input. It remains disabled by default. It does not fabricate billing

@@ -1,3 +1,7 @@
+## Pending changes since v0.11.1
+
+- Support Car Scanner **2.2.21** premium status with native profile-decoder, ECU certificate-check and delayed-exit fixes. Existing 2.1.50 behavior is preserved. Host/bundle verification passed; the user reported successful emulator navigation and subsequent real-device ECU operation.
+
 ## Pending changes since v0.10.1
 
 - Add **Car Scanner - Premium status** for Car Scanner ELM OBD2 **2.1.50**. The optional patch makes the central premium-status getter return true. Original-input and packaged-bundle checks passed; the user reported that the patched app appears to work on device.

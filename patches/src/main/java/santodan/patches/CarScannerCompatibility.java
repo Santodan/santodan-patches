@@ -3,7 +3,7 @@ package santodan.patches;
 import app.morphe.patcher.patch.ApkFileType;
 import app.morphe.patcher.patch.AppTarget;
 import app.morphe.patcher.patch.Compatibility;
-import java.util.Collections;
+import java.util.List;
 
 /** Exact inspected target; do not extend to older inputs. */
 public final class CarScannerCompatibility {
@@ -14,6 +14,6 @@ public final class CarScannerCompatibility {
     public static Compatibility create() {
         return new Compatibility(PACKAGE, "Car Scanner ELM OBD2", null,
             ApkFileType.APK, null, null,
-            Collections.singletonList(new AppTarget(VERSION, false, 21)), false);
+            List.of(new AppTarget(VERSION, false, 21), new AppTarget("2.2.21", false, 23)), false);
     }
 }

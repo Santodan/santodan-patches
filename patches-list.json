@@ -4,7 +4,7 @@
   "patches": [
     {
       "name": "Car Scanner - Premium status",
-      "description": "Makes the managed premium-status getter return true in Car Scanner 2.1.50.",
+      "description": "Enables premium status in Car Scanner 2.1.50 and 2.2.21; preserves profile decoding and ECU initialization and prevents the repackaging exit in 2.2.21.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -21,6 +21,13 @@
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": 21,
+              "description": null
+            },
+            {
+              "version": "2.2.21",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 23,
               "description": null
             }
           ]

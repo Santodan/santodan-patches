@@ -463,10 +463,27 @@ current/future years and ambiguous year ranges still require exact dates. Exact
 preview dates retain precedence. Setting-change diagnostics include the scope,
 while normal settings rendering stays silent. Runtime checks cover these rules.
 
-## Car Scanner 2.1.50 managed premium-status patch
+## Car Scanner managed premium-status patch
 
-`CarScannerManagedPatch` is an optional raw-resource patch targeting only the
-verified original `com.ovz.carscanner` 2.1.50 APK. This .NET MAUI app keeps its
+The latest local input is `com.ovz.carscanner` **2.2.21**, versionCode 42002021.
+`CarScanner221` handles its XABA v3 assembly store, premium getter and ECU
+certificate predicate in both IL and compiled arm64 AOT code. It also disables
+the failure-only native scheduler that calls `_exit(0)` after APK integrity
+failure; native transport, JNI attachment and unrelated validation remain intact.
+See [CarScanner221.md](docs/CarScanner221.md) for exact original hashes, method
+contracts, offsets, log findings and device checks. Run `:patches:verifyCarScanner221`
+and `:patches:verifyCarScanner221Bundle` alongside the build and metadata tasks.
+The native profile decoder independently chooses a bad seed after context
+validation failure, producing the observed BSON type -27 error. The 2.2.21
+branch preserves its normal seed with one instruction change in `libvndctx.so`;
+the original embedded database independently decodes to 1323 valid profiles.
+The user reported successful emulator profile/navigation checks and subsequent
+real-device operation including ECU connection on 2026-10-18. These are
+user-reported results; individual premium features and purchase/restore behavior
+have not all been verified.
+
+`CarScannerManagedPatch` is optional and retains its existing 2.1.50 branch
+unchanged. This .NET MAUI app keeps its
 central purchase-status getter in `CarScannerMaui.dll`, not in DEX.
 `CarScannerAssemblyStore` validates exact store/assembly/AOT hashes, decodes XALZ,
 rewrites `SharedSettings.get_AdsProductPurchased()` to `ldc.i4.1; ret`, and rebuilds

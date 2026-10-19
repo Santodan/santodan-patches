@@ -1,3 +1,9 @@
+## [0.11.2](https://github.com/Santodan/santodan-patches/compare/v0.11.1...v0.11.2) (2026-10-19)
+
+### 🐛 Bug Fixes
+
+* **carscanner:** support 2.2.21 profiles and ECU connections [skip ci] ([f02159c](https://github.com/Santodan/santodan-patches/commit/f02159cda5b1f1b399d53518431883564c21f4f2))
+
 ## [0.11.1](https://github.com/Santodan/santodan-patches/compare/v0.11.0...v0.11.1) (2026-10-16)
 
 ### 🐛 Bug Fixes

@@ -276,6 +276,34 @@
       "options": []
     },
     {
+      "name": "NuvioTV - Preferred source add-on",
+      "description": "Choose a per-profile add-on to refresh and display first, with optional automatic playback of its first playable stream.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nuvio.tv",
+          "name": "NuvioTV",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.0-beta.7",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "NuvioTV - Preload streams for next episode",
       "description": "Adds an opt-in Streams setting to fetch the next episode's source list after 30 seconds of playback, reusing Nuvio's native search cache.",
       "default": false,

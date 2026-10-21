@@ -153,6 +153,13 @@ retain the target contracts within its context window.
 
 ## NuvioTV launcher channels
 
+For source request priority and opt-in autoplay from a preferred installed add-on,
+see `docs/NuvioPreferredAddon.md`. The independent **NuvioTV - Preferred source
+add-on** patch shares the Streams settings group. Both settings are per profile;
+the native manual/resolved-session guards and playable-stream predicate remain
+authoritative. Verify original DEX roundtrip, runtime settings and profile behavior,
+shared-menu selections, and standalone/combined packaged bundles.
+
 For a visible current-session source label, see `docs/NuvioCurrentStream.md`.
 The independent **NuvioTV - Indicate current stream** patch prefixes the native
 current source title with `[Playing]`, following the existing session flag.

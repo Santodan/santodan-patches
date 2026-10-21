@@ -1,4 +1,4 @@
-These ten patches target NuvioTV beta.7 only. See [beta.7 verification](docs/NuvioBeta7.md).
+These fourteen patches target NuvioTV beta.7 only. See [beta.7 verification](docs/NuvioBeta7.md).
 
 ### Continue Watching
 
@@ -30,16 +30,30 @@ These ten patches target NuvioTV beta.7 only. See [beta.7 verification](docs/Nuv
 
 ### Streams
 
+- **Preferred source add-on**: Choose a preferred installed add-on per profile to schedule its refresh first and show its results first. A separate, disabled-by-default switch automatically plays its first playable stream as soon as it is available. Other add-ons continue loading concurrently; manual source selection remains available. Configure both settings under **Settings > Layout > Santodan-Patches > Streams**. See [settings, logcat and verification](docs/NuvioPreferredAddon.md).
+
+- **Indicate current stream**: Shows `[Playing]` on the active source when reopening Sources during playback. Enabled by default under **Settings > Layout > Santodan-Patches > Streams**. See [settings and verification](docs/NuvioCurrentStream.md).
+
 - **Preload streams in Continue Watching**: Searches sources in the background for visible, playable episodes and movies, so opening playback can reuse the search results.
 
 - **Preload streams on detail page**: Searches sources for the current Play or Resume movie or episode, following changes to the next episode on the detail page.
 
 - **Preload streams for next episode**: Fetches the next episode's source list after 30 seconds of actual playback, giving the current episode time to buffer. Pauses and buffering do not count toward the delay. Nuvio reuses the results when you open the next episode; expired searches refresh in the background during longer episodes. On beta.7, enabling this switch also suppresses Nuvio's separate threshold preload and prevents the manual next-episode picker from forcing another search. Explicit source refresh remains available. This switch is disabled by default and independent of the other preload switches.
 
+### Playback
+
+- **Customize playback buttons**: Choose which native playback controls appear, their order, and placement in the main row or More actions. The customization is opt-in under **Settings > Layout > Santodan-Patches > Playback**. See [settings and verification](docs/NuvioPlaybackButtons.md).
+
+- **Submit segments to IntroDB**: Enable the feature and enter your API key under **Settings > Layout > Santodan-Patches > Playback**, using the same single-line input and Cancel/Clear/Save layout as Anime Skip. A dedicated playback button captures the start on its first press and the end on its second, then opens a native NuvioTV dialog with an Intro/Recap/Outro dropdown and side-by-side Submit/Cancel buttons. Filmstrip play/stop/check icons distinguish the capture stages. Rejections show IntroDB's validation reason when available. See [setup, logcat and verification](docs/NuvioIntroDb.md).
+
+### Android TV launcher
+
+- **Android TV launcher channels**: Publish selected catalogs, tracking lists, Library and Upcoming to the Android TV launcher. Disabled by default and configured under **Settings > Layout > Santodan-Patches > Android TV launcher**. See [setup and verification](docs/NuvioLauncherChannels.md).
+
 ### Installation
 
 - **Side-by-side installation**: Lets you choose a different package name and launcher name so the patched app can coexist with the official app.
 
-The patch settings are under **Layout > Santodan-Patches**, grouped under **Continue Watching**, **UI**, and **Streams** labels. Labels appear only for installed patch groups. Package and launcher names are configured when patching the APK.
+The patch settings are under **Layout > Santodan-Patches**, grouped under **Continue Watching**, **UI**, **Streams**, **Android TV launcher**, and **Playback** labels. Labels appear only for installed patch groups. Package and launcher names are configured when patching the APK.
 
 <img src="images/NuvioTVMenu.png" width="800" alt="Santodan-Patches menu">

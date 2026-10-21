@@ -1,9 +1,10 @@
 # NuvioTV 1.1.0-beta.7
 
-The thirteen public NuvioTV patches support `com.nuvio.tv` `1.1.0-beta.7` (version code
+The fourteen public NuvioTV patches support `com.nuvio.tv` `1.1.0-beta.7` (version code
 `1070`) only. Production hooks and runtime reflection use beta.7 symbols directly;
 no backward-compatibility adapters are included.
 The current-session source label is documented in [NuvioCurrentStream.md](NuvioCurrentStream.md).
+Preferred source ordering and per-profile autoplay are documented in [NuvioPreferredAddon.md](NuvioPreferredAddon.md).
 Playback button customization is documented in [NuvioPlaybackButtons.md](NuvioPlaybackButtons.md).
 IntroDB submissions, including settings, two-press capture, the native review
 dropdown and validation errors, are documented in [NuvioIntroDb.md](NuvioIntroDb.md).

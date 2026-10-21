@@ -80,6 +80,12 @@ def patches_table(patches):
     ]
     for p in sorted(patches, key=lambda x: x["name"]):
         a = anchor(p["name"])
+        documentation = {
+            "NuvioTV - Customize playback buttons": "docs/NuvioPlaybackButtons.md",
+            "NuvioTV - Indicate current stream": "docs/NuvioCurrentStream.md",
+            "NuvioTV - Preferred source add-on": "docs/NuvioPreferredAddon.md",
+            "NuvioTV - Submit segments to IntroDB": "docs/NuvioIntroDb.md",
+        }.get(p["name"], f"#{a}")
         options = p.get("options") or []
         if options:
             # Show only option titles as a bullet list
@@ -88,7 +94,7 @@ def patches_table(patches):
         else:
             opts_cell = ""
         desc = (p.get("description") or "").replace("\n", "<br>")
-        rows.append(f"| [{p['name']}](#{a}) | {desc} | {opts_cell} |")
+        rows.append(f"| [{p['name']}]({documentation}) | {desc} | {opts_cell} |")
     return "\n".join(rows)
 
 

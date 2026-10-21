@@ -176,7 +176,7 @@ claiming that a device crash has been reproduced or every device cause resolved.
 Use this command before reproducing the problem, and Ctrl+C afterward:
 
 ```powershell
-adb.exe logcat -b main -b system -b crash -v threadtime "ActivityTaskManager:I" "ActivityManager:I" "SantodanIntroDB:V" "SantodanMergedProgress:V" "SantodanRemaining:V" "SantodanAiring:V" "SantodanFinale:V" "SantodanSettings:V" "SantodanStreams:V" "SantodanThumbs:I" "ThumbDecode:D" "ThumbWorker:D" "AndroidRuntime:E" "DEBUG:E" "libc:F" "*:S" > logs_patch.log
+adb.exe logcat -b main -b system -b crash -v threadtime "ActivityTaskManager:I" "ActivityManager:I" "SantodanPreferred:V" "SantodanCurrentStream:V" "SantodanIntroDB:V" "SantodanMergedProgress:V" "SantodanRemaining:V" "SantodanAiring:V" "SantodanFinale:V" "SantodanSettings:V" "SantodanStreams:V" "SantodanThumbs:I" "ThumbDecode:D" "ThumbWorker:D" "AndroidRuntime:E" "DEBUG:E" "libc:F" "*:S" > logs_patch.log
 ```
 
 `SantodanIntroDB` records runtime readiness, enable/disable, key saved/cleared

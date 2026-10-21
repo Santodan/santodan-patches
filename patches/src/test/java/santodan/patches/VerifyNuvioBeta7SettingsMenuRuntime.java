@@ -26,11 +26,12 @@ public final class VerifyNuvioBeta7SettingsMenuRuntime {
             "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams",
             "software.santodan.extension.nuvionextstreams.NuvioNextEpisodeStreams",
             "software.santodan.extension.nuviocurrentstream.NuvioCurrentStream",
+            "software.santodan.extension.nuviopreferred.NuvioPreferredAddon",
             "software.santodan.extension.nuviolauncher.NuvioLauncherChannels",
             "software.santodan.extension.nuviobuttons.NuvioPlaybackButtons",
             "software.santodan.extension.nuviointro.NuvioIntroDb"
         };
-        for (int selection : new int[]{0,1,2,4,8,16,32,64,128,256,3,7,24,96,384,271,511,512,768,1023,1024,1536,2047,2048,2560,3072,4095}) {
+        for (int selection : new int[]{0,1,2,4,8,16,32,64,128,256,3,7,24,96,384,271,511,512,768,1023,1024,1536,2047,2048,2560,3072,4095,4096,4608,6144,8191}) {
             int installed = Integer.bitCount(selection);
             Path root = Path.of(args[2]);
             Files.createDirectories(root);
@@ -64,13 +65,13 @@ public final class VerifyNuvioBeta7SettingsMenuRuntime {
                     continueWatching = true;
                 }
                 if (index >= 3 && index < 5 && !ui) { expected.add("UI"); ui = true; }
-                if (index >= 5 && index < 9 && !streams) {
+                if (index >= 5 && index < 10 && !streams) {
                     expected.add("Streams");
                     streams = true;
                 }
                 String bridge = bridges[index];
-                if (index == 9) expected.add("Android TV launcher");
-                if (index >= 10 && !playback) { expected.add("Playback"); playback = true; }
+                if (index == 10) expected.add("Android TV launcher");
+                if (index >= 11 && !playback) { expected.add("Playback"); playback = true; }
                 expected.add(bridge);
                 int dot = bridge.lastIndexOf('.');
                 sources.put(bridge, "package " + bridge.substring(0, dot) + "; public class " + bridge.substring(dot + 1)

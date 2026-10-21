@@ -49,6 +49,36 @@ tasks.register<JavaExec>("verifyNuvioCurrentStream") {
         file("${layout.buildDirectory.get()}/verification/nuvio-current-stream.dex").absolutePath)
 }
 
+tasks.register<JavaExec>("verifyNuvioPreferredAddon") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioPreferredAddon")
+    maxHeapSize = "2g"
+    args(file("../../OriginalApps/NuvioTV-1.1.0-beta7.apk").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-preferred-addon.dex").absolutePath)
+    if (providers.gradleProperty("discoverPreferredAddon").isPresent) args("discover")
+}
+
+tasks.register<JavaExec>("verifyNuvioPreferredAddonRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioPreferredAddonRuntime")
+    args(file("../extensions/nuvio-preferred-addon/src/main/java/software/santodan/extension/nuviopreferred/NuvioPreferredAddon.java").absolutePath,
+        file("${layout.buildDirectory.get()}/verification").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioPreferredAddonApk") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioPlaybackApkKt")
+    maxHeapSize = "3g"
+    args(file("../../OriginalApps/NuvioTV-1.1.0-beta7.apk").absolutePath,
+        file("../../Apps/NuvioTV/NuvioTV-1.1.0-beta.7-preferred-addon-unsigned.apk").absolutePath,
+        file(androidSdkDirectory.get()).absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-preferred-addon-apk").absolutePath,
+        "Lsoftware/santodan/extension/nuviopreferred/NuvioPreferredAddon;", "15")
+}
+
 tasks.register<JavaExec>("verifyNuvioCurrentStreamRuntime") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath

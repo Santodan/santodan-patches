@@ -11,7 +11,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.11.2](https://github.com/Santodan/santodan-patches/releases/tag/v0.11.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;23 patches total
+> **[v0.11.2](https://github.com/Santodan/santodan-patches/releases/tag/v0.11.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;27 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -48,10 +48,10 @@ MEO 5.7.0 patches provide a separately installable clone and compatibility handl
 </details>
 
 <details>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;13 patches</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;14 patches</summary>
 <br>
 
-These thirteen patches target NuvioTV beta.7 only. See [beta.7 verification](docs/NuvioBeta7.md).
+These fourteen patches target NuvioTV beta.7 only. See [beta.7 verification](docs/NuvioBeta7.md).
 
 ### Continue Watching
 
@@ -83,9 +83,9 @@ These thirteen patches target NuvioTV beta.7 only. See [beta.7 verification](doc
 
 ### Streams
 
-- **Indicate current stream**: Shows `[Playing]` on the active source when reopening Sources during playback. Enabled by default under **Settings > Layout > Santodan-Patches > Streams**. See [settings and verification](docs/NuvioCurrentStream.md).
+- **Preferred source add-on**: Choose a preferred installed add-on per profile to schedule its refresh first and show its results first. A separate, disabled-by-default switch automatically plays its first playable stream as soon as it is available. Other add-ons continue loading concurrently; manual source selection remains available. Configure both settings under **Settings > Layout > Santodan-Patches > Streams**. See [settings, logcat and verification](docs/NuvioPreferredAddon.md).
 
-- **Submit segments to IntroDB**: Enable the feature and enter your API key under **Settings > Layout > Santodan-Patches > Playback**, using the same single-line input and Cancel/Clear/Save layout as Anime Skip. A dedicated playback button captures the start on its first press and the end on its second, then opens a native NuvioTV dialog with an Intro/Recap/Outro dropdown and side-by-side Submit/Cancel buttons. Filmstrip play/stop/check icons distinguish the capture stages. Rejections show IntroDB's validation reason when available. See [setup, logcat and verification](docs/NuvioIntroDb.md).
+- **Indicate current stream**: Shows `[Playing]` on the active source when reopening Sources during playback. Enabled by default under **Settings > Layout > Santodan-Patches > Streams**. See [settings and verification](docs/NuvioCurrentStream.md).
 
 - **Preload streams in Continue Watching**: Searches sources in the background for visible, playable episodes and movies, so opening playback can reuse the search results.
 
@@ -93,11 +93,21 @@ These thirteen patches target NuvioTV beta.7 only. See [beta.7 verification](doc
 
 - **Preload streams for next episode**: Fetches the next episode's source list after 30 seconds of actual playback, giving the current episode time to buffer. Pauses and buffering do not count toward the delay. Nuvio reuses the results when you open the next episode; expired searches refresh in the background during longer episodes. On beta.7, enabling this switch also suppresses Nuvio's separate threshold preload and prevents the manual next-episode picker from forcing another search. Explicit source refresh remains available. This switch is disabled by default and independent of the other preload switches.
 
+### Playback
+
+- **Customize playback buttons**: Choose which native playback controls appear, their order, and placement in the main row or More actions. The customization is opt-in under **Settings > Layout > Santodan-Patches > Playback**. See [settings and verification](docs/NuvioPlaybackButtons.md).
+
+- **Submit segments to IntroDB**: Enable the feature and enter your API key under **Settings > Layout > Santodan-Patches > Playback**, using the same single-line input and Cancel/Clear/Save layout as Anime Skip. A dedicated playback button captures the start on its first press and the end on its second, then opens a native NuvioTV dialog with an Intro/Recap/Outro dropdown and side-by-side Submit/Cancel buttons. Filmstrip play/stop/check icons distinguish the capture stages. Rejections show IntroDB's validation reason when available. See [setup, logcat and verification](docs/NuvioIntroDb.md).
+
+### Android TV launcher
+
+- **Android TV launcher channels**: Publish selected catalogs, tracking lists, Library and Upcoming to the Android TV launcher. Disabled by default and configured under **Settings > Layout > Santodan-Patches > Android TV launcher**. See [setup and verification](docs/NuvioLauncherChannels.md).
+
 ### Installation
 
 - **Side-by-side installation**: Lets you choose a different package name and launcher name so the patched app can coexist with the official app.
 
-The patch settings are under **Layout > Santodan-Patches**, grouped under **Continue Watching**, **UI**, and **Streams** labels. Labels appear only for installed patch groups. Package and launcher names are configured when patching the APK.
+The patch settings are under **Layout > Santodan-Patches**, grouped under **Continue Watching**, **UI**, **Streams**, **Android TV launcher**, and **Playback** labels. Labels appear only for installed patch groups. Package and launcher names are configured when patching the APK.
 
 <img src="images/NuvioTVMenu.png" width="800" alt="Santodan-Patches menu">
 
@@ -109,17 +119,18 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [NuvioTV - Android TV launcher channels](#nuviotv-android-tv-launcher-channels) | Choose individual catalogs and tracking lists, Library, and Upcoming to publish as Android TV launcher channels. |  |
-| [NuvioTV - Customize playback buttons](docs/NuvioPlaybackButtons.md) | Configure playback button visibility, order and placement between the main row and More actions. |  |
-| [NuvioTV - Indicate current stream](docs/NuvioCurrentStream.md) | Adds `[Playing]` to the active source, with a default-enabled toggle under Santodan-Patches > Streams. |  |
+| [NuvioTV - Customize playback buttons](docs/NuvioPlaybackButtons.md) | Adds optional playback button visibility, ordering and placement in the main row or More actions, with saved settings and reset. |  |
 | [NuvioTV - Finale dates in library and collections](#nuviotv-finale-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters. |  |
+| [NuvioTV - Indicate current stream](docs/NuvioCurrentStream.md) | Labels the current stream with [Playing], with an enabled-by-default toggle in Santodan-Patches > Streams. |  |
 | [NuvioTV - Keep airing series in Upcoming](#nuviotv-keep-airing-series-in-upcoming) | Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale. |  |
 | [NuvioTV - Merge tracking progress](#nuviotv-merge-tracking-progress) | Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh. |  |
+| [NuvioTV - Preferred source add-on](docs/NuvioPreferredAddon.md) | Choose a per-profile add-on to refresh and display first, with optional automatic playback of its first playable stream. |  |
 | [NuvioTV - Preload streams for next episode](#nuviotv-preload-streams-for-next-episode) | Adds an opt-in Streams setting to fetch the next episode's source list after 30 seconds of playback, reusing Nuvio's native search cache. |  |
 | [NuvioTV - Preload streams in Continue Watching](#nuviotv-preload-streams-in-continue-watching) | Adds an opt-in Streams setting to search sources in the background for visible Continue Watching episodes and movies, reusing Nuvio's native search cache. |  |
 | [NuvioTV - Preload streams on detail page](#nuviotv-preload-streams-on-detail-page) | Adds an opt-in Streams setting to search sources for the detail page's Play or Resume episode or movie, reusing Nuvio's native search cache. |  |
 | [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default setting that displays aired, unwatched episode counts for every tracking integration. Controlled by Settings > Layout > Santodan-Patches. |  |
 | [NuvioTV - Side-by-side installation](#nuviotv-side-by-side-installation) | Installs a separately named NuvioTV clone using a configurable package name and app name. | • Package name<br>• App name |
-| [NuvioTV - Submit segments to IntroDB](docs/NuvioIntroDb.md) | Capture segment start/end times with two presses and submit through a native dialog; configure the feature and API key in Settings. |  |
+| [NuvioTV - Submit segments to IntroDB](docs/NuvioIntroDb.md) | Adds an optional playback button that captures segment start/end times and opens a native NuvioTV submission dialog. Enable it and enter your IntroDB API key in Settings. |  |
 | [NuvioTV - Upcoming movie dates in library and collections](#nuviotv-upcoming-movie-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show known release dates on unreleased movie posters in library and collections. |  |
 
 </details>

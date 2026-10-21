@@ -1,3 +1,12 @@
+## [0.12.0](https://github.com/Santodan/santodan-patches/compare/v0.11.2...v0.12.0) (2026-10-21)
+
+### ✨ New Features
+
+* **nuviotv:** add native IntroDB segment submissions [skip ci] ([577ff4a](https://github.com/Santodan/santodan-patches/commit/577ff4acf7b5c9c2bce46ed5d2bb647d91c8972b))
+* **nuviotv:** customize playback button visibility, order and groups [skip ci] ([b903a08](https://github.com/Santodan/santodan-patches/commit/b903a0820f67768e7eeb7c8574fea778c2c22342))
+* **nuviotv:** indicate the current stream with a Streams setting [skip ci] ([09b209f](https://github.com/Santodan/santodan-patches/commit/09b209fa6ee9d092b95b6e23e0dc12c7e518d360))
+* **nuviotv:** prioritize and autoplay preferred source add-on ([6e77240](https://github.com/Santodan/santodan-patches/commit/6e7724044c10edc619d31c63732b96f40134b75e))
+
 ## [0.11.2](https://github.com/Santodan/santodan-patches/compare/v0.11.1...v0.11.2) (2026-10-19)
 
 ### 🐛 Bug Fixes

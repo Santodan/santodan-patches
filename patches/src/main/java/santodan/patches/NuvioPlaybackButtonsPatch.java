@@ -90,7 +90,7 @@ public final class NuvioPlaybackButtonsPatch {
             invoke(more, 3).getImplementation().getRegisterCount() != 78)
             throw new IllegalStateException("Native playback register layout changed");
         // Exact latest-version bodies prove availability branches, register sources and group boundaries.
-        if (!fingerprint(invoke(main, 2)).equals("2c382f8f1152d222b534cab5f4e8fc70c38cbf80515be32533ed434002e75f00") ||
+        if (!fingerprint(withoutIntroControl(invoke(main, 2))).equals("2c382f8f1152d222b534cab5f4e8fc70c38cbf80515be32533ed434002e75f00") ||
             !fingerprint(invoke(more, 3)).equals("d50337b058b7289a6cbd19b54fdc8b4d88a88620f4e328fc41ff72a062aae44b"))
             throw new IllegalStateException("Native playback instruction layout changed");
     }
@@ -118,6 +118,20 @@ public final class NuvioPlaybackButtonsPatch {
             for (byte b : digest) result.append(String.format("%02x", b & 255));
             return result.toString();
         } catch (java.security.NoSuchAlgorithmException impossible) { throw new AssertionError(impossible); }
+    }
+    private static MutableMethod withoutIntroControl(MutableMethod source) {
+        MutableMethod copy = new MutableMethod(source);
+        var code = NuvioAiringSeriesPatch.instructions(copy);
+        int count = 0;
+        for (int i = code.size() - 1; i >= 0; i--) if (reference(code.get(i)).equals(NuvioIntroDbPatch.RENDER)) {
+            if (++count > 1 || !(code.get(i) instanceof RegisterRangeInstruction) ||
+                ((RegisterRangeInstruction)code.get(i)).getStartRegister() != 46 || ((RegisterRangeInstruction)code.get(i)).getRegisterCount() != 2 ||
+                i == 0 || !reference(code.get(i - 1)).equals(BUTTON)) throw new IllegalStateException("Unexpected IntroDB control hook");
+            for (int later = i + 1; later < code.size(); later++) if (reference(code.get(later)).equals(BUTTON))
+                throw new IllegalStateException("IntroDB control must follow the final native button");
+            copy.getImplementation().removeInstruction(i);
+        }
+        return copy;
     }
     private static void requireCalls(List<Instruction> instructions, String signature, int count, int registers) {
         List<Instruction> matches = new ArrayList<>();

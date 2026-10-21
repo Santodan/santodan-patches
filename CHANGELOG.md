@@ -60,6 +60,10 @@
 
 ## Unreleased
 
+### New Features
+
+* **nuviotv:** add optional IntroDB episode submissions on beta.7 with a Settings enable switch and Anime Skip-style API-key editor, two-press start/end capture, changing filmstrip icons, and a native review dialog with a segment-type dropdown and side-by-side Submit/Cancel buttons; display provider validation errors and preserve playback customization compatibility
+
 ### Bug Fixes
 
 * **nuviotv:** prevent merged progress reads from collecting refresh-on-start tracking flows during playback, including empty snapshots with MDBList as the main service

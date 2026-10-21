@@ -153,6 +153,12 @@ retain the target contracts within its context window.
 
 ## NuvioTV launcher channels
 
+For optional IntroDB episode submissions, see `docs/NuvioIntroDb.md`. Settings has
+the enable switch and native API-key editor. A dedicated main-row button captures
+start/end positions on two presses and opens a native NuvioDialog. Validate beta.7
+player layout, native engine position helper and controls timer, then run the focused,
+native runtime, shared-menu, and standalone/combined bundle verifiers.
+
 For playback button visibility, order and placement between the main row and More
 actions, see `docs/NuvioPlaybackButtons.md`. The independently selectable patch is
 opt-in, uses native controls and availability, and shares the Layout settings menu.

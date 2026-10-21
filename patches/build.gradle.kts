@@ -48,7 +48,39 @@ sourceSets["test"].java.srcDir("../extensions/pillo-weight-import/src/main/java"
 sourceSets["test"].java.srcDir("../extensions/pillo-local-backup/src/main/java")
 sourceSets["test"].java.srcDir("../extensions/pillo-weight-summary/src/main/java")
 tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
+    source(file("../extensions/nuvio-introdb/src/main/java/software/santodan/extension/nuviointro/Submission.java"))
+    source(file("../extensions/nuvio-introdb/src/main/java/software/santodan/extension/nuviointro/IntroDbClient.java"))
+    source(file("../extensions/nuvio-introdb/src/main/java/software/santodan/extension/nuviointro/SegmentCapture.java"))
     source(file("../extensions/nuvio-playback-buttons/src/main/java/software/santodan/extension/nuviobuttons/ButtonLayout.java"))
+}
+
+tasks.register<JavaExec>("verifyNuvioIntroDb") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioIntroDb")
+    maxHeapSize = "2g"
+    args(file("../../OriginalApps/NuvioTV-1.1.0-beta7.apk").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-introdb.dex").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioIntroDbRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioIntroDbRuntimeKt")
+    args(file("../extensions/nuvio-introdb/src/main/java/software/santodan/extension/nuviointro").absolutePath,
+        file("${layout.buildDirectory.get()}/verification").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioIntroDbApk") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioPlaybackApkKt")
+    maxHeapSize = "3g"
+    args(file("../../OriginalApps/NuvioTV-1.1.0-beta7.apk").absolutePath,
+        file("../../Apps/NuvioTV/NuvioTV-1.1.0-beta.7-introdb-unsigned.apk").absolutePath,
+        file(androidSdkDirectory.get()).absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-introdb-apk").absolutePath,
+        "Lsoftware/santodan/extension/nuviointro/NuvioIntroDb;", "3")
 }
 
 tasks.register<JavaExec>("verifyNuvioPlaybackButtons") {

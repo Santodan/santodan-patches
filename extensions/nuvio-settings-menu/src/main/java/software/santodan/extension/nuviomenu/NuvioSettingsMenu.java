@@ -18,7 +18,8 @@ public final class NuvioSettingsMenu {
         "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams",
         "software.santodan.extension.nuvionextstreams.NuvioNextEpisodeStreams",
         "software.santodan.extension.nuviolauncher.NuvioLauncherChannels",
-        "software.santodan.extension.nuviobuttons.NuvioPlaybackButtons"
+        "software.santodan.extension.nuviobuttons.NuvioPlaybackButtons",
+        "software.santodan.extension.nuviointro.NuvioIntroDb"
     };
     private static volatile Object expandedState;
     private NuvioSettingsMenu() {}

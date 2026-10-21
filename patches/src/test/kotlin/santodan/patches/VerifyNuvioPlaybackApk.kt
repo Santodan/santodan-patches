@@ -10,6 +10,8 @@ import java.util.zip.ZipFile
 
 /** Check the actual CLI-rebuilt APK, including its stripped/relocated DEX classes. */
 fun main(args: Array<String>) {
+    val extension = args.getOrNull(4) ?: NuvioPlaybackButtonsPatch.EXTENSION
+    val expectedHooks = args.getOrNull(5)?.toInt() ?: 16
     val verifier = SdkDexVerifier(File(args[2]), null)
     val verify = SdkDexVerifier::class.java.getDeclaredMethod("verifyClassHierarchy", File::class.java).apply { isAccessible = true }
     val results = args.take(2).mapIndexed { index, path ->
@@ -28,14 +30,14 @@ fun main(args: Array<String>) {
                             val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
                             if (!ref.definingClass.startsWith("Lsoftware/santodan/extension/")) continue
                             calls += ref.toString()
-                            if (!owner.type.startsWith("Lsoftware/santodan/extension/") && ref.definingClass == NuvioPlaybackButtonsPatch.EXTENSION) hooks++
+                            if (!owner.type.startsWith("Lsoftware/santodan/extension/") && ref.definingClass == extension) hooks++
                         }
                     }
                 }
             }
         }
         if (index == 1) {
-            check(hooks == 16) { "Rebuilt APK has $hooks playback hooks" }
+            check(hooks == expectedHooks) { "Rebuilt APK has $hooks hooks for $extension; expected $expectedHooks" }
             check(calls.all { it in definitions }) { "Unresolved extension signatures: ${calls - definitions}" }
         }
         val report = try { verify.invoke(verifier, directory); "" }
@@ -44,5 +46,5 @@ fun main(args: Array<String>) {
             .map { it.replace(Regex("\\(classes\\d*\\.dex\\)"), "(DEX)").replace(Regex("\\s+"), " ").trim() }.sorted()
     }
     check(results[0] == results[1]) { "Rebuilt APK introduced cross-DEX findings: ${results[1] - results[0].toSet()}" }
-    println("PASS: CLI-rebuilt APK has all 16 playback hooks, resolves extension signatures and introduces no cross-DEX findings (${results[0].size} original optional-library findings)")
+    println("PASS: CLI-rebuilt APK has all $expectedHooks hooks for $extension, resolves extension signatures and introduces no cross-DEX findings (${results[0].size} original optional-library findings)")
 }

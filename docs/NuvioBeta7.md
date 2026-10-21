@@ -1,9 +1,11 @@
 # NuvioTV 1.1.0-beta.7
 
-The eleven public NuvioTV patches support `com.nuvio.tv` `1.1.0-beta.7` (version code
+The twelve public NuvioTV patches support `com.nuvio.tv` `1.1.0-beta.7` (version code
 `1070`) only. Production hooks and runtime reflection use beta.7 symbols directly;
 no backward-compatibility adapters are included.
 Playback button customization is documented in [NuvioPlaybackButtons.md](NuvioPlaybackButtons.md).
+IntroDB submissions, including settings, two-press capture, the native review
+dropdown and validation errors, are documented in [NuvioIntroDb.md](NuvioIntroDb.md).
 The source backup is
 `../backups/nuvio-beta7-20261016-174310/`, with a manifest of SHA-256 hashes and a
 binary Git diff.
@@ -47,8 +49,8 @@ Use Java 21 and Android platform 36 from the repository root:
 The DEX verifier checks native contracts and missing, changed, ambiguous and duplicate
 hook rejection, then writes and reloads the modified DEX. Host runtime checks cover
 player targets, buffering/errors, Hilt readers, style controls, persistence and reset.
-The bundle verifier applies next-episode and merged progress individually, then all
-nine runtime patches together. It checks assembled hooks and extension/coroutine
+The bundle verifier applies next-episode, merged progress, playback customization
+and IntroDB individually, then all eleven runtime patches together. It checks assembled hooks and extension/coroutine
 references, verifies the unrelated watch-party return is untouched, and compares
 cross-DEX hierarchy findings with the original. Both have the same 36 unresolved
 optional-library references; no new hierarchy finding is introduced.

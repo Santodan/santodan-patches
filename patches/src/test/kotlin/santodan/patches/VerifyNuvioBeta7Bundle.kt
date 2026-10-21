@@ -86,15 +86,16 @@ fun main(args: Array<String>) = runBlocking {
     val baselineIssues = hierarchyIssues(originalDex)
     val nextName = "NuvioTV - Preload streams for next episode"
     check(available.count { it.name == nextName } == 1)
-    for (mode in listOf("next", "merged", "buttons", "combined")) {
+    for (mode in listOf("next", "merged", "buttons", "introdb", "combined")) {
         val combined = mode == "combined"
         val mergeOnly = mode == "merged"
         val buttonsOnly = mode == "buttons"
+        val introOnly = mode == "introdb"
         val selected = available.filter {
             if (combined) it.name?.startsWith("NuvioTV - ") == true && it.name != "NuvioTV - Side-by-side installation"
-            else it.name == if (buttonsOnly) "NuvioTV - Customize playback buttons" else if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
+            else it.name == if (introOnly) "NuvioTV - Submit segments to IntroDB" else if (buttonsOnly) "NuvioTV - Customize playback buttons" else if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
         }.toSet()
-        check(selected.size == if (combined) 10 else 1)
+        check(selected.size == if (combined) 11 else 1)
         val output = File(args[2], mode).apply { mkdirs() }
         Patcher(PatcherConfig(apkFile = File(args[0]), temporaryFilesPath = File(output, "work"))).use { patcher ->
             patcher += selected
@@ -109,6 +110,7 @@ fun main(args: Array<String>) = runBlocking {
             val classes = mutableSetOf<String>()
             val nativeHooks = mutableMapOf<String, Int>()
             val mergeHooks = mutableMapOf<String, Int>()
+            var introHooks = 0
             for (dex in patcher.get().dexFiles) {
                 val target = File(output, dex.name)
                 dex.stream.use { input -> target.outputStream().use { input.copyTo(it) } }
@@ -140,6 +142,7 @@ fun main(args: Array<String>) = runBlocking {
                             }
                             for (instruction in instructions) {
                                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
+                                if (ref.definingClass == NuvioIntroDbPatch.EXT && !owner.type.startsWith("Lsoftware/santodan/extension/")) introHooks++
                                 if ((owner.type.startsWith("Lsoftware/santodan/extension/nuviostreams/") ||
                                     owner.type.startsWith("Lsoftware/santodan/extension/nuviomerged/")) &&
                                     ref.definingClass.startsWith("Lkotlinx/coroutines/")) coroutineCalls += ref.toString()
@@ -158,7 +161,7 @@ fun main(args: Array<String>) = runBlocking {
                     }
                 }
             }
-            if (!mergeOnly && !buttonsOnly) {
+            if (!mergeOnly && !buttonsOnly && !introOnly) {
             for (hook in listOf("registerComponent", "observeNextEpisode", "stopNextEpisode", "nextEpisodePluginPause"))
                 check(nativeHooks[hook] == 1) { "Expected one $hook hook, found ${nativeHooks[hook]}" }
             check(nativeHooks["nextEpisodePickerRefresh"] == 1) { "Next-episode picker entry must reuse the warmed search" }
@@ -203,7 +206,7 @@ fun main(args: Array<String>) = runBlocking {
             check(coroutineCalls.all { resolves(it) }) {
                 "Missing native coroutine APIs: ${coroutineCalls.filter { !resolves(it) }}"
             }
-            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly))
+            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly && !introOnly))
             check(("Lsoftware/santodan/extension/nuviobuttons/NuvioPlaybackButtons;" in classes) == (buttonsOnly || combined))
             check(("Lsoftware/santodan/extension/nuviocwstreams/NuvioContinueWatchingStreams;" in classes) == combined)
             check(("Lsoftware/santodan/extension/nuviodetailstreams/NuvioDetailStreams;" in classes) == combined)
@@ -211,7 +214,11 @@ fun main(args: Array<String>) = runBlocking {
                 val buttonHooks = extensionCalls.filter { it.startsWith(NuvioPlaybackButtonsPatch.EXTENSION) }
                 check(buttonHooks.size >= 16) { "Playback button hooks missing from packaged DEX: $buttonHooks" }
             }
-            println("PASS: ${if (combined) "all ten Nuvio runtime patches coexist" else if (buttonsOnly) "standalone playback-buttons patch" else if (mergeOnly) "standalone merged-progress patch" else "standalone next-episode patch"}; assembled DEX reloads and hooks resolve")
+            if (introOnly || combined) {
+                check("Lsoftware/santodan/extension/nuviointro/Submission;" in classes)
+                check(introHooks == 3) { "Expected three native IntroDB hooks, found $introHooks" }
+            }
+            println("PASS: ${if (combined) "all eleven Nuvio runtime patches coexist" else if (introOnly) "standalone IntroDB submission patch" else if (buttonsOnly) "standalone playback-buttons patch" else if (mergeOnly) "standalone merged-progress patch" else "standalone next-episode patch"}; assembled DEX reloads and hooks resolve")
             check(hierarchyIssues(output) == baselineIssues) { "Patched cross-DEX hierarchy findings differ from original" }
             println("PASS: $mode cross-DEX hierarchy has no new findings (${baselineIssues.size} original optional-library findings)")
         }

@@ -86,16 +86,17 @@ fun main(args: Array<String>) = runBlocking {
     val baselineIssues = hierarchyIssues(originalDex)
     val nextName = "NuvioTV - Preload streams for next episode"
     check(available.count { it.name == nextName } == 1)
-    for (mode in listOf("next", "merged", "buttons", "introdb", "combined")) {
+    for (mode in listOf("next", "merged", "buttons", "introdb", "current-stream", "combined")) {
         val combined = mode == "combined"
         val mergeOnly = mode == "merged"
         val buttonsOnly = mode == "buttons"
         val introOnly = mode == "introdb"
+        val currentOnly = mode == "current-stream"
         val selected = available.filter {
             if (combined) it.name?.startsWith("NuvioTV - ") == true && it.name != "NuvioTV - Side-by-side installation"
-            else it.name == if (introOnly) "NuvioTV - Submit segments to IntroDB" else if (buttonsOnly) "NuvioTV - Customize playback buttons" else if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
+            else it.name == if (currentOnly) "NuvioTV - Indicate current stream" else if (introOnly) "NuvioTV - Submit segments to IntroDB" else if (buttonsOnly) "NuvioTV - Customize playback buttons" else if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
         }.toSet()
-        check(selected.size == if (combined) 11 else 1)
+        check(selected.size == if (combined) 12 else 1)
         val output = File(args[2], mode).apply { mkdirs() }
         Patcher(PatcherConfig(apkFile = File(args[0]), temporaryFilesPath = File(output, "work"))).use { patcher ->
             patcher += selected
@@ -111,6 +112,7 @@ fun main(args: Array<String>) = runBlocking {
             val nativeHooks = mutableMapOf<String, Int>()
             val mergeHooks = mutableMapOf<String, Int>()
             var introHooks = 0
+            var currentLabels = 0
             for (dex in patcher.get().dexFiles) {
                 val target = File(output, dex.name)
                 dex.stream.use { input -> target.outputStream().use { input.copyTo(it) } }
@@ -121,6 +123,17 @@ fun main(args: Array<String>) = runBlocking {
                         for (method in owner.methods) {
                             definitions += method.toString()
                             val instructions = method.implementation?.instructions ?: continue
+                            if (owner.type == "Lva/z;" && method.name == "q") {
+                                val body = instructions.toList()
+                                currentLabels += body.count { (it as? ReferenceInstruction)?.reference?.toString() == NuvioCurrentStreamPatch.LABEL_METHOD }
+                                if (currentOnly || combined) {
+                                    check(body[142].opcode == Opcode.INVOKE_STATIC)
+                                    val call = body[142] as com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction
+                                    check(call.registerCount == 2 && call.registerC == 7 && call.registerD == 8)
+                                    check((body[142] as ReferenceInstruction).reference.toString() == NuvioCurrentStreamPatch.LABEL_METHOD)
+                                    check(body[143].opcode == Opcode.MOVE_RESULT_OBJECT && (body[143] as OneRegisterInstruction).registerA == 7)
+                                }
+                            }
                             if ((combined || mergeOnly) && owner.type == "Lba/ze;" && method.name in setOf("C", "s")) {
                                 val entry = instructions.toList()
                                 check((entry[0] as ReferenceInstruction).reference.toString().endsWith("->syncLocalProgress(Z)Z"))
@@ -161,7 +174,9 @@ fun main(args: Array<String>) = runBlocking {
                     }
                 }
             }
-            if (!mergeOnly && !buttonsOnly && !introOnly) {
+            check(currentLabels == if (currentOnly || combined) 1 else 0)
+            check((NuvioCurrentStreamPatch.EXTENSION in classes) == (currentOnly || combined))
+            if (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly) {
             for (hook in listOf("registerComponent", "observeNextEpisode", "stopNextEpisode", "nextEpisodePluginPause"))
                 check(nativeHooks[hook] == 1) { "Expected one $hook hook, found ${nativeHooks[hook]}" }
             check(nativeHooks["nextEpisodePickerRefresh"] == 1) { "Next-episode picker entry must reuse the warmed search" }
@@ -206,7 +221,7 @@ fun main(args: Array<String>) = runBlocking {
             check(coroutineCalls.all { resolves(it) }) {
                 "Missing native coroutine APIs: ${coroutineCalls.filter { !resolves(it) }}"
             }
-            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly && !introOnly))
+            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly))
             check(("Lsoftware/santodan/extension/nuviobuttons/NuvioPlaybackButtons;" in classes) == (buttonsOnly || combined))
             check(("Lsoftware/santodan/extension/nuviocwstreams/NuvioContinueWatchingStreams;" in classes) == combined)
             check(("Lsoftware/santodan/extension/nuviodetailstreams/NuvioDetailStreams;" in classes) == combined)
@@ -218,7 +233,7 @@ fun main(args: Array<String>) = runBlocking {
                 check("Lsoftware/santodan/extension/nuviointro/Submission;" in classes)
                 check(introHooks == 3) { "Expected three native IntroDB hooks, found $introHooks" }
             }
-            println("PASS: ${if (combined) "all eleven Nuvio runtime patches coexist" else if (introOnly) "standalone IntroDB submission patch" else if (buttonsOnly) "standalone playback-buttons patch" else if (mergeOnly) "standalone merged-progress patch" else "standalone next-episode patch"}; assembled DEX reloads and hooks resolve")
+            println("PASS: ${if (combined) "all twelve Nuvio behavior patches coexist" else if (currentOnly) "standalone current-stream indicator" else if (introOnly) "standalone IntroDB submission patch" else if (buttonsOnly) "standalone playback-buttons patch" else if (mergeOnly) "standalone merged-progress patch" else "standalone next-episode patch"}; assembled DEX reloads and hooks resolve")
             check(hierarchyIssues(output) == baselineIssues) { "Patched cross-DEX hierarchy findings differ from original" }
             println("PASS: $mode cross-DEX hierarchy has no new findings (${baselineIssues.size} original optional-library findings)")
         }

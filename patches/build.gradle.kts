@@ -40,6 +40,23 @@ dependencies {
     testCompileOnly(files(androidTestJar))
 }
 
+tasks.register<JavaExec>("verifyNuvioCurrentStream") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioCurrentStream")
+    maxHeapSize = "2g"
+    args(file("../../OriginalApps/NuvioTV-1.1.0-beta7.apk").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-current-stream.dex").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioCurrentStreamRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioCurrentStreamRuntime")
+    args(file("../extensions/nuvio-current-stream/src/main/java/software/santodan/extension/nuviocurrentstream/NuvioCurrentStream.java").absolutePath,
+        file("${layout.buildDirectory.get()}/verification").absolutePath)
+}
+
 kotlin.sourceSets.named("test") {
     kotlin.srcDir("../extensions/nuvio-stream-preload/src/main/java")
 }

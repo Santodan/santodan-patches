@@ -192,6 +192,34 @@
       "options": []
     },
     {
+      "name": "NuvioTV - Indicate current stream",
+      "description": "Labels the current stream with [Playing], with an enabled-by-default toggle in Santodan-Patches > Streams.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nuvio.tv",
+          "name": "NuvioTV",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.0-beta.7",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "NuvioTV - Keep airing series in Upcoming",
       "description": "Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale.",
       "default": false,

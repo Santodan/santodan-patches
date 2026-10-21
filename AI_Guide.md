@@ -153,6 +153,13 @@ retain the target contracts within its context window.
 
 ## NuvioTV launcher channels
 
+For a visible current-session source label, see `docs/NuvioCurrentStream.md`.
+The independent **NuvioTV - Indicate current stream** patch prefixes the native
+current source title with `[Playing]`, following the existing session flag.
+The `nuvio-current-stream` extension adds a default-enabled switch under
+Santodan-Patches > Streams. Verify DEX mutation/roundtrip, runtime persistence
+and toggling, shared-menu selections, and standalone/combined packaged bundles.
+
 For optional IntroDB episode submissions, see `docs/NuvioIntroDb.md`. Settings has
 the enable switch and native API-key editor. A dedicated main-row button captures
 start/end positions on two presses and opens a native NuvioDialog. Validate beta.7

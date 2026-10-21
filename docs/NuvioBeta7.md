@@ -1,8 +1,9 @@
 # NuvioTV 1.1.0-beta.7
 
-The ten public NuvioTV patches support `com.nuvio.tv` `1.1.0-beta.7` (version code
+The eleven public NuvioTV patches support `com.nuvio.tv` `1.1.0-beta.7` (version code
 `1070`) only. Production hooks and runtime reflection use beta.7 symbols directly;
 no backward-compatibility adapters are included.
+Playback button customization is documented in [NuvioPlaybackButtons.md](NuvioPlaybackButtons.md).
 The source backup is
 `../backups/nuvio-beta7-20261016-174310/`, with a manifest of SHA-256 hashes and a
 binary Git diff.

@@ -235,7 +235,7 @@ final class NuvioStreamPreloadPatch {
             new ImmutableMethodReference(EXTENSION, callback, List.of("Ljava/lang/Object;"), "V")));
     }
 
-    private static InputStream extension(String module) {
+    static InputStream extension(String module) {
         InputStream input = NuvioStreamPreloadPatch.class.getClassLoader().getResourceAsStream("extensions/" + module + ".mpe");
         if (input == null) throw new IllegalStateException("Missing bundled stream-preloading extension: " + module);
         return input;

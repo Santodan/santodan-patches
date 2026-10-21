@@ -25,9 +25,10 @@ public final class VerifyNuvioBeta7SettingsMenuRuntime {
             "software.santodan.extension.nuviocwstreams.NuvioContinueWatchingStreams",
             "software.santodan.extension.nuviodetailstreams.NuvioDetailStreams",
             "software.santodan.extension.nuvionextstreams.NuvioNextEpisodeStreams",
-            "software.santodan.extension.nuviolauncher.NuvioLauncherChannels"
+            "software.santodan.extension.nuviolauncher.NuvioLauncherChannels",
+            "software.santodan.extension.nuviobuttons.NuvioPlaybackButtons"
         };
-        for (int selection : new int[]{0,1,2,4,8,16,32,64,128,256,3,7,24,96,384,271,511}) {
+        for (int selection : new int[]{0,1,2,4,8,16,32,64,128,256,3,7,24,96,384,271,511,512,768,1023}) {
             int installed = Integer.bitCount(selection);
             Path root = Path.of(args[2]);
             Files.createDirectories(root);
@@ -66,6 +67,7 @@ public final class VerifyNuvioBeta7SettingsMenuRuntime {
                 }
                 String bridge = bridges[index];
                 if (index == 8) expected.add("Android TV launcher");
+                if (index == 9) expected.add("Playback");
                 expected.add(bridge);
                 int dot = bridge.lastIndexOf('.');
                 sources.put(bridge, "package " + bridge.substring(0, dot) + "; public class " + bridge.substring(dot + 1)

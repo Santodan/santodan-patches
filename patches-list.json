@@ -136,6 +136,34 @@
       "options": []
     },
     {
+      "name": "NuvioTV - Customize playback buttons",
+      "description": "Adds optional playback button visibility, ordering and placement in the main row or More actions, with saved settings and reset.",
+      "default": false,
+      "dependencies": [
+        "BytecodePatch"
+      ],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nuvio.tv",
+          "name": "NuvioTV",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.0-beta.7",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "NuvioTV - Finale dates in library and collections",
       "description": "Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters.",
       "default": false,

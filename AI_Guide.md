@@ -153,6 +153,11 @@ retain the target contracts within its context window.
 
 ## NuvioTV launcher channels
 
+For playback button visibility, order and placement between the main row and More
+actions, see `docs/NuvioPlaybackButtons.md`. The independently selectable patch is
+opt-in, uses native controls and availability, and shares the Layout settings menu.
+Verify its original-APK hooks and host runtime, then standalone and combined bundles.
+
 For merged tracking progress, see `docs/NuvioMergedProgress.md`. Its automatic
 sync gate follows the root navigation flow and activity lifecycle, not stream-search
 pause signals. Main-service playback writes and service inclusion are configured

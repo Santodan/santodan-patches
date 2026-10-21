@@ -47,8 +47,40 @@ kotlin.sourceSets.named("test") {
 sourceSets["test"].java.srcDir("../extensions/pillo-weight-import/src/main/java")
 sourceSets["test"].java.srcDir("../extensions/pillo-local-backup/src/main/java")
 sourceSets["test"].java.srcDir("../extensions/pillo-weight-summary/src/main/java")
+tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
+    source(file("../extensions/nuvio-playback-buttons/src/main/java/software/santodan/extension/nuviobuttons/ButtonLayout.java"))
+}
+
+tasks.register<JavaExec>("verifyNuvioPlaybackButtons") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioPlaybackButtons")
+    maxHeapSize = "2g"
+    args(file("../../OriginalApps/NuvioTV-1.1.0-beta7.apk").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-playback-buttons.dex").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioPlaybackButtonsRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioPlaybackButtonsRuntimeKt")
+    args(file("../extensions/nuvio-playback-buttons/src/main/java/software/santodan/extension/nuviobuttons").absolutePath,
+        file("${layout.buildDirectory.get()}/verification").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioPlaybackApk") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioPlaybackApkKt")
+    maxHeapSize = "3g"
+    args(file("../../OriginalApps/NuvioTV-1.1.0-beta7.apk").absolutePath,
+        file("../../Apps/NuvioTV/NuvioTV-1.1.0-beta.7-playback-buttons-unsigned.apk").absolutePath,
+        file(androidSdkDirectory.get()).absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-playback-apk").absolutePath)
+}
 
 tasks.named<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileTestKotlin") {
+    source(file("../extensions/nuvio-playback-buttons/src/main/java/software/santodan/extension/nuviobuttons/ButtonLayout.java"))
     source(file("../extensions/nuvio-launcher-channels/src/main/java/software/santodan/extension/nuviolauncher/LauncherModels.kt"))
     source(file("../extensions/nuvio-launcher-channels/src/main/java/software/santodan/extension/nuviolauncher/LauncherDates.kt"))
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioProviderRefresh.kt"))

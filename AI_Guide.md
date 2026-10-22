@@ -177,6 +177,15 @@ For playback button visibility, order and placement between the main row and Mor
 actions, see `docs/NuvioPlaybackButtons.md`. The independently selectable patch is
 opt-in, uses native controls and availability, and shares the Layout settings menu.
 Verify its original-APK hooks and host runtime, then standalone and combined bundles.
+The editor uses one continuous native scrolling list with leading icons and numbered
+group positions. Hold OK to pick up a control, Up/Down to move it, OK to save and
+Back to cancel. When IntroDB is selected, its control is collected immediately before
+the customization row flushes, in either patch order; it supports the same hiding,
+sorting and grouping while retaining IntroDB availability and review dialogs.
+The user confirmed the corrected editor works on a device after the focus-slot
+fix. `h1.j.f` is only a slot-writing initializer: call `h1.l0.R`, check `h1.n.a`,
+then initialize only an empty slot. Keep focus, list state and effect groups separate;
+the runtime verifier models remembered slots across recomposition and failure recovery.
 
 For merged tracking progress, see `docs/NuvioMergedProgress.md`. Its automatic
 sync gate follows the root navigation flow and activity lifecycle, not stream-search

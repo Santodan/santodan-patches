@@ -7,6 +7,13 @@
 * **nuviotv:** indicate the current stream with a Streams setting [skip ci] ([09b209f](https://github.com/Santodan/santodan-patches/commit/09b209fa6ee9d092b95b6e23e0dc12c7e518d360))
 * **nuviotv:** prioritize and autoplay preferred source add-on ([6e77240](https://github.com/Santodan/santodan-patches/commit/6e7724044c10edc619d31c63732b96f40134b75e))
 
+### Maintenance updates (2026-10-22)
+
+* **nuviotv:** fix the playback button editor failing on Mi Box runtimes without the no-argument `Optional.orElseThrow()` API.
+* **nuviotv:** include IntroDB's segment button in playback visibility, ordering and group customization.
+* **nuviotv:** show button icons and numbered positions in one continuous scrolling list; hold OK to pick up a button, use Up/Down to reorder, OK to save and Back to cancel.
+* **nuviotv:** preserve remembered focus/list state during recomposition to fix the long-press editor crash; add runtime slot-state regression coverage. The user confirmed the corrected behavior on a device.
+
 ## [0.11.2](https://github.com/Santodan/santodan-patches/compare/v0.11.1...v0.11.2) (2026-10-19)
 
 ### 🐛 Bug Fixes

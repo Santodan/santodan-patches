@@ -9,6 +9,9 @@ import javax.tools.ToolProvider
 fun main(args: Array<String>) {
     val root = Files.createTempDirectory(File(args[1]).apply { mkdirs() }.toPath(), "introdb-native-runtime-").toFile()
     val sources = mapOf(
+        "software.santodan.extension.nuviobuttons.NuvioPlaybackButtons" to """package software.santodan.extension.nuviobuttons; public class NuvioPlaybackButtons {
+            public static boolean collect; public static Object[] captured;
+            public static boolean collectIntroDb(Object[] args){if(collect)captured=args;return collect;} }""",
         "android.content.SharedPreferences" to """package android.content; public class SharedPreferences {
             public java.util.Map<String,Object> values=new java.util.HashMap<>();
             public boolean getBoolean(String k,boolean d){return (Boolean)values.getOrDefault(k,d);}
@@ -200,6 +203,12 @@ fun main(args: Array<String>) {
                     Ui.keyRow.invoke();settings();Ui.click("Clear");settings();check(Ui.keyStatus.equals("Not set"));
                     Ui.toggle.invoke();render(owner);Ui.button.invoke();render(owner);check(Ui.title.equals("Submit segment to IntroDB")&&Ui.labels.stream().anyMatch(x->x.contains("Settings"))&&!Ui.enabled.get("Submit"));
                     Ui.click("Cancel");((va.g3)owner.c.Y.H0.value).d=true;render(owner);check(Ui.button==null);
+                    ((va.g3)owner.c.Y.H0.value).d=false;
+                    software.santodan.extension.nuviobuttons.NuvioPlaybackButtons.collect=true;
+                    render(owner);check(Ui.button==null);
+                    Object[] captured=software.santodan.extension.nuviobuttons.NuvioPlaybackButtons.captured;
+                    check(captured!=null&&captured[0] instanceof k2.e&&captured[2].toString().contains("mark start")&&captured[10]==composer);
+                    ((kotlin.jvm.functions.Function0)captured[3]).invoke();render(owner);check(Ui.title.equals("Submit segment to IntroDB"));
                     NuvioIntroDb.pause(activity);check(composer.depth==0);
                     check(Ui.logs.stream().noneMatch(x->x.contains("test-key")||x.contains("unsaved-key")));
                 }

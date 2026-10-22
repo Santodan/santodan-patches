@@ -120,13 +120,20 @@ public final class NuvioIntroDb {
                 String label = current == null ? "Submit segment: mark start" : current.review ? "Submit segment: review" :
                     "Submit segment: mark end (start " + SegmentCapture.time(current.capture.start) + ")";
                 Object icon = IntroIcons.icon(loader, current == null ? 0 : current.review ? 2 : 1);
-                IntroUi.method(loader.loadClass("va.yd"), "b", 13).invoke(null, icon, null, label,
+                Object[] button = new Object[]{icon, null, label,
                     IntroUi.click(loader, () -> mark(controller, media, target, loader)), null, IntroUi.field(owner, "o"),
-                    current == null || !current.busy, IntroUi.field(owner, "p"), IntroUi.field(owner, "q"), 0L, composer, 0, 530);
+                    current == null || !current.busy, IntroUi.field(owner, "p"), IntroUi.field(owner, "q"), 0L, composer, 0, 530};
+                boolean collected = false;
+                try {
+                    Class<?> customization = loader.loadClass("software.santodan.extension.nuviobuttons.NuvioPlaybackButtons");
+                    collected = (Boolean)customization.getMethod("collectIntroDb", Object[].class).invoke(null, (Object)button);
+                } catch (ClassNotFoundException standalone) { /* Independently selectable patch. */ }
+                if (!collected) IntroUi.method(loader.loadClass("va.yd"), "b", 13).invoke(null, button);
                 if (current != null && current.review) renderReview(composer, current);
             } finally { IntroUi.method(composer.getClass(), "p", 1).invoke(composer, false); }
         } catch (Exception error) { Log.e(TAG, "Native IntroDB control failed", error); throw new IllegalStateException("Native IntroDB control failed", error); }
     }
+    public static Object settingsIcon(ClassLoader loader) throws Exception { return IntroIcons.icon(loader, 0); }
     private static void mark(Object controller, String media, Submission target, ClassLoader loader) throws Exception {
         if (!enabled()) { reset(); return; }
         if (draft == null || draft.controller.get() != controller || !draft.media.equals(media)) { reset(); draft = new Draft(controller, media, target); }

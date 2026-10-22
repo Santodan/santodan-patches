@@ -33,7 +33,11 @@ Times retain millisecond precision. The playback clock is sampled on each press,
 using Nuvio's existing helper for either ExoPlayer or MPV, rather than a wall clock
 or a composition-time snapshot. End must follow start. The button label indicates
 whether the next press will capture the start, capture the end, or reopen review.
-The button remains a separate main-row action when playback buttons are customized.
+With playback customization disabled or absent, the button stays at the end of
+the main row. When customization is enabled, its filmstrip entry can be hidden,
+reordered or moved to More actions through **Edit playback buttons**. Its capture
+callback and stage icons remain unchanged, and an open review dialog remains
+composed even if its control is hidden or in collapsed More actions.
 It is hidden when the feature is disabled, for live playback, and when the episode
 has no consistent IMDb/season/episode identifiers. Movies and other provider IDs
 are not submitted. A missing API key opens a native message directing you to Settings.
@@ -118,6 +122,12 @@ final button, with registers v46/v47. The IntroDB verifier restores only known
 same-register customization bridges on a copy before comparing the original
 fingerprint. Both patch orders reject missing, changed, ambiguous and duplicate
 layouts and preserve the existing native buttons.
+
+When both patches are selected, the proven IntroDB call is placed immediately
+before the final customization bridge in either application order. This allows
+the optional `collectIntroDb(Object[])` runtime bridge to capture the button's
+native arguments before the customized row renders. IntroDB remains independently
+selectable and renders normally when customization is absent or disabled.
 
 ## Verification and artifacts
 

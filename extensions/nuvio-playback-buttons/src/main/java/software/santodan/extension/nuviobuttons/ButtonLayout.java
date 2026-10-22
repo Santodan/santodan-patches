@@ -6,10 +6,10 @@ import java.util.*;
 public final class ButtonLayout {
     public static final List<String> IDS = Collections.unmodifiableList(Arrays.asList(
         "play", "next", "subtitles", "audio", "sources", "engine", "episodes", "party",
-        "speed", "aspect", "external", "info", "report"));
+        "speed", "aspect", "external", "info", "report", "introdb"));
     public static final List<String> LABELS = Collections.unmodifiableList(Arrays.asList(
         "Play / pause", "Next episode", "Subtitles", "Audio tracks", "Sources", "Player engine",
-        "Episodes", "Watch party", "Playback speed", "Aspect ratio", "External player", "Stream info", "Report playback issue"));
+        "Episodes", "Watch party", "Playback speed", "Aspect ratio", "External player", "Stream info", "Report playback issue", "Submit segment to IntroDB"));
     public final List<String> order;
     public final Set<String> hidden, more;
     public final boolean enabled;

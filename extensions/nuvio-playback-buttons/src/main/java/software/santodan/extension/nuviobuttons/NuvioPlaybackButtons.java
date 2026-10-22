@@ -3,6 +3,8 @@ package software.santodan.extension.nuviobuttons;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.view.KeyEvent;
+import android.view.ViewConfiguration;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -12,6 +14,9 @@ public final class NuvioPlaybackButtons {
     private static final ThreadLocal<Frame> frames = new ThreadLocal<>();
     private static Object menuState;
     private static int menuRevision;
+    private static String menuFocusId = "play", movingId = "", heldId = "";
+    private static ButtonLayout moveDraft;
+    private static boolean longHeld, consumedBack;
     private static final class Frame {
         final ButtonLayout layout;
         final Map<String, Object[]> buttons = new LinkedHashMap<>();
@@ -73,6 +78,12 @@ public final class NuvioPlaybackButtons {
     public static void registerMore(Object lambda) {
         Frame frame = frames.get();
         if (frame != null) frame.lambda = lambda;
+    }
+    public static boolean collectIntroDb(Object[] args) {
+        Frame frame = frames.get();
+        if (frame == null) return false;
+        frame.buttons.put("introdb", args);
+        return true;
     }
     public static void more(boolean visible, Object modifier, Object enter, Object exit, Object label,
             Object content, Object composer, int flags) {
@@ -139,7 +150,7 @@ public final class NuvioPlaybackButtons {
         ClassLoader loader = composer.getClass().getClassLoader();
         if (menuState == null) menuState = method(loader.loadClass("h1.h"), "s", 1).invoke(null, "");
         String page = ((String) method(menuState.getClass(), "getValue", 0).invoke(menuState)).split("\\|", 2)[0];
-        ButtonLayout value = layout();
+        ButtonLayout value = moveDraft == null ? layout() : moveDraft;
         Object toggle = ButtonsUi.callback(loader, "Function0", args -> {
             save(layout().enabled(!layout().enabled)); setPage(""); return ButtonsUi.unit(loader);
         });
@@ -150,13 +161,17 @@ public final class NuvioPlaybackButtons {
         ButtonsUi.action(composer, "Edit playback buttons", () -> setPage("list"));
         ButtonsUi.action(composer, "Reset playback buttons", () -> { save(ButtonLayout.defaults()); setPage(""); });
         if (page.equals("list")) {
+            List<String> ids = settingsIds(value, loader);
             List<String> labels = new ArrayList<>();
-            for (String id : value.order) labels.add(ButtonLayout.label(id) + " — " + (value.hidden.contains(id) ? "Hidden" : value.more.contains(id) ? "More actions" : "Main row"));
-            ButtonsUi.picker(composer, "Playback buttons", value.order, labels, "", id -> setPage(id), () -> setPage(""));
+            for (String id : ids) labels.add((id.equals(movingId) ? "Moving · " : "") + positionLabel(value, ids, id));
+            ButtonsUi.iconPicker(composer, "Playback buttons", ids, labels, menuFocusId, movingId,
+                NuvioPlaybackButtons::rowKey, NuvioPlaybackButtons::selectRow, () -> {
+                    if (moveDraft != null) setPage("list"); else setPage("");
+                });
         } else if (ButtonLayout.IDS.contains(page)) {
-            List<String> actions = Arrays.asList("visibility", "group", "left", "right", "back");
+            List<String> actions = Arrays.asList("visibility", "group", "back");
             List<String> labels = Arrays.asList(value.hidden.contains(page) ? "Show button" : "Hide button",
-                value.more.contains(page) ? "Move to main row" : "Move to More actions", "Move earlier in this group", "Move later in this group", "Back to buttons");
+                value.more.contains(page) ? "Move to main row" : "Move to More actions", "Back to buttons");
             ButtonsUi.picker(composer, ButtonLayout.label(page), actions, labels, "", action -> {
                 if (!action.equals("back")) save(layout().change(page, action));
                 setPage("list");
@@ -164,8 +179,76 @@ public final class NuvioPlaybackButtons {
         }
     }
     private static void setPage(String value) throws Exception {
+        moveDraft = null; movingId = ""; heldId = ""; longHeld = false;
+        refreshPage(value);
+    }
+    private static void refreshPage(String value) throws Exception {
         // Settings actions always change the page, invalidating the native composition after edits.
         method(menuState.getClass(), "setValue", 1).invoke(menuState, value + "|" + (++menuRevision));
+    }
+    private static void selectRow(String id) throws Exception {
+        menuFocusId = id;
+        if (moveDraft != null) { save(moveDraft); setPage("list"); }
+        else setPage(id);
+    }
+    private static void beginMove(String id) throws Exception {
+        menuFocusId = movingId = id;
+        moveDraft = layout();
+        longHeld = true;
+        refreshPage("list");
+    }
+    private static boolean rowKey(String id, Object nativeEvent, Object listState) throws Exception {
+        KeyEvent event = (KeyEvent)nativeEvent;
+        int code = event.getKeyCode(), action = event.getAction();
+        if (code == KeyEvent.KEYCODE_BACK && (moveDraft != null || consumedBack)) {
+            if (action == KeyEvent.ACTION_DOWN) { consumedBack = true; setPage("list"); }
+            else if (action == KeyEvent.ACTION_UP) consumedBack = false;
+            return true;
+        }
+        if (moveDraft != null && (code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN)) {
+            if (action == KeyEvent.ACTION_DOWN) {
+                ButtonLayout next = moveDraft.change(movingId, code == KeyEvent.KEYCODE_DPAD_UP ? "left" : "right");
+                if (!next.order.equals(moveDraft.order)) {
+                    moveDraft = next;
+                    int index = settingsIds(next, NuvioPlaybackButtons.class.getClassLoader()).indexOf(movingId);
+                    method(listState.getClass(), "k", 3).invoke(listState, index, 0, false);
+                    refreshPage("list");
+                }
+            }
+            return true;
+        }
+        if (moveDraft != null && (code == KeyEvent.KEYCODE_DPAD_LEFT || code == KeyEvent.KEYCODE_DPAD_RIGHT)) return true;
+        if (code != KeyEvent.KEYCODE_DPAD_CENTER && code != KeyEvent.KEYCODE_ENTER && code != KeyEvent.KEYCODE_NUMPAD_ENTER) return false;
+        if (event.isCanceled()) { heldId = ""; longHeld = false; return true; }
+        boolean heldLongEnough = event.getEventTime() - event.getDownTime() >= ViewConfiguration.getLongPressTimeout();
+        if (action == KeyEvent.ACTION_DOWN) {
+            if (event.getRepeatCount() == 0) { heldId = id; longHeld = false; }
+            else if (moveDraft == null && id.equals(heldId) && heldLongEnough) beginMove(id);
+            return true;
+        }
+        if (action == KeyEvent.ACTION_UP) {
+            if (!id.equals(heldId)) return true;
+            if (longHeld) { longHeld = false; heldId = ""; return true; }
+            heldId = "";
+            if (moveDraft == null && heldLongEnough) { beginMove(id); longHeld = false; }
+            else selectRow(id);
+            return true;
+        }
+        return false;
+    }
+    private static List<String> settingsIds(ButtonLayout value, ClassLoader loader) {
+        List<String> ids = new ArrayList<>(value.order);
+        if (!ButtonsIcons.hasIntroDb(loader)) ids.remove("introdb");
+        ids.sort((a, b) -> Boolean.compare(value.more.contains(a), value.more.contains(b)));
+        return ids;
+    }
+    private static String positionLabel(ButtonLayout value, List<String> ids, String id) {
+        int position = 0;
+        for (String candidate : ids) {
+            if (value.more.contains(candidate) == value.more.contains(id)) position++;
+            if (candidate.equals(id)) break;
+        }
+        return position + ". " + ButtonLayout.label(id) + " — " + (value.hidden.contains(id) ? "Hidden" : value.more.contains(id) ? "More actions" : "Main row");
     }
     public static void play(Object icon, Object painter, Object label, Object click, Object focus, Object up,
             boolean enabled, Object down, Object focused, long tint, Object composer, int flags, int defaults) {

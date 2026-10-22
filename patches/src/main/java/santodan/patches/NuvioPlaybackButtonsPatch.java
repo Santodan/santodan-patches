@@ -35,6 +35,14 @@ public final class NuvioPlaybackButtonsPatch {
                     new MutableClass(context.classDefBy("Lv/b0;")), new MutableClass(context.classDefBy("Lv/c0;")));
                 for (String signature : UI_CONTRACTS) validateUiMethod(new MutableClass(context.classDefBy(
                     signature.substring(0, signature.indexOf("->")))), signature);
+                NuvioIntroDbPatch.staticFields(new MutableClass(context.classDefBy("Le2/z;")), "b:J");
+                NuvioIntroDbPatch.fields(new MutableClass(context.classDefBy("Lio/sentry/d2;")), "b:Ljava/util/ArrayList;");
+                NuvioIntroDbPatch.fields(new MutableClass(context.classDefBy("Lp2/b;")), "a:Landroid/view/KeyEvent;");
+                NuvioIntroDbPatch.staticFields(new MutableClass(context.classDefBy("Lh1/n;")), "a:Lh1/d;");
+                for (String field : List.of("Lee/b;->d:Lk2/e;", "Lwa/d0;->a:Lk2/e;", "Lu9/n6;->a:Lk2/e;")) {
+                    int arrow = field.indexOf("->");
+                    NuvioIntroDbPatch.staticFields(new MutableClass(context.classDefBy(field.substring(0, arrow))), field.substring(arrow + 2));
+                }
                 validate(main, more); // Validate both owners before any mutation.
                 hook(main, more);
                 return Unit.INSTANCE;
@@ -43,6 +51,22 @@ public final class NuvioPlaybackButtonsPatch {
         });
     }
     static final List<String> UI_CONTRACTS = List.of(
+        "Lh1/l0;->R()Ljava/lang/Object;", "Lh1/l0;->o0(Ljava/lang/Object;)V",
+        "Lg0/j0;->b(IILh1/o;II)Lg0/f0;", "Lg0/f0;->k(IIZ)V",
+        "Lg0/i;->q(ILkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;Lr1/s;)V",
+        "Leb/p;->i(Lx1/q;Lg0/f0;Le0/m1;Le0/h;Lx1/c;La0/s;ZLy/b2;Lkotlin/jvm/functions/Function1;Lh1/o;II)V",
+        "Landroidx/compose/foundation/layout/b;->i(Lx1/q;FFI)Lx1/q;",
+        "Le0/o1;-><init>(FFFF)V", "Le0/i;->g(F)Le0/f;",
+        "Lp2/d;->e(Lx1/q;Lkotlin/jvm/functions/Function1;)Lx1/q;",
+        "Lc2/d;->d(Lx1/q;Lc2/a0;)Lx1/q;", "Lh1/j;->f(Lh1/l0;)Lc2/a0;",
+        "Lab/i1;-><init>(ILc2/a0;Lkotlin/coroutines/Continuation;)V",
+        "Lh1/f0;->d(Lh1/o;Ljava/lang/Object;Lkotlin/jvm/functions/Function2;)V",
+        "Lab/uh;->a(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lx1/q;Lkotlin/jvm/functions/Function0;ZLk2/e;Lk2/e;JLk2/e;Ljava/lang/Integer;FJLh1/o;III)V",
+        "Lha/m2;->z(Lkotlin/jvm/functions/Function0;Ljava/lang/String;Ljava/lang/String;FIZZLe2/v;Le2/z;FFFFLkotlin/jvm/functions/Function3;Lr1/s;Lh1/o;III)V",
+        "La/a;->B()Lk2/e;", "Ld7/a;->U()Lk2/e;", "Lx0/k;->c()Lk2/e;", "Lu6/g;->Y()Lk2/e;",
+        "Lee/b;->n()Lk2/e;", "Lu9/a5;->p()Lk2/e;", "Lwb/b;->g()Lk2/e;", "La/b;->p()Lk2/e;", "Lee/b;->l()Lk2/e;",
+        "Lk2/d;-><init>(Ljava/lang/String;FFFFJIZI)V", "Lk2/d;->a(Lk2/d;Ljava/util/ArrayList;ILe2/y0;)V", "Lk2/d;->b()Lk2/e;",
+        "Le2/y0;-><init>(J)V", "Lio/sentry/d2;-><init>(I)V", "Lio/sentry/d2;->o(FF)V", "Lio/sentry/d2;->m(FF)V", "Lio/sentry/d2;->e()V",
         "Lab/uh;->d(Ljava/lang/String;Lkotlin/jvm/functions/Function0;ZZLh1/o;II)V",
         "Lab/uh;->e(Lx1/c;Lr1/s;Lh1/o;II)V",
         "Lab/uh;->j(Ljava/lang/String;Ljava/util/List;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/lang/String;FFLh1/o;II)V",
@@ -54,7 +78,9 @@ public final class NuvioPlaybackButtonsPatch {
             .orElseThrow(() -> new IllegalStateException("Native playback UI contract changed: " + signature));
         if (owner.getMethods().stream().filter(m -> m.getName().equals(expected.getName()) &&
             m.getParameterTypes().size() == expected.getParameterTypes().size()).count() != 1 ||
-            (((expected.getAccessFlags() & 8) != 0) != (owner.getType().equals("Lab/uh;"))))
+            (((expected.getAccessFlags() & 8) != 0) != (!expected.getName().equals("<init>") &&
+                !List.of("Lr1/s;", "Lh1/l0;", "Lio/sentry/d2;", "Lg0/i;", "Lg0/f0;").contains(owner.getType()) &&
+                !signature.equals("Lk2/d;->b()Lk2/e;"))))
             throw new IllegalStateException("Ambiguous or incompatible native playback UI contract: " + signature);
     }
     static String reference(Instruction instruction) {
@@ -142,6 +168,16 @@ public final class NuvioPlaybackButtonsPatch {
     }
     static void hook(MutableClass main, MutableClass more) {
         validate(main, more);
+        // IntroDB can be applied first. Move its proven appended hook before the final
+        // native button so it participates in collection in either patch order.
+        MutableMethod body = invoke(main, 2);
+        var code = NuvioAiringSeriesPatch.instructions(body);
+        for (int i = 0; i < code.size(); i++) if (reference(code.get(i)).equals(NuvioIntroDbPatch.RENDER)) {
+            body.getImplementation().removeInstruction(i);
+            body.getImplementation().addInstruction(i - 1, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 46, 2,
+                new ImmutableMethodReference(NuvioIntroDbPatch.EXT, "renderControl", List.of("Ljava/lang/Object;", "Ljava/lang/Object;"), "V")));
+            break;
+        }
         rewrite(invoke(main, 2), new String[]{"play", "next", "subtitles", "audio", "sources", "engine", "episodes", "party", "finish"});
         rewrite(invoke(more, 3), new String[]{"speed", "aspect", "external", "info"});
     }

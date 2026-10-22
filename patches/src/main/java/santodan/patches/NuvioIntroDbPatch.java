@@ -167,7 +167,9 @@ public final class NuvioIntroDbPatch {
         for (int i = code.size() - 1; i >= 0; i--) {
             String ref = NuvioPlaybackButtonsPatch.reference(code.get(i));
             if (ref.equals(NuvioPlaybackButtonsPatch.BUTTON) || ref.startsWith(NuvioPlaybackButtonsPatch.EXTENSION + "->finish(")) {
-                method.getImplementation().addInstruction(i + 1, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 46, 2,
+                // Customization must collect the optional control before flushing the native row.
+                int insertion = ref.startsWith(NuvioPlaybackButtonsPatch.EXTENSION) ? i : i + 1;
+                method.getImplementation().addInstruction(insertion, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 46, 2,
                     new ImmutableMethodReference(EXT, "renderControl", List.of("Ljava/lang/Object;", "Ljava/lang/Object;"), "V")));
                 break;
             }

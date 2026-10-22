@@ -26,8 +26,21 @@ fun main(args: Array<String>) {
                 target.inputStream().buffered().use { input ->
                     for (owner in DexBackedDexFile.fromInputStream(null, input).classes) for (method in owner.methods) {
                         definitions += method.toString()
+                        if (index == 1 && extension == NuvioPlaybackButtonsPatch.EXTENSION && owner.type == "Lva/bd;" && method.name == "invoke") {
+                            val code = method.implementation?.instructions?.toList() ?: emptyList()
+                            val intro = code.indexOfFirst { NuvioPlaybackButtonsPatch.reference(it) == NuvioIntroDbPatch.RENDER }
+                            if (intro >= 0) check(code.getOrNull(intro + 1)?.let { NuvioPlaybackButtonsPatch.reference(it) }
+                                ?.startsWith(NuvioPlaybackButtonsPatch.EXTENSION + "->finish(") == true) {
+                                "IntroDB must be collected immediately before the customized playback row renders"
+                            }
+                        }
                         for (instruction in method.implementation?.instructions ?: emptyList()) {
                             val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
+                            if (index == 1 && owner.type.startsWith("Lsoftware/santodan/extension/nuviobuttons/")) {
+                                check(!(ref.definingClass == "Ljava/util/Optional;" && ref.name == "orElseThrow" && ref.parameterTypes.isEmpty())) {
+                                    "Playback editor requires an unavailable Android API: $ref in $method"
+                                }
+                            }
                             if (!ref.definingClass.startsWith("Lsoftware/santodan/extension/")) continue
                             calls += ref.toString()
                             if (!owner.type.startsWith("Lsoftware/santodan/extension/") && ref.definingClass == extension) hooks++

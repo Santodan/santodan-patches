@@ -56,13 +56,21 @@ public final class VerifyNuvioIntroDb {
         rejected(() -> NuvioIntroDbPatch.validateState(badState));
         NuvioIntroDbPatch.hook(main, activity);
         rejected(() -> NuvioIntroDbPatch.hook(main, activity));
-        // Both patch orders preserve the native controls and append one independent control.
+        // Both patch orders collect IntroDB immediately before the native row is flushed.
         for (boolean first : List.of(false, true)) {
             MutableClass combined = new MutableClass(originalMain), more = new MutableClass(originalMore), a = new MutableClass(originalActivity);
             if (first) NuvioIntroDbPatch.hook(combined, a);
             NuvioPlaybackButtonsPatch.hook(combined, more);
             if (!first) NuvioIntroDbPatch.hook(combined, a);
             check(NuvioPlaybackButtonsPatch.fingerprint(NuvioIntroDbPatch.originalMain(NuvioPlaybackButtonsPatch.invoke(combined, 2))).equals("2c382f8f1152d222b534cab5f4e8fc70c38cbf80515be32533ed434002e75f00"));
+            var instructions = NuvioAiringSeriesPatch.instructions(NuvioPlaybackButtonsPatch.invoke(combined, 2));
+            int introAt = -1, finishAt = -1;
+            for (int i = 0; i < instructions.size(); i++) {
+                String ref = NuvioPlaybackButtonsPatch.reference(instructions.get(i));
+                if (ref.equals(NuvioIntroDbPatch.RENDER)) { check(introAt == -1); introAt = i; }
+                if (ref.startsWith(NuvioPlaybackButtonsPatch.EXTENSION + "->finish(")) finishAt = i;
+            }
+            check(introAt >= 0 && finishAt == introAt + 1);
         }
         File output = new File(args[1]); output.getParentFile().mkdirs();
         DexPool.writeTo(output.getPath(), new ImmutableDexFile(Opcodes.getDefault(), List.of(main, activity)));

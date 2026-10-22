@@ -153,7 +153,7 @@ tasks.register<JavaExec>("verifyNuvioPlaybackApk") {
     mainClass.set("santodan.patches.VerifyNuvioPlaybackApkKt")
     maxHeapSize = "3g"
     args(file("../../OriginalApps/NuvioTV-1.1.0-beta7.apk").absolutePath,
-        file("../../Apps/NuvioTV/NuvioTV-1.1.0-beta.7-playback-buttons-unsigned.apk").absolutePath,
+        file(providers.gradleProperty("nuvioPlaybackApk").getOrElse("../../Apps/NuvioTV/NuvioTV-1.1.0-beta.7-playback-buttons-unsigned.apk")).absolutePath,
         file(androidSdkDirectory.get()).absolutePath,
         file("${layout.buildDirectory.get()}/verification/nuvio-playback-apk").absolutePath)
 }

@@ -76,7 +76,7 @@ public final class VerifyNuvioPlaybackButtons {
         ButtonLayout persisted = new ButtonLayout(value.enabled, String.join(",", value.order), String.join(",", value.hidden), String.join(",", value.more));
         check(value.order.equals(persisted.order) && value.more.equals(persisted.more));
         ButtonLayout corrupt = new ButtonLayout(true, "bogus,speed,speed", String.join(",", ButtonLayout.IDS), String.join(",", ButtonLayout.IDS));
-        check(corrupt.order.size() == 13 && !corrupt.hidden.contains("play") && !corrupt.more.contains("play"));
+        check(corrupt.order.size() == 14 && !corrupt.hidden.contains("play") && !corrupt.more.contains("play"));
         check(corrupt.visible(List.of("play"), false).equals(List.of("play")));
         check(value.visible(List.of("play", "speed"), false).contains("speed"));
         check(!value.visible(List.of("play"), false).contains("next"));

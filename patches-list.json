@@ -192,6 +192,51 @@
       "options": []
     },
     {
+      "name": "NuvioTV - GitHub APK updates",
+      "description": "Checks Santodan GitHub releases for APK updates using NuvioTV's native download and installation flow. Set the installed release version when patching each APK.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nuvio.tv",
+          "name": "NuvioTV",
+          "description": null,
+          "apkFileType": "APK",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.0-beta.8",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": [
+        {
+          "key": "repository",
+          "title": "GitHub repository",
+          "description": "Public repository in owner/name format containing APK release assets.",
+          "required": true,
+          "type": "kotlin.String",
+          "default": "Santodan/santodan-patches",
+          "values": null
+        },
+        {
+          "key": "releaseVersion",
+          "title": "Installed APK release version",
+          "description": "Version of THIS patched APK, matching its GitHub release tag without v (for example 0.12.0). Increase for every APK release, including patch-only updates.",
+          "required": true,
+          "type": "kotlin.String",
+          "default": "0.12.0",
+          "values": null
+        }
+      ]
+    },
+    {
       "name": "NuvioTV - Indicate current stream",
       "description": "Labels the current stream with [Playing], with an enabled-by-default toggle in Santodan-Patches > Streams.",
       "default": false,

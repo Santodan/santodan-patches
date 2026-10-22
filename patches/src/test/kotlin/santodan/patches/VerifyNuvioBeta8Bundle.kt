@@ -86,8 +86,9 @@ fun main(args: Array<String>) = runBlocking {
     val baselineIssues = hierarchyIssues(originalDex)
     val nextName = "NuvioTV - Preload streams for next episode"
     check(available.count { it.name == nextName } == 1)
-    for (mode in listOf("next", "merged", "buttons", "introdb", "current-stream", "preferred", "combined")) {
+    for (mode in listOf("next", "merged", "buttons", "introdb", "current-stream", "preferred", "apk-updates", "combined")) {
         val combined = mode == "combined"
+        val updatesOnly = mode == "apk-updates"
         val mergeOnly = mode == "merged"
         val buttonsOnly = mode == "buttons"
         val introOnly = mode == "introdb"
@@ -95,9 +96,9 @@ fun main(args: Array<String>) = runBlocking {
         val preferredOnly = mode == "preferred"
         val selected = available.filter {
             if (combined) it.name?.startsWith("NuvioTV - ") == true && it.name != "NuvioTV - Side-by-side installation"
-            else it.name == if (preferredOnly) "NuvioTV - Preferred source add-on" else if (currentOnly) "NuvioTV - Indicate current stream" else if (introOnly) "NuvioTV - Submit segments to IntroDB" else if (buttonsOnly) "NuvioTV - Customize playback buttons" else if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
+            else it.name == if (updatesOnly) "NuvioTV - GitHub APK updates" else if (preferredOnly) "NuvioTV - Preferred source add-on" else if (currentOnly) "NuvioTV - Indicate current stream" else if (introOnly) "NuvioTV - Submit segments to IntroDB" else if (buttonsOnly) "NuvioTV - Customize playback buttons" else if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
         }.toSet()
-        check(selected.size == if (combined) 13 else 1)
+        check(selected.size == if (combined) 14 else 1)
         val output = File(args[2], mode).apply { mkdirs() }
         Patcher(PatcherConfig(apkFile = File(args[0]), temporaryFilesPath = File(output, "work"))).use { patcher ->
             patcher += selected
@@ -114,6 +115,8 @@ fun main(args: Array<String>) = runBlocking {
             val mergeHooks = mutableMapOf<String, Int>()
             var introHooks = 0
             var currentLabels = 0
+            var updaterVersions = 0
+            var updaterRepository = 0
             val preferredHooks = mutableMapOf<String, Int>()
             for (dex in patcher.get().dexFiles) {
                 val target = File(output, dex.name)
@@ -137,6 +140,13 @@ fun main(args: Array<String>) = runBlocking {
                                     preferredHooks[reference.name] = preferredHooks.getOrDefault(reference.name, 0) + 1
                             }
                             val instructions = method.implementation?.instructions ?: continue
+                            if (owner.type in NuvioApkUpdates.TYPES) {
+                                for (instruction in instructions) {
+                                    val value = NuvioApkUpdates.string(instruction)
+                                    if (value == "0.12.0") updaterVersions++
+                                    if (owner.type == "Lkb/j0;" && value in setOf("Santodan", "santodan-patches")) updaterRepository++
+                                }
+                            }
                             if (owner.type == "Lab/bp;" && method.name == "h") {
                                 val body = instructions.toList()
                                 currentLabels += body.count { (it as? ReferenceInstruction)?.reference?.toString() == NuvioCurrentStreamPatch.LABEL_METHOD }
@@ -196,7 +206,7 @@ fun main(args: Array<String>) = runBlocking {
             } else check(preferredHooks.isEmpty())
             check(currentLabels == if (currentOnly || combined) 1 else 0)
             check((NuvioCurrentStreamPatch.EXTENSION in classes) == (currentOnly || combined))
-            if (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly) {
+            if (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !updatesOnly) {
             for (hook in listOf("registerComponent", "observeNextEpisode", "stopNextEpisode", "nextEpisodePluginPause"))
                 check(nativeHooks[hook] == 1) { "Expected one $hook hook, found ${nativeHooks[hook]}" }
             check(nativeHooks["nextEpisodePickerRefresh"] == 1) { "Next-episode picker entry must reuse the warmed search" }
@@ -227,7 +237,9 @@ fun main(args: Array<String>) = runBlocking {
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioMergePolicy;" in classes)
             }
             val frameworkAccessor = "Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;->getContext()Landroid/content/Context;"
-            check(NuvioAccessPatch.TYPE in classes) { "Shared direct native accessors are missing" }
+            check(updaterVersions == if (updatesOnly || combined) 6 else 0)
+            check(updaterRepository == if (updatesOnly || combined) 2 else 0)
+            check(updatesOnly || NuvioAccessPatch.TYPE in classes) { "Shared direct native accessors are missing" }
             check(extensionCalls.all { it in definitions || (it == frameworkAccessor &&
                 parents["Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;"]?.contains("Landroid/content/ContentProvider;") == true) }) {
                 "Missing extension signatures: ${extensionCalls.filter { it !in definitions }}"
@@ -242,7 +254,7 @@ fun main(args: Array<String>) = runBlocking {
             check(coroutineCalls.all { resolves(it) }) {
                 "Missing native coroutine APIs: ${coroutineCalls.filter { !resolves(it) }}"
             }
-            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly))
+            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !updatesOnly))
             check(("Lsoftware/santodan/extension/nuviobuttons/NuvioPlaybackButtons;" in classes) == (buttonsOnly || combined))
             check(("Lsoftware/santodan/extension/nuviocwstreams/NuvioContinueWatchingStreams;" in classes) == combined)
             check(("Lsoftware/santodan/extension/nuviodetailstreams/NuvioDetailStreams;" in classes) == combined)
@@ -254,7 +266,7 @@ fun main(args: Array<String>) = runBlocking {
                 check("Lsoftware/santodan/extension/nuviointro/Submission;" in classes)
                 check(introHooks == 3) { "Expected three native IntroDB hooks, found $introHooks" }
             }
-            println("PASS: ${if (combined) "all thirteen Nuvio behavior patches coexist" else if (preferredOnly) "standalone preferred add-on" else if (currentOnly) "standalone current-stream indicator" else if (introOnly) "standalone IntroDB submission patch" else if (buttonsOnly) "standalone playback-buttons patch" else if (mergeOnly) "standalone merged-progress patch" else "standalone next-episode patch"}; assembled DEX reloads and hooks resolve")
+            println("PASS: $mode selection; assembled DEX reloads and hooks resolve")
             check(hierarchyIssues(output) == baselineIssues) { "Patched cross-DEX hierarchy findings differ from original" }
             println("PASS: $mode cross-DEX hierarchy has no new findings (${baselineIssues.size} original optional-library findings)")
         }

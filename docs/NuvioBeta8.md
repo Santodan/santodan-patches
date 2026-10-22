@@ -1,8 +1,14 @@
 # NuvioTV 1.1.0-beta.8
 
-All fourteen public NuvioTV patches target `com.nuvio.tv` version `1.1.0-beta.8`,
+All fifteen public NuvioTV patches target `com.nuvio.tv` version `1.1.0-beta.8`,
 version code `1071`. No older-version mappings or dispatch branches were added.
 The historical beta.7 fixtures remain on disk.
+
+The optional [GitHub APK updates patch](NuvioApkUpdates.md) uses the native
+updater with `Santodan/santodan-patches` release assets. Set `releaseVersion`
+for each APK build. Its focused original-APK verifier and standalone/combined
+bundle checks passed; a final all-fifteen-patch unsigned APK was rebuilt and
+verified. Earlier validation records below describe their original selections.
 
 Native symbols now come from a shared generated contract, with structural
 insertion anchors and direct runtime accessors. See [maintenance workflow](NuvioMaintenance.md)

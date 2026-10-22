@@ -52,7 +52,7 @@ tasks.register("verifyNuvioLatest") {
     group = "verification"
     description = "Verify the currently reviewed Nuvio contract, runtime features and packaged patch combinations."
     dependsOn("verifyNuvioMaintenance", "verifyNuvioBeta8", "verifyNuvioBeta8Launcher", "verifyNuvioBeta8Player",
-        "verifyNuvioCurrentStream", "verifyNuvioPreferredAddon", "verifyNuvioPlaybackButtons", "verifyNuvioIntroDb",
+        "verifyNuvioCurrentStream", "verifyNuvioPreferredAddon", "verifyNuvioPlaybackButtons", "verifyNuvioIntroDb", "verifyNuvioApkUpdates",
         "verifyNuvioBeta8DateStyleRuntime", "verifyNuvioBeta8SettingsMenuRuntime", "verifyNuvioBeta8TrackingDialogs",
         "verifyNuvioCurrentStreamRuntime", "verifyNuvioPreferredAddonRuntime", "verifyNuvioPlaybackButtonsRuntime",
         "verifyNuvioIntroDbRuntime", "verifyNuvioStreamPreloadRuntime", "verifyNuvioProviderRefreshRuntime",
@@ -665,6 +665,14 @@ tasks.register<JavaExec>("verifyNuvioBeta7SettingsMenuRuntime") {
     args(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu/NuvioSettingsMenu.java").absolutePath,
         file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioSourceContinuation.java").absolutePath,
         file("${layout.buildDirectory.get()}/verification/beta7-menu-runtime").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioApkUpdates") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioApkUpdates")
+    args(nuvioOriginal.absolutePath, file("${layout.buildDirectory.get()}/verification/nuvio-apk-updates.dex").absolutePath)
+    providers.gradleProperty("nuvioUpdatesApk").orNull?.let { args(file(it).absolutePath) }
 }
 
 tasks.register<JavaExec>("verifyNuvioBeta8") {

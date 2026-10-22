@@ -83,6 +83,7 @@ def patches_table(patches):
         documentation = {
             "NuvioTV - Customize playback buttons": "docs/NuvioPlaybackButtons.md",
             "NuvioTV - Indicate current stream": "docs/NuvioCurrentStream.md",
+            "NuvioTV - GitHub APK updates": "docs/NuvioApkUpdates.md",
             "NuvioTV - Preferred source add-on": "docs/NuvioPreferredAddon.md",
             "NuvioTV - Submit segments to IntroDB": "docs/NuvioIntroDb.md",
         }.get(p["name"], f"#{a}")

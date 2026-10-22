@@ -11,7 +11,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.12.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.12.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;27 patches total
+> **[v0.12.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.12.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;28 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -48,10 +48,12 @@ MEO 5.7.0 patches provide a separately installable clone and compatibility handl
 </details>
 
 <details>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;14 patches</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;15 patches</summary>
 <br>
 
-These fourteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs/NuvioBeta8.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
+These fifteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs/NuvioBeta8.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
+
+- **GitHub APK updates**: Optional patch that uses NuvioTV's native updater to check, download and install APK releases from `Santodan/santodan-patches`. Set the installed release version when building each APK. See [GitHub release publishing instructions](docs/NuvioApkUpdates.md).
 
 ### Continue Watching
 
@@ -121,6 +123,7 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 | [NuvioTV - Android TV launcher channels](#nuviotv-android-tv-launcher-channels) | Choose individual catalogs and tracking lists, Library, and Upcoming to publish as Android TV launcher channels. |  |
 | [NuvioTV - Customize playback buttons](docs/NuvioPlaybackButtons.md) | Adds optional playback button visibility, ordering and placement in the main row or More actions, with saved settings and reset. |  |
 | [NuvioTV - Finale dates in library and collections](#nuviotv-finale-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters. |  |
+| [NuvioTV - GitHub APK updates](docs/NuvioApkUpdates.md) | Checks Santodan GitHub releases for APK updates using NuvioTV's native download and installation flow. Set the installed release version when patching each APK. | • GitHub repository<br>• Installed APK release version |
 | [NuvioTV - Indicate current stream](docs/NuvioCurrentStream.md) | Labels the current stream with [Playing], with an enabled-by-default toggle in Santodan-Patches > Streams. |  |
 | [NuvioTV - Keep airing series in Upcoming](#nuviotv-keep-airing-series-in-upcoming) | Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale. |  |
 | [NuvioTV - Merge tracking progress](#nuviotv-merge-tracking-progress) | Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh. |  |

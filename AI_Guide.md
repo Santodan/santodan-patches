@@ -16,6 +16,12 @@ installer-source spoof.
 
 ## Start here: creating or modifying a patch
 
+The bundle targets Morphe Patcher **2.0.0** / Desktop **1.19.0**. Read
+`docs/MorpheCompatibility.md` for compatibility constructors, form factors,
+on-demand resource extraction and exact Desktop import verification. Do not
+validate this bundle with the older 1.18.1 CLI. Keep smali aligned with the
+patcher's `4220ae75f7` dependency.
+
 This is the working guide for coding agents, including local models in LM Studio.
 The app-specific sections below describe existing implementations; they are not
 instructions to expand their historical version support.

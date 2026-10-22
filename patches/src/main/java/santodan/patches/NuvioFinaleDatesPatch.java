@@ -49,7 +49,7 @@ public final class NuvioFinaleDatesPatch {
             "Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility(PACKAGE, "NuvioTV", null, ApkFileType.APK,
-                    null, null, NuvioLayout.modernTargets(), false));
+                    null, null, NuvioLayout.modernTargets(), app.morphe.patcher.patch.FormFactor.TV, false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(NuvioFinaleDatesPatch::extensionStream);
                 builder.execute(context -> {

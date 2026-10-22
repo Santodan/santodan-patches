@@ -68,7 +68,7 @@ public final class RedditContentFilterPatch {
             "Adds keyword and per-community flair filters under Morphe > Filters. Home-feed flair filtering requires Show flairs in home feed, which is installed automatically.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility(PACKAGE, "Reddit", null, ApkFileType.APK,
-                    null, null, Collections.singletonList(new AppTarget(VERSION, false, null)), false));
+                    null, null, Collections.singletonList(new AppTarget(VERSION, null, false, null, null)), app.morphe.patcher.patch.FormFactor.MOBILE, false));
                 builder.dependsOn(RedditShowHomeFlairsPatch.getRedditShowHomeFlairsPatch());
                 builder.execute(context -> {
                     if (!PACKAGE.equals(context.getPackageMetadata().getPackageName())

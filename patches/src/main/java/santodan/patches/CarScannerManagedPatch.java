@@ -22,10 +22,11 @@ public final class CarScannerManagedPatch {
                         throw new IllegalStateException("Expected Car Scanner 2.1.50 or 2.2.21");
                     try {
                         if ("2.2.21".equals(context.getPackageMetadata().getVersionName())) {
-                            Path store = context.get(CarScanner221.ENTRY, false).toPath();
-                            Path aot = context.get(CarScanner221.AOT_ENTRY, false).toPath();
-                            Path guard = context.get(CarScanner221.GUARD_ENTRY, false).toPath();
-                            Path decoder = context.get(CarScanner221.DECODER_ENTRY, false).toPath();
+                            // Patcher 2 extracts archive entries on demand; request extraction before reading.
+                            Path store = context.get(CarScanner221.ENTRY, true).toPath();
+                            Path aot = context.get(CarScanner221.AOT_ENTRY, true).toPath();
+                            Path guard = context.get(CarScanner221.GUARD_ENTRY, true).toPath();
+                            Path decoder = context.get(CarScanner221.DECODER_ENTRY, true).toPath();
                             var rewritten = CarScanner221.patch(Files.readAllBytes(store),
                                 Files.readAllBytes(aot), Files.readAllBytes(guard));
                             byte[] rewrittenDecoder = CarScanner221.patchDecoder(Files.readAllBytes(decoder));
@@ -35,9 +36,9 @@ public final class CarScannerManagedPatch {
                             Files.write(decoder, rewrittenDecoder);
                             return Unit.INSTANCE;
                         }
-                        Path store = context.get(CarScannerAssemblyStore.ENTRY, false).toPath();
+                        Path store = context.get(CarScannerAssemblyStore.ENTRY, true).toPath();
                         byte[] rewritten = CarScannerAssemblyStore.patch(Files.readAllBytes(store),
-                            Files.readAllBytes(context.get(CarScannerAssemblyStore.AOT_ENTRY, false).toPath()));
+                            Files.readAllBytes(context.get(CarScannerAssemblyStore.AOT_ENTRY, true).toPath()));
                         Files.write(store, rewritten);
                     } catch (java.io.IOException exception) {
                         throw new IllegalStateException("Could not rewrite Car Scanner assembly store", exception);

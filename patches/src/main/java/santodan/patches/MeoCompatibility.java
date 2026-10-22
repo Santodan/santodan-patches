@@ -17,8 +17,8 @@ public final class MeoCompatibility {
             ApkFileType.APKM,
             null,
             null,
-            Collections.singletonList(new AppTarget("5.7.0", false, 28)),
-            false
+            Collections.singletonList(new AppTarget("5.7.0", null, false, 28, null)),
+            app.morphe.patcher.patch.FormFactor.TV, false
         );
     }
 }

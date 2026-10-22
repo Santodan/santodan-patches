@@ -49,7 +49,7 @@ public final class NuvioAiringSeriesPatch {
             "Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility(PACKAGE, "NuvioTV", null, ApkFileType.APK,
-                    null, null, NuvioLayout.modernTargets(), false));
+                    null, null, NuvioLayout.modernTargets(), app.morphe.patcher.patch.FormFactor.TV, false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(NuvioAiringSeriesPatch::extensionStream);
                 builder.execute(context -> {

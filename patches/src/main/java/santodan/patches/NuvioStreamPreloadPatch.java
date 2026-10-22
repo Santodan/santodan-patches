@@ -47,7 +47,7 @@ final class NuvioStreamPreloadPatch {
     static BytecodePatch create(String name, String description, String mode) {
         return PatchKt.bytecodePatch(name, description, false, builder -> {
             builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
-                null, null, NuvioLayout.modernTargets(), false));
+                null, null, NuvioLayout.modernTargets(), app.morphe.patcher.patch.FormFactor.TV, false));
             builder.dependsOn(shared());
             builder.extendWith(() -> extension("next_episode".equals(mode) ? "nuvio-next-episode-streams"
                 : "details".equals(mode) ? "nuvio-detail-streams" : "nuvio-cw-streams"));

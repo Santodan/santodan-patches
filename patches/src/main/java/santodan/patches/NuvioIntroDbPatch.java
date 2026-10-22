@@ -20,7 +20,7 @@ public final class NuvioIntroDbPatch {
         return PatchKt.bytecodePatch("NuvioTV - Submit segments to IntroDB",
             "Adds an optional playback button that captures segment start/end times and opens a native NuvioTV submission dialog. Enable it and enter your IntroDB API key in Settings.", false, builder -> {
             builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
-                null, null, List.of(new AppTarget(NuvioNative.VERSION, false, null)), false));
+                null, null, List.of(new AppTarget(NuvioNative.VERSION, null, false, null, null)), app.morphe.patcher.patch.FormFactor.TV, false));
             builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
             builder.extendWith(() -> NuvioStreamPreloadPatch.extension("nuvio-introdb"));
             builder.execute(context -> {

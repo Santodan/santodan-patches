@@ -40,8 +40,8 @@ public final class PeafowlThemeOwnershipPatch {
                     ApkFileType.APK,
                     null,
                     null,
-                    Collections.singletonList(new AppTarget(VERSION, false, null)),
-                    false
+                    Collections.singletonList(new AppTarget(VERSION, null, false, null, null)),
+                    app.morphe.patcher.patch.FormFactor.MOBILE, false
                 ));
                 builder.execute(context -> {
                     if (!PACKAGE.equals(context.getPackageMetadata().getPackageName())

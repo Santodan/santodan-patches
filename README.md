@@ -2,6 +2,9 @@
 
 Independent patches for the [Morphe](https://morphe.software/) patcher.
 
+Built for **Morphe Patcher 2.0.0**, including **Morphe Desktop 1.19.0**.
+See [client compatibility and verification](docs/MorpheCompatibility.md).
+
 [Add Santodan Patches to Morphe](https://morphe.software/add-source?github=Santodan/santodan-patches), or add this source manually:
 
 ```text

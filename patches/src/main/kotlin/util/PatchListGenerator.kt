@@ -54,6 +54,7 @@ private fun generatePatchList(version: String, patches: Set<Patch<*>>) {
                     name = compat.name,
                     description = compat.description,
                     apkFileType = compat.apkFileType?.name,
+                    formFactor = compat.formFactor?.name,
                     // Format as #RRGGBB string for readability; null if not set
                     appIconColor = compat.appIconColor?.let { "#%06X".format(it) },
                     signatures = compat.signatures,
@@ -134,6 +135,8 @@ private class JsonCompatibility(
     val description: String?,
     /** Target unpatched app file type, e.g. APK, APKM. Null if not specified. */
     val apkFileType: String?,
+    /** Device family used by Morphe Manager when presenting supported apps. */
+    val formFactor: String?,
     /** App icon background color as #RRGGBB string, or null if not set. */
     val appIconColor: String?,
     /** Valid SHA-256 signatures of the app. */

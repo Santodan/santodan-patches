@@ -15,13 +15,13 @@ public final class FirstDescendantCompatibility {
     public static Compatibility create() {
         return new Compatibility(PACKAGE, "TFD Companion", null,
             ApkFileType.APKS, null, null,
-            Collections.singletonList(new AppTarget(VERSION, false, 24)), false);
+            Collections.singletonList(new AppTarget(VERSION, null, false, 24, null)), app.morphe.patcher.patch.FormFactor.MOBILE, false);
     }
 
     /** Package-visibility filtering requires Android 11 or newer. */
     public static Compatibility createVisibility() {
         return new Compatibility(PACKAGE, "TFD Companion", null,
             ApkFileType.APKS, null, null,
-            Collections.singletonList(new AppTarget(VERSION, false, 30)), false);
+            Collections.singletonList(new AppTarget(VERSION, null, false, 30, null)), app.morphe.patcher.patch.FormFactor.MOBILE, false);
     }
 }

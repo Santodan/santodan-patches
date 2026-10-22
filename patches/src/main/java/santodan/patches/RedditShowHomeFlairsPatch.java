@@ -32,7 +32,7 @@ public final class RedditShowHomeFlairsPatch {
             false, builder -> {
                 builder.compatibleWith(new Compatibility(RedditContentFilterPatch.PACKAGE, "Reddit", null,
                     ApkFileType.APK, null, null,
-                    Collections.singletonList(new AppTarget(RedditContentFilterPatch.VERSION, false, null)), false));
+                    Collections.singletonList(new AppTarget(RedditContentFilterPatch.VERSION, null, false, null, null)), app.morphe.patcher.patch.FormFactor.MOBILE, false));
                 // This patch owns the extension and post-data hooks required to render
                 // home-feed flairs. The content-filter patch depends on this patch and
                 // adds only its filtering-specific hooks.

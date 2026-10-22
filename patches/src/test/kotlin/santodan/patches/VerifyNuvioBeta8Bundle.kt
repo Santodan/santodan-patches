@@ -100,6 +100,10 @@ fun main(args: Array<String>) = runBlocking {
         }.toSet()
         check(selected.size == if (combined) 14 else 1)
         val output = File(args[2], mode).apply { mkdirs() }
+        // Patcher 2 partitions copied/modified DEX differently. Remove only prior
+        // generated root DEX files so hierarchy checks see this run's output.
+        output.listFiles()!!.filter { it.isFile && it.name.matches(Regex("classes\\d*\\.dex")) }
+            .forEach { check(it.delete()) { "Cannot remove stale verifier output: $it" } }
         Patcher(PatcherConfig(apkFile = File(args[0]), temporaryFilesPath = File(output, "work"))).use { patcher ->
             patcher += selected
             patcher().collect { result ->
@@ -118,9 +122,15 @@ fun main(args: Array<String>) = runBlocking {
             var updaterVersions = 0
             var updaterRepository = 0
             val preferredHooks = mutableMapOf<String, Int>()
-            for (dex in patcher.get().dexFiles) {
-                val target = File(output, dex.name)
-                dex.stream.use { input -> target.outputStream().use { input.copyTo(it) } }
+            val patchedDex = patcher.get().dexFiles
+            // STRIP_FAST now returns only replacement/new DEX entries. Untouched
+            // original entries remain in the APK and must be included in verification.
+            val replacedNames = patchedDex.map { it.name }.toSet()
+            val retainedDex = originalDex.listFiles()!!.filter { it.name !in replacedNames && it.name.matches(Regex("classes\\d*\\.dex")) }
+                .map { it.name to it.inputStream() }
+            for ((name, stream) in patchedDex.map { it.name to it.stream } + retainedDex) {
+                val target = File(output, name)
+                stream.use { input -> target.outputStream().use { input.copyTo(it) } }
                 target.inputStream().buffered().use { input ->
                     for (owner in DexBackedDexFile.fromInputStream(null, input).classes) {
                         classes += owner.type

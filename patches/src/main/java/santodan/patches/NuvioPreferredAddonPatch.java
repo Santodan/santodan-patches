@@ -35,7 +35,7 @@ public final class NuvioPreferredAddonPatch {
         return PatchKt.bytecodePatch("NuvioTV - Preferred source add-on",
             "Choose a per-profile add-on to refresh and display first, with optional automatic playback of its first playable stream.", false, builder -> {
                 builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
-                    null, null, List.of(new AppTarget(NuvioNative.VERSION, false, null)), false));
+                    null, null, List.of(new AppTarget(NuvioNative.VERSION, null, false, null, null)), app.morphe.patcher.patch.FormFactor.TV, false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(() -> NuvioStreamPreloadPatch.extension("nuvio-preferred-addon"));
                 builder.execute(context -> {

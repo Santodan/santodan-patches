@@ -13,6 +13,7 @@
           "name": "Car Scanner ELM OBD2",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -46,6 +47,7 @@
           "name": "MEO (Android TV)",
           "description": null,
           "apkFileType": "APKM",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -91,6 +93,7 @@
           "name": "MEO (Android TV)",
           "description": null,
           "apkFileType": "APKM",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -120,6 +123,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -148,6 +152,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -176,6 +181,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -202,6 +208,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -249,6 +256,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -277,6 +285,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -305,6 +314,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -333,6 +343,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -361,6 +372,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -389,6 +401,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -417,6 +430,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -445,6 +459,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -471,6 +486,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -518,6 +534,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -546,6 +563,7 @@
           "name": "NuvioTV",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "TV",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -572,6 +590,7 @@
           "name": "Peafowl Theme Maker for EMUI",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -598,6 +617,7 @@
           "name": "Pillo",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -631,6 +651,7 @@
           "name": "Pillo",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -657,6 +678,7 @@
           "name": "Pillo",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -683,6 +705,7 @@
           "name": "Pillo",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -711,6 +734,7 @@
           "name": "Reddit",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -737,6 +761,7 @@
           "name": "Reddit",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -763,6 +788,7 @@
           "name": "Reddit",
           "description": null,
           "apkFileType": "APK",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -789,6 +815,7 @@
           "name": "TFD Companion",
           "description": null,
           "apkFileType": "APKS",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [
@@ -815,6 +842,7 @@
           "name": "TFD Companion",
           "description": null,
           "apkFileType": "APKS",
+          "formFactor": "MOBILE",
           "appIconColor": null,
           "signatures": null,
           "targets": [

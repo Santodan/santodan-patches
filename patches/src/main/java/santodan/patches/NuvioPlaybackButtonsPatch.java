@@ -25,7 +25,7 @@ public final class NuvioPlaybackButtonsPatch {
         return PatchKt.bytecodePatch("NuvioTV - Customize playback buttons",
             "Adds optional playback button visibility, ordering and placement in the main row or More actions, with saved settings and reset.", false, builder -> {
             builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
-                null, null, List.of(new AppTarget(NuvioNative.VERSION, false, null)), false));
+                null, null, List.of(new AppTarget(NuvioNative.VERSION, null, false, null, null)), app.morphe.patcher.patch.FormFactor.TV, false));
             builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
             builder.extendWith(() -> NuvioStreamPreloadPatch.extension("nuvio-playback-buttons"));
             builder.execute(context -> {

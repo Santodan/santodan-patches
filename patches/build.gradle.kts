@@ -675,6 +675,15 @@ tasks.register<JavaExec>("verifyNuvioApkUpdates") {
     providers.gradleProperty("nuvioUpdatesApk").orNull?.let { args(file(it).absolutePath) }
 }
 
+tasks.register<JavaExec>("verifyMorpheDesktopImport") {
+    dependsOn("testClasses", "buildAndroid")
+    description = "Load the MPP using only the exact Desktop fat JAR as the patcher runtime."
+    classpath = files(sourceSets["test"].output.classesDirs,
+        providers.gradleProperty("morpheDesktopJar").getOrElse("../../morphe-desktop-1.19.0-all.jar"))
+    mainClass.set("santodan.patches.VerifyMorpheDesktopImport")
+    args(file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath)
+}
+
 tasks.register<JavaExec>("verifyNuvioBeta8") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath

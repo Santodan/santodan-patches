@@ -24,7 +24,7 @@ public final class PilloWeightSummaryPatch {
             "Adds signed Total weight change, an All default filter, a selectable Last since date, and Last 30 days / Last 15 days / Change summaries using full profile history.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility("xyz.rtrvr.pillo", "Pillo", null, ApkFileType.APK,
-                    null, null, List.of(new AppTarget("0.6.20", false, null)), false));
+                    null, null, List.of(new AppTarget("0.6.20", null, false, null, null)), app.morphe.patcher.patch.FormFactor.MOBILE, false));
                 builder.extendWith(() -> {
                     var stream = PilloWeightSummaryPatch.class.getClassLoader().getResourceAsStream("extensions/pillo-weight-summary.mpe");
                     if (stream == null) throw new IllegalStateException("Missing Pillo weight summary extension");

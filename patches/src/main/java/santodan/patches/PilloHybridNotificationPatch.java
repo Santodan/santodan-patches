@@ -46,10 +46,10 @@ public final class PilloHybridNotificationPatch {
                     null,
                     null,
                     Arrays.asList(
-                        new AppTarget("0.6.20", false, null),
-                        new AppTarget("0.6.19", false, null)
+                        new AppTarget("0.6.20", null, false, null, null),
+                        new AppTarget("0.6.19", null, false, null, null)
                     ),
-                    false
+                    app.morphe.patcher.patch.FormFactor.MOBILE, false
                 ));
                 builder.execute(context -> {
                     if (!PACKAGE.equals(context.getPackageMetadata().getPackageName())

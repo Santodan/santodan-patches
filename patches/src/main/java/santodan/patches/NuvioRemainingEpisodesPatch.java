@@ -49,7 +49,7 @@ public final class NuvioRemainingEpisodesPatch {
             "Adds a disabled-by-default setting that displays aired, unwatched episode counts for every tracking integration. Controlled by Settings > Layout > Santodan-Patches.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility(PACKAGE, "NuvioTV", null, ApkFileType.APK,
-                    null, null, NuvioLayout.targets(), false));
+                    null, null, NuvioLayout.targets(), app.morphe.patcher.patch.FormFactor.TV, false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(NuvioRemainingEpisodesPatch::extensionStream);
                 builder.execute(context -> {

@@ -37,7 +37,7 @@ public final class RedditGuestModePatch {
             "Skips the forced startup login screen using Reddit's native browse-logged-out action. Login remains available from the account menu. Already included upstream in Morphe Patches PR #3109: https://github.com/MorpheApp/morphe-patches/pull/3109",
             false, builder -> {
                 builder.compatibleWith(new Compatibility(PACKAGE, "Reddit", null, ApkFileType.APK,
-                    null, null, Collections.singletonList(new AppTarget(VERSION, false, null)), false));
+                    null, null, Collections.singletonList(new AppTarget(VERSION, null, false, null, null)), app.morphe.patcher.patch.FormFactor.MOBILE, false));
                 builder.extendWith(RedditGuestModePatch::extensionStream);
                 builder.execute(context -> {
                     if (!PACKAGE.equals(context.getPackageMetadata().getPackageName())

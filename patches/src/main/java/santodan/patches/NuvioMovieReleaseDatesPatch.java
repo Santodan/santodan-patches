@@ -32,7 +32,7 @@ public final class NuvioMovieReleaseDatesPatch {
             "Adds separate disabled-by-default settings to show known release dates on unreleased movie posters in library and collections.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility(PACKAGE, "NuvioTV", null, ApkFileType.APK,
-                    null, null, NuvioLayout.modernTargets(), false));
+                    null, null, NuvioLayout.modernTargets(), app.morphe.patcher.patch.FormFactor.TV, false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(NuvioMovieReleaseDatesPatch::extensionStream);
                 builder.execute(context -> {

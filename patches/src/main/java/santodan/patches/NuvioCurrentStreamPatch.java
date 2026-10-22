@@ -22,7 +22,7 @@ public final class NuvioCurrentStreamPatch {
         return PatchKt.bytecodePatch("NuvioTV - Indicate current stream",
             "Labels the current stream with [Playing], with an enabled-by-default toggle in Santodan-Patches > Streams.", false, builder -> {
                 builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
-                    null, null, List.of(new AppTarget(NuvioNative.VERSION, false, null)), false));
+                    null, null, List.of(new AppTarget(NuvioNative.VERSION, null, false, null, null)), app.morphe.patcher.patch.FormFactor.TV, false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(() -> NuvioStreamPreloadPatch.extension("nuvio-current-stream"));
                 builder.execute(context -> {

@@ -27,7 +27,7 @@ public final class NuvioMergedProgressPatch {
             "Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
-                    null, null, NuvioLayout.targets(), false));
+                    null, null, NuvioLayout.targets(), app.morphe.patcher.patch.FormFactor.TV, false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(NuvioMergedProgressPatch::extensionStream);
                 builder.execute(context -> {

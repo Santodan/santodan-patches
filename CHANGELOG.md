@@ -8,6 +8,14 @@
 
 * **NuvioTV:** add native GitHub APK updates [skip ci] ([15bd85e](https://github.com/Santodan/santodan-patches/commit/15bd85ed1778e7e342088212bc2a0bfb195766a0))
 
+### Compatibility repair (2026-10-22)
+
+* **morphe:** rebuild v0.13.0 for Morphe Patcher 2.0.0 / Desktop 1.19.0, fixing bundle import errors.
+* **morphe:** migrate app compatibility constructors, add TV/mobile metadata and align smali dependencies.
+* **carscanner:** extract native files on demand before patching with Patcher 2.0.
+* **verification:** verify all 28 patches with the exact Desktop runtime, complete Nuvio DEX output and manifest-resource compilation.
+* Replace the existing v0.13.0 release assets without changing the tag or running the release workflow. Clients retaining the old cached bundle may need to reimport it.
+
 ## [0.12.0](https://github.com/Santodan/santodan-patches/compare/v0.11.2...v0.12.0) (2026-10-21)
 
 ### ✨ New Features

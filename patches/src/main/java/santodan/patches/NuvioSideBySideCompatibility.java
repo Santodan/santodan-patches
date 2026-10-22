@@ -18,7 +18,7 @@ public final class NuvioSideBySideCompatibility {
             null,
             null,
             NuvioLayout.targets(),
-            false
+            app.morphe.patcher.patch.FormFactor.TV, false
         );
     }
 }

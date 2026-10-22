@@ -13,7 +13,7 @@ final class NuvioLayout {
     static void use(String version) {
         if (!recent(version)) throw new IllegalStateException("Unsupported NuvioTV version: " + version);
     }
-    static List<AppTarget> targets() { return List.of(new AppTarget(BETA8, false, null)); }
+    static List<AppTarget> targets() { return List.of(new AppTarget(BETA8, null, false, null, null)); }
     static List<AppTarget> modernTargets() { return targets(); }
     static boolean modern(String version) { use(version); return true; }
 }

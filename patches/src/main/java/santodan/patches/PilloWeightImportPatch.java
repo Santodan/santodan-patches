@@ -35,7 +35,7 @@ public final class PilloWeightImportPatch {
             "Adds a native Import weights JSON button above Skip in Weight > Add record. Imports SWT backup weights with their dates into the selected profile, with kg/lb selection and duplicate skipping.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility("xyz.rtrvr.pillo", "Pillo", null,
-                    ApkFileType.APK, null, null, List.of(new AppTarget("0.6.20", false, null)), false));
+                    ApkFileType.APK, null, null, List.of(new AppTarget("0.6.20", null, false, null, null)), app.morphe.patcher.patch.FormFactor.MOBILE, false));
                 builder.extendWith(PilloWeightImportPatch::extensionStream);
                 builder.execute(context -> {
                     if (!"xyz.rtrvr.pillo".equals(context.getPackageMetadata().getPackageName())

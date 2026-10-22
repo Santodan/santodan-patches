@@ -19,7 +19,7 @@ public final class NuvioLauncherChannelsPatch {
         return PatchKt.bytecodePatch("NuvioTV - Android TV launcher channels",
             "Choose individual catalogs and tracking lists, Library, and Upcoming to publish as Android TV launcher channels.", false, builder -> {
             builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
-                null, null, NuvioLayout.modernTargets(), false));
+                null, null, NuvioLayout.modernTargets(), app.morphe.patcher.patch.FormFactor.TV, false));
             builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
             builder.dependsOn(NuvioLauncherResourcesKt.getNuvioLauncherArtworkResourcesPatch());
             builder.extendWith(() -> {

@@ -1,5 +1,7 @@
 package software.santodan.extension.nuviolauncher
 
+import software.santodan.nuvio.NuvioNative
+
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -17,7 +19,7 @@ object NativeContinueWatchingDiagnostics {
         var aired = 0
         for (item in items) {
             val data = item.javaClass.getDeclaredField("a").apply { isAccessible = true }.get(item) ?: continue
-            if (data.javaClass.name != "sa.q9") continue // beta7 NextUpInfo
+            if (data.javaClass.name != NuvioNative.HOME_ITEM_NAME) continue // beta7 NextUpInfo
             nextUp++
             if (data.javaClass.getDeclaredField("n").apply { isAccessible = true }.getBoolean(data)) aired++
         }

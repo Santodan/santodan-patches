@@ -1,5 +1,7 @@
 package software.santodan.extension.nuviobuttons;
 
+import software.santodan.nuvio.NuvioNative;
+
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -36,7 +38,7 @@ public final class NuvioPlaybackButtons {
             if (layout == null) try {
                 SharedPreferences p = preferences();
                 layout = new ButtonLayout(p.getBoolean("enabled", false), p.getString("order", ""),
-                    p.getString("hidden", ""), p.getString("more", "speed,aspect,external,info,report"));
+                    p.getString("hidden", ""), p.getString("more", "speed,aspect,engine,external,info,report"));
             } catch (Exception error) {
                 Log.e("SantodanButtons", "Cannot read playback layout", error);
                 return ButtonLayout.defaults(); // Retry after app initialization.
@@ -59,10 +61,10 @@ public final class NuvioPlaybackButtons {
         result.setAccessible(true); return result;
     }
     private static void nativeButton(Object[] args) {
-        invokeNative(args.length == 9 ? "G" : "b", args, args.length == 9 ? 7 : 10);
+        invokeNative(args.length == 9 ? NuvioNative.NATIVE_REPORT_METHOD : NuvioNative.NATIVE_BUTTON_METHOD, args, args.length == 9 ? 7 : 10);
     }
     private static void invokeNative(String name, Object[] args, int composerIndex) {
-        try { method(args[composerIndex].getClass().getClassLoader().loadClass("va.yd"), name, args.length).invoke(null, args); }
+        try { method(args[composerIndex].getClass().getClassLoader().loadClass(NuvioNative.PLAYER_CONTROLS_NAME), name, args.length).invoke(null, args); }
         catch (Exception error) { throw new IllegalStateException("Native playback control failed", error); }
     }
     private static void capture(String id, Object[] args) {
@@ -91,14 +93,14 @@ public final class NuvioPlaybackButtons {
         try {
             ClassLoader loader = composer.getClass().getClassLoader();
             if (frame == null) {
-                method(loader.loadClass("v.b0"), "d", 8).invoke(null, visible, modifier, enter, exit, label, content, composer, flags);
+                method(loader.loadClass(NuvioNative.ANIMATED_VISIBILITY_NAME), "e", 8).invoke(null, visible, modifier, enter, exit, label, content, composer, flags);
                 return;
             }
             frame.expanded = visible;
             if (frame.lambda == null) throw new IllegalStateException("Missing native More content");
             // The original branch only requires a non-null empty AnimatedVisibilityScope interface.
             // Evaluate every native availability rule even while More is closed, so controls can move out of it.
-            Object scope = Proxy.newProxyInstance(loader, new Class<?>[]{loader.loadClass("v.c0")},
+            Object scope = Proxy.newProxyInstance(loader, new Class<?>[]{loader.loadClass(NuvioNative.ANIMATED_SCOPE_NAME)},
                 (proxy, called, args) -> called.getName().equals("hashCode") ? System.identityHashCode(proxy) :
                     called.getName().equals("equals") ? proxy == args[0] : "SantodanPlaybackScope");
             method(composer.getClass(), "d0", 1).invoke(composer, 0x53425001);
@@ -148,13 +150,13 @@ public final class NuvioPlaybackButtons {
     }
     public static void renderSettings(Object composer) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
-        if (menuState == null) menuState = method(loader.loadClass("h1.h"), "s", 1).invoke(null, "");
+        if (menuState == null) menuState = method(loader.loadClass(NuvioNative.COMPOSE_FACTORY_NAME), NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, "");
         String page = ((String) method(menuState.getClass(), "getValue", 0).invoke(menuState)).split("\\|", 2)[0];
         ButtonLayout value = moveDraft == null ? layout() : moveDraft;
         Object toggle = ButtonsUi.callback(loader, "Function0", args -> {
             save(layout().enabled(!layout().enabled)); setPage(""); return ButtonsUi.unit(loader);
         });
-        method(loader.loadClass("ab.uh"), "m", 13).invoke(null,
+        method(loader.loadClass(NuvioNative.SETTINGS_ROWS_NAME), "m", 13).invoke(null,
             "Customize playback buttons", "Choose visibility, order, and main row or More actions. Settings apply to this installation.",
             value.enabled, toggle, null, ButtonsUi.callback(loader, "Function0", args -> ButtonsUi.unit(loader)),
             false, null, 0L, false, composer, 0, 1008);
@@ -265,6 +267,10 @@ public final class NuvioPlaybackButtons {
     public static void audio(Object icon, Object painter, Object label, Object click, Object focus, Object up,
             boolean enabled, Object down, Object focused, long tint, Object composer, int flags, int defaults) {
         capture("audio", new Object[]{icon, painter, label, click, focus, up, enabled, down, focused, tint, composer, flags, defaults});
+    }
+    public static void chapters(Object icon, Object painter, Object label, Object click, Object focus, Object up,
+            boolean enabled, Object down, Object focused, long tint, Object composer, int flags, int defaults) {
+        capture("chapters", new Object[]{icon, painter, label, click, focus, up, enabled, down, focused, tint, composer, flags, defaults});
     }
     public static void sources(Object icon, Object painter, Object label, Object click, Object focus, Object up,
             boolean enabled, Object down, Object focused, long tint, Object composer, int flags, int defaults) {

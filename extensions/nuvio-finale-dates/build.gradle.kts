@@ -9,3 +9,5 @@ android {
         isCoreLibraryDesugaringEnabled = false
     }
 }
+
+dependencies { compileOnly(project(":nuvio-contracts")) }

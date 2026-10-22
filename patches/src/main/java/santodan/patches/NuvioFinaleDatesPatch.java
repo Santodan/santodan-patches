@@ -1,5 +1,7 @@
 package santodan.patches;
 
+import software.santodan.nuvio.NuvioNative;
+
 import app.morphe.patcher.patch.ApkFileType;
 import app.morphe.patcher.patch.AppTarget;
 import app.morphe.patcher.patch.BytecodePatch;
@@ -35,8 +37,8 @@ import kotlin.Unit;
 /** Adds independently configurable finale dates to library and collection posters. */
 public final class NuvioFinaleDatesPatch {
     public static final String NAME = "NuvioTV - Finale dates in library and collections";
-    static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = NuvioLayout.BETA7;
+    static final String PACKAGE = NuvioNative.PACKAGE_NAME;
+    static final String VERSION = NuvioLayout.BETA8;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuviofinale/NuvioFinaleDates;";
 
     private NuvioFinaleDatesPatch() {}
@@ -56,9 +58,9 @@ public final class NuvioFinaleDatesPatch {
                     if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.recent(version))
                         throw unsupported("Expected " + PACKAGE + " " + VERSION);
                     for (String type : itemOwners()) hookItems(context.mutableClassDefBy(type));
-                    hookCard(context.mutableClassDefBy("Lha/h2;"));
-                    hookCard(context.mutableClassDefBy("Lha/s0;"));
-                    for (String type : List.of("Lha/h2;", "Lha/s0;", "Lha/i2;", "Lha/t0;"))
+                    hookCard(context.mutableClassDefBy(NuvioNative.LIBRARY_CARD_TYPE));
+                    hookCard(context.mutableClassDefBy(NuvioNative.COLLECTION_CARD_TYPE));
+                    for (String type : List.of(NuvioNative.LIBRARY_CARD_TYPE, NuvioNative.COLLECTION_CARD_TYPE, NuvioNative.LIBRARY_RESTART_TYPE, NuvioNative.COLLECTION_RESTART_TYPE))
                         hookContext(context.mutableClassDefBy(type));
                     return Unit.INSTANCE;
                 });
@@ -69,18 +71,18 @@ public final class NuvioFinaleDatesPatch {
 
 
     static List<String> itemOwners() {
-        return List.of("Lha/n0;", "Lha/c0;", "Lha/t0;");
+        return List.of(NuvioNative.LIBRARY_ITEMS_TYPE, NuvioNative.COLLECTION_ITEMS_TYPE, NuvioNative.COLLECTION_RESTART_TYPE);
     }
 
     static void hookItems(MutableClass owner) { hookItems(owner, EXTENSION); }
 
     static void hookItems(MutableClass owner, String extension) {
-        MutableMethod target = unique(owner, "invoke", owner.getType().equals("Lha/t0;") ? 2 : 4);
+        MutableMethod target = unique(owner, "invoke", owner.getType().equals(NuvioNative.COLLECTION_RESTART_TYPE) ? 2 : 4);
         List<Instruction> ins = instructions(target);
         int matches = 0;
         for (int i = ins.size() - 1; i >= 0; i--) {
-            String hook = calls(ins.get(i), "Lha/m2;", "p") ? "libraryItem"
-                : calls(ins.get(i), "Lha/x0;", "a") ? "collectionItem" : null;
+            String hook = calls(ins.get(i), NuvioNative.LIBRARY_CONTENT_TYPE, "p") ? "libraryItem"
+                : calls(ins.get(i), NuvioNative.COLLECTION_ITEM_TYPE, "a") ? "collectionItem" : null;
             if (hook == null) continue;
             if (!(ins.get(i) instanceof RegisterRangeInstruction)) throw unsupported("Item card invocation changed");
             int item = ((RegisterRangeInstruction) ins.get(i)).getStartRegister();
@@ -90,7 +92,7 @@ public final class NuvioFinaleDatesPatch {
                 item, 1, method(extension, hook, List.of("Ljava/lang/Object;"), "V")));
             matches++;
         }
-        if (matches != (!owner.getType().equals("Lha/n0;") ? 1 : 2))
+        if (matches != (!owner.getType().equals(NuvioNative.LIBRARY_ITEMS_TYPE) ? 1 : 2))
             throw unsupported("Library/collection card anchors changed");
     }
 
@@ -98,7 +100,7 @@ public final class NuvioFinaleDatesPatch {
 
     static void hookContext(MutableClass owner, String extension) {
         int constructors = 0;
-        boolean restart = "Lha/i2;".equals(owner.getType()) || "Lha/t0;".equals(owner.getType());
+        boolean restart = NuvioNative.LIBRARY_RESTART_TYPE.equals(owner.getType()) || NuvioNative.COLLECTION_RESTART_TYPE.equals(owner.getType());
         for (MutableMethod target : owner.getMethods()) {
             if (target.getImplementation() == null) continue;
             boolean constructor = "<init>".equals(target.getName());
@@ -128,13 +130,13 @@ public final class NuvioFinaleDatesPatch {
     static void hookCard(MutableClass owner) { hookCard(owner, EXTENSION); }
 
     static void hookCard(MutableClass owner, String extension) {
-        boolean library = "Lha/h2;".equals(owner.getType());
+        boolean library = NuvioNative.LIBRARY_CARD_TYPE.equals(owner.getType());
         MutableMethod target = unique(owner, "invoke", 3);
-        if (target.getImplementation().getRegisterCount() != (library ? (36) : 53))
+        if (target.getImplementation().getRegisterCount() != (library ? (36) : 63))
             throw unsupported("Finale card register layout changed");
         List<Instruction> ins = instructions(target);
         List<Integer> images = new ArrayList<>();
-        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "Leb/m;", "b")) images.add(i);
+        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), NuvioNative.POSTER_IMAGE_TYPE, "b")) images.add(i);
         if (images.size() != (library ? 2 : 3)) throw unsupported("Finale card image anchors changed");
         // The third collection image is the logo; only badge the two poster branches.
         for (int n = 1; n >= 0; n--) {
@@ -157,7 +159,7 @@ public final class NuvioFinaleDatesPatch {
                 && method.getImplementation() != null) {
                 // Beta4 has a 27-argument default-mask overload as well as the real
                 // model constructor. Register only fully initialized model instances.
-                if ("Lsa/q9;".equals(owner.getType()) && "<init>".equals(name)
+                if (NuvioNative.HOME_ITEM_TYPE.equals(owner.getType()) && "<init>".equals(name)
                     && !"Lcom/nuvio/tv/domain/model/MDBListRatings;".contentEquals(
                         method.getParameterTypes().get(parameters - 1))) continue;
                 if (result != null) throw unsupported("Multiple " + owner.getType() + "->" + name + " matches");

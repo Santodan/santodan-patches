@@ -1,11 +1,13 @@
 package santodan.patches
 
+import software.santodan.nuvio.NuvioNative
+
 import app.morphe.patcher.patch.resourcePatch
 import app.morphe.patcher.patch.stringOption
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
-private const val ORIGINAL_PACKAGE = "com.nuvio.tv"
+private const val ORIGINAL_PACKAGE = NuvioNative.PACKAGE_NAME
 private const val CLONED_PACKAGE = "com.nuvio.santodan"
 private const val CLONED_LABEL = "NuvioTV Patched"
 

@@ -1,5 +1,9 @@
 package software.santodan.extension.nuviointro;
 
+import software.santodan.nuvio.NuvioAccess;
+
+import software.santodan.nuvio.NuvioNative;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.SharedPreferences;
@@ -68,7 +72,7 @@ public final class NuvioIntroDb {
             }
             Object controller = old.controller.get();
             if (foreground && old.review && controller != null) try {
-                IntroUi.method(controller.getClass().getClassLoader().loadClass("va.sa"), "F", 1).invoke(null, controller);
+                IntroUi.method(controller.getClass().getClassLoader().loadClass(NuvioNative.PLAYER_TIMERS_NAME), "F", 1).invoke(null, controller);
             } catch (Exception error) { Log.e(TAG, "Native controls timer restart failed", error); }
         }
         changed();
@@ -78,7 +82,7 @@ public final class NuvioIntroDb {
         IntroUi.method(composer.getClass(), "d0", 1).invoke(composer, 0x53494310);
         try {
             observe(loader);
-            IntroUi.method(loader.loadClass("ab.uh"), "m", 13).invoke(null, "IntroDB segment submissions",
+            IntroUi.method(loader.loadClass(NuvioNative.SETTINGS_ROWS_NAME), "m", 13).invoke(null, "IntroDB segment submissions",
                 "Show a playback button to mark segment start and end times, then review before submitting.", enabled(),
                 IntroUi.click(loader, () -> { boolean value = !enabled(); prefs().edit().putBoolean("enabled", value).apply(); Log.d(TAG, "Submissions enabled=" + value); reset(); }),
                 null, IntroUi.click(loader, () -> {}), false, null, 0L, false, composer, 0, 1008);
@@ -86,7 +90,7 @@ public final class NuvioIntroDb {
             IntroUi.row(composer, "IntroDB API key", "Enter or remove the API key used for segment submissions on this device.",
                 key.isBlank() ? "Not set" : "Configured", () -> {
                     keyText = IntroUi.state(loader, prefs().getString("key", ""));
-                    keyFocus = loader.loadClass("c2.a0").getDeclaredConstructor().newInstance();
+                    keyFocus = loader.loadClass(NuvioNative.FOCUS_REQUESTER_NAME).getDeclaredConstructor().newInstance();
                     keyFocused = IntroUi.state(loader, false);
                     changed();
                     Log.d(TAG, "Opening API key editor");
@@ -108,11 +112,11 @@ public final class NuvioIntroDb {
                 if (!enabled()) { if (draft != null) reset(); return; }
                 Object state = IntroUi.field(owner, "e");
                 Object controller = IntroUi.field(IntroUi.field(owner, "c"), "Y");
-                String video = (String)IntroUi.field(state, "z0");
-                String media = video + "|" + IntroUi.field(state, "x0") + "|" + IntroUi.field(state, "y0") + "|" + IntroUi.field(state, "i");
+                String video = (String)NuvioAccess.currentVideo(state);
+                String media = video + "|" + NuvioAccess.currentSeason(state) + "|" + NuvioAccess.currentEpisode(state) + "|" + IntroUi.field(state, "i");
                 if (draft != null && (draft.controller.get() != controller || !draft.media.equals(media))) reset();
                 Submission target;
-                try { target = new Submission(video, (Integer)IntroUi.field(state, "x0"), (Integer)IntroUi.field(state, "y0")); }
+                try { target = new Submission(video, (Integer)NuvioAccess.currentSeason(state), (Integer)NuvioAccess.currentEpisode(state)); }
                 catch (IllegalArgumentException unavailable) { return; }
                 Object timeline = IntroUi.method(loader.loadClass("kotlinx.coroutines.flow.StateFlow"), "getValue", 0).invoke(IntroUi.field(controller, "H0"));
                 if ((Boolean)IntroUi.field(timeline, "d")) { if (draft != null) reset(); return; }
@@ -128,7 +132,7 @@ public final class NuvioIntroDb {
                     Class<?> customization = loader.loadClass("software.santodan.extension.nuviobuttons.NuvioPlaybackButtons");
                     collected = (Boolean)customization.getMethod("collectIntroDb", Object[].class).invoke(null, (Object)button);
                 } catch (ClassNotFoundException standalone) { /* Independently selectable patch. */ }
-                if (!collected) IntroUi.method(loader.loadClass("va.yd"), "b", 13).invoke(null, button);
+                if (!collected) IntroUi.method(loader.loadClass(NuvioNative.PLAYER_CONTROLS_NAME), NuvioNative.NATIVE_BUTTON_METHOD, 13).invoke(null, button);
                 if (current != null && current.review) renderReview(composer, current);
             } finally { IntroUi.method(composer.getClass(), "p", 1).invoke(composer, false); }
         } catch (Exception error) { Log.e(TAG, "Native IntroDB control failed", error); throw new IllegalStateException("Native IntroDB control failed", error); }
@@ -143,7 +147,7 @@ public final class NuvioIntroDb {
             current.status = "Set your IntroDB API key in Settings > Layout > Santodan-Patches > Playback."; openReview(current); changed(); return;
         }
         if (current.review) { changed(); return; }
-        Long position = (Long)IntroUi.method(loader.loadClass("va.z9"), "e", 1).invoke(null, controller);
+        Long position = (Long)IntroUi.method(loader.loadClass(NuvioNative.PLAYER_POSITION_NAME), "e", 1).invoke(null, controller);
         try {
             if (position == null) throw new IllegalArgumentException("Playback position is unavailable.");
             boolean complete = current.capture.mark(position);

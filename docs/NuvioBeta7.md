@@ -1,5 +1,7 @@
 # NuvioTV 1.1.0-beta.7
 
+> Historical implementation notes. The active patch set targets [beta.8](NuvioBeta8.md).
+
 The fourteen public NuvioTV patches support `com.nuvio.tv` `1.1.0-beta.7` (version code
 `1070`) only. Production hooks and runtime reflection use beta.7 symbols directly;
 no backward-compatibility adapters are included.

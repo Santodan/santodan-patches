@@ -1,11 +1,13 @@
 package software.santodan.extension.nuviointro;
 
+import software.santodan.nuvio.NuvioNative;
+
 /** Filmstrip + play/stop/check glyphs distinguish capture start, capture end and review. */
 final class IntroIcons {
     private static final Object[] cached = new Object[3];
     static synchronized Object icon(ClassLoader loader, int stage) throws Exception {
         if (cached[stage] != null) return cached[stage];
-        Object vector = loader.loadClass("k2.d").getDeclaredConstructor(String.class, float.class, float.class, float.class,
+        Object vector = loader.loadClass(NuvioNative.VECTOR_BUILDER_NAME).getDeclaredConstructor(String.class, float.class, float.class, float.class,
             float.class, long.class, int.class, boolean.class, int.class)
             .newInstance("IntroDB.Segment." + stage, 24f, 24f, 24f, 24f, 0L, 0, false, 96);
         Object path = loader.loadClass("io.sentry.d2").getDeclaredConstructor(int.class).newInstance(1);
@@ -21,9 +23,9 @@ final class IntroIcons {
         if (stage == 0) polygon(path, 9,7, 16,12, 9,17);
         else if (stage == 1) polygon(path, 9,8, 16,8, 16,16, 9,16);
         else polygon(path, 7,12, 9,10, 11,12, 15,8, 17,10, 11,16);
-        Object brush = loader.loadClass("e2.y0").getDeclaredConstructor(long.class).newInstance((Long)IntroUi.constant(loader, "e2.z", "b"));
-        IntroUi.method(loader.loadClass("k2.d"), "a", 4).invoke(null, vector, IntroUi.field(path, "b"), 0, brush);
-        cached[stage] = IntroUi.method(loader.loadClass("k2.d"), "b", 0).invoke(vector);
+        Object brush = loader.loadClass("e2.y0").getDeclaredConstructor(long.class).newInstance((Long)IntroUi.constant(loader, NuvioNative.COLOR_NAME, "b"));
+        IntroUi.method(loader.loadClass(NuvioNative.VECTOR_BUILDER_NAME), "a", 4).invoke(null, vector, IntroUi.field(path, "b"), 0, brush);
+        cached[stage] = IntroUi.method(loader.loadClass(NuvioNative.VECTOR_BUILDER_NAME), "b", 0).invoke(vector);
         return cached[stage];
     }
     private static void polygon(Object path, float... points) throws Exception {

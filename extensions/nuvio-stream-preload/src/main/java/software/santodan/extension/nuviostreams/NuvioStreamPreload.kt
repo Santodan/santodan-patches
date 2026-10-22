@@ -1,5 +1,9 @@
 package software.santodan.extension.nuviostreams
 
+import software.santodan.nuvio.NuvioAccess
+
+import software.santodan.nuvio.NuvioNative
+
 import android.app.Application
 import android.util.Log
 import java.lang.reflect.Method
@@ -28,7 +32,7 @@ object NuvioStreamPreload {
     @Volatile private var component: Any? = null
     @Volatile private var repository: Any? = null
     private val heroResolver by lazy {
-        Class.forName("ra.t0").getDeclaredMethod("D",
+        Class.forName(NuvioNative.DETAIL_RESOLVER_NAME).getDeclaredMethod("D",
             Class.forName("com.nuvio.tv.domain.model.Meta"),
             Class.forName("com.nuvio.tv.domain.model.NextToWatch"), List::class.java).apply {
             check(java.lang.reflect.Modifier.isStatic(modifiers) &&
@@ -60,7 +64,7 @@ object NuvioStreamPreload {
     private fun get(owner: Any, name: String) = StreamTargets.get(owner, name)
     private fun profileFlow(): StateFlow<*>? {
         val current = component ?: return null
-        val provider = field(current, "B") ?: return null
+        val provider = NuvioAccess.profileProvider(current) ?: return null
         val manager = get(provider, "get") ?: return null
         return field(manager, "f") as StateFlow<*>
     }
@@ -79,7 +83,7 @@ object NuvioStreamPreload {
         val current = repository ?: run {
             val owner = component ?: return false
             // Scoped Hilt provider: obtain the native singleton without opening the stream screen.
-            val provider = field(owner, "Y2") ?: return false
+            val provider = NuvioAccess.streamProvider(owner) ?: return false
             (get(provider, "get") ?: return false).also { repository = it }
         }
         fun allowed() = enabled(target.mode) && profile() == target.profile &&
@@ -182,11 +186,11 @@ object NuvioStreamPreload {
                         // Only booleans and elapsed time: never dump native state containing stream URLs.
                         // Emit changes and five-second milestones up to the buffer grace period.
                         val native = flow.value
-                        val next = field(native, "r1")
+                        val next = NuvioAccess.nextEpisode(native)
                         val diagnostic = "enabled=${state.enabled} playing=${state.playing} " +
                             "nativePlaying=${field(native, "a") == true} buffering=${field(native, "b") == true} " +
                             "ended=${field(native, "c") == true} exiting=${field(native, "d") != null} " +
-                            "error=${!(field(native, "f1") as? String).isNullOrBlank()} " +
+                            "error=${!(NuvioAccess.playbackError(native) as? String).isNullOrBlank()} " +
                             "series=${requestType.equals("series", true) || requestType.equals("tv", true)} nextPresent=${next != null} " +
                             "nextAired=${next != null && field(next, "h") == true} " +
                             "profileReady=${state.profile != null} currentReady=${!state.currentVideoId.isNullOrBlank()} " +
@@ -236,7 +240,7 @@ object NuvioStreamPreload {
         try {
             val loader = composer.javaClass.classLoader!!
             val state = states.getOrPut(mode) {
-                method(loader.loadClass("h1.h"), "s", 1).invoke(null, enabled(mode))
+                method(loader.loadClass(NuvioNative.COMPOSE_FACTORY_NAME), NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, enabled(mode))
             }
             fun callback(action: () -> Unit): Any {
                 val contract = loader.loadClass("kotlin.jvm.functions.Function0")
@@ -268,7 +272,7 @@ object NuvioStreamPreload {
                 NEXT -> "Fetch the next episode's source list after 30 seconds of playback."
                 else -> "Search sources for the detail page's Play or Resume episode or movie."
             }
-            method(loader.loadClass("ab.uh"), "m", 13).invoke(null,
+            method(loader.loadClass(NuvioNative.SETTINGS_ROWS_NAME), "m", 13).invoke(null,
                 title, description, get(state, "getValue"), toggle, null, callback {}, false,
                 null, 0L, false, composer, 0, 1008)
         } catch (error: Exception) { Log.e(TAG, "Stream settings rendering failed", error) }

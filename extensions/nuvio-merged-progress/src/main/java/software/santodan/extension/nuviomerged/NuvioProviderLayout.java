@@ -1,5 +1,7 @@
 package software.santodan.extension.nuviomerged;
 
+import software.santodan.nuvio.NuvioNative;
+
 /** Verified version-specific provider accessors; erased Flow types carry different values. */
 public final class NuvioProviderLayout {
     public final String providerInterface;
@@ -14,13 +16,13 @@ public final class NuvioProviderLayout {
         progressWriteMethod = "r";
         snapshotReadyMethod = "p";
         itemProgressMethod = "o";
-        providerInterface = "q9.z";
+        providerInterface = NuvioNative.PROVIDER_INTERFACE_NAME;
         allProgressMethod = "q";
         siblingsMethod = "w";
         refreshMethod = "v";
     }
     public static NuvioProviderLayout forRepository(String repositoryClass) {
-        if (!"ba.ze".equals(repositoryClass))
+        if (!NuvioNative.PROGRESS_REPOSITORY_NAME.equals(repositoryClass))
             throw new IllegalStateException("Unsupported Nuvio repository: " + repositoryClass);
         return new NuvioProviderLayout();
     }

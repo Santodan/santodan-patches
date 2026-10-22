@@ -9,6 +9,9 @@
 
 ### Maintenance updates (2026-10-22)
 
+* **nuviotv:** update all fourteen patches to beta.8, including Chapters and player-engine placement, native stream routes and settings hooks.
+* **nuviotv:** centralize native contracts, add structural anchors and direct runtime accessors, and provide update reporting and a latest-version verification task.
+* **nuviotv:** fix the missing Santodan settings menu and affected controls by using beta.8's Compose state factory; correct runtime fixtures to match the original DEX.
 * **nuviotv:** fix the playback button editor failing on Mi Box runtimes without the no-argument `Optional.orElseThrow()` API.
 * **nuviotv:** include IntroDB's segment button in playback visibility, ordering and group customization.
 * **nuviotv:** show button icons and numbered positions in one continuous scrolling list; hold OK to pick up a button, use Up/Down to reorder, OK to save and Back to cancel.

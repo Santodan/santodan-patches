@@ -1,5 +1,7 @@
 package santodan.patches;
 
+import software.santodan.nuvio.NuvioNative;
+
 import app.morphe.patcher.patch.*;
 import app.morphe.patcher.util.proxy.mutableTypes.*;
 import com.android.tools.smali.dexlib2.Opcode;
@@ -13,40 +15,40 @@ public final class NuvioPreferredAddonPatch {
     static final String EXTENSION = "Lsoftware/santodan/extension/nuviopreferred/NuvioPreferredAddon;";
     static final String STREAM = "Lcom/nuvio/tv/domain/model/Stream;";
     static final Map<String, String> HASHES = Map.of(
-        "snapshot", "7f0eb705b24abdaf09c7a6255a6d5e08e7162ff1dfed1cdd9b8e981ea68b9a66",
-        "order", "83b43b9f154447b90d266406a3ae736d448502b588f977896a1fa0c9a8ce2984",
-        "select", "330e31fcb5ca72b812565b38f9c6b75de022cb081a2588a5f632fc20a4f52268",
-        "gate", "f79963aa3ced943b7abeea5245e0ea02d39076f2d11034a136e58301e4ea0e1e",
-        "regex", "7e7b351ccacf8ab5e9a52b16c07285d0301df7c421520604ed479f958109118a",
-        "apply", "e2652661b9d251299dcdf2c40d42c04055d8611e977839a50af90533055a6601",
-        "load", "ac141e9228292e7f4aed3757b64f4a8f9aec34229c38984bf5371cda547cb308");
+        "snapshot", NuvioNative.HASH_ADDON_SNAPSHOT,
+        "order", NuvioNative.HASH_ADDON_ORDER,
+        "select", NuvioNative.HASH_ADDON_SELECTION,
+        "gate", NuvioNative.HASH_ADDON_GATE,
+        "regex", NuvioNative.HASH_ADDON_REGEX,
+        "apply", NuvioNative.HASH_ADDON_APPLY,
+        "load", NuvioNative.HASH_ADDON_LOAD);
     static final Map<String, String> SIGNATURES = Map.of(
-        "snapshot", "Lba/m4;-><init>(ILjava/util/List;ZLjava/util/List;ZLjava/util/List;Lcom/nuvio/tv/domain/model/DebridSettings;)V",
-        "order", "Ld9/w1;->d(Ljava/util/List;Ljava/util/List;Ljava/util/Set;)Ljava/util/List;",
-        "select", "Ld9/w1;->e(Ljava/util/List;Lcom/nuvio/tv/data/local/r7;Ljava/lang/String;Lcom/nuvio/tv/data/local/s7;Ljava/util/Set;Ljava/util/Set;Ljava/util/Set;Ljava/lang/String;ZZ)" + STREAM,
-        "gate", "Ld9/w1;->a(Lcom/nuvio/tv/data/local/x4;)Z",
-        "regex", "Ld9/w1;->c(Ljava/lang/String;)Z",
-        "apply", "Lbb/u1;->a(Ljava/util/List;Ljava/util/Set;Lbb/d2;Lkotlin/jvm/internal/Ref$BooleanRef;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lcom/nuvio/tv/data/local/x4;Ljava/util/List;Z)V",
-        "load", "Lbb/u1;->invokeSuspend(Ljava/lang/Object;)Ljava/lang/Object;");
+        "snapshot", NuvioNative.REF_ADDON_SNAPSHOT_INIT,
+        "order", NuvioNative.REF_ADDON_SELECTOR_D,
+        "select", NuvioNative.REF_ADDON_SELECTOR_E + STREAM,
+        "gate", NuvioNative.REF_ADDON_SELECTOR_A,
+        "regex", NuvioNative.REF_ADDON_SELECTOR_C,
+        "apply", NuvioNative.REF_STREAM_LOADER_A,
+        "load", NuvioNative.REF_STREAM_LOADER_INVOKESUSPEND);
 
     public static BytecodePatch getNuvioPreferredAddonPatch() {
         return PatchKt.bytecodePatch("NuvioTV - Preferred source add-on",
             "Choose a per-profile add-on to refresh and display first, with optional automatic playback of its first playable stream.", false, builder -> {
-                builder.compatibleWith(new Compatibility("com.nuvio.tv", "NuvioTV", null, ApkFileType.APK,
-                    null, null, List.of(new AppTarget("1.1.0-beta.7", false, null)), false));
+                builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
+                    null, null, List.of(new AppTarget(NuvioNative.VERSION, false, null)), false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(() -> NuvioStreamPreloadPatch.extension("nuvio-preferred-addon"));
                 builder.execute(context -> {
-                    if (!"com.nuvio.tv".equals(context.getPackageMetadata().getPackageName()) ||
-                        !"1.1.0-beta.7".equals(context.getPackageMetadata().getVersionName()))
-                        throw new IllegalStateException("Preferred add-on requires NuvioTV 1.1.0-beta.7");
+                    if (!NuvioNative.PACKAGE_NAME.equals(context.getPackageMetadata().getPackageName()) ||
+                        !NuvioNative.VERSION.equals(context.getPackageMetadata().getVersionName()))
+                        throw new IllegalStateException("Preferred add-on requires NuvioTV 1.1.0-beta.8");
                     validateContracts(type -> new MutableClass(context.classDefBy(type)));
-                    MutableClass snapshot = context.mutableClassDefBy("Lba/m4;");
-                    MutableClass selector = context.mutableClassDefBy("Ld9/w1;");
+                    MutableClass snapshot = context.mutableClassDefBy(NuvioNative.ADDON_SNAPSHOT_TYPE);
+                    MutableClass selector = context.mutableClassDefBy(NuvioNative.ADDON_SELECTOR_TYPE);
                     validate(snapshot, selector);
-                    MutableClass loader = context.mutableClassDefBy("Lbb/u1;");
+                    MutableClass loader = context.mutableClassDefBy(NuvioNative.STREAM_LOADER_TYPE);
                     validateLoader(loader, selector);
-                    hookComponent(context.mutableClassDefBy("Lq8/e;"));
+                    hookComponent(context.mutableClassDefBy(NuvioNative.HILT_COMPONENT_TYPE));
                     hook(snapshot, selector);
                     hookLoader(loader, selector);
                     return Unit.INSTANCE;
@@ -65,26 +67,26 @@ public final class NuvioPreferredAddonPatch {
             throw new IllegalStateException("Preferred add-on contract changed: " + owner + "->" + name);
     }
     static void validateContracts(Classes classes) {
-        field(classes, "Lq8/e;", "B", "Lvb/c;");
-        field(classes, "Lq8/e;", "Y2", "Lvb/c;");
-        field(classes, "Lg9/e;", "f", "Lkotlinx/coroutines/flow/StateFlow;");
-        field(classes, "Lba/d5;", "c", "Lfa/a;");
-        field(classes, "Lba/p;", "r", "Lkotlinx/coroutines/flow/StateFlow;");
-        field(classes, "Lbb/d2;", "t", "Z");
+        field(classes, NuvioNative.HILT_COMPONENT_TYPE, NuvioNative.PROFILE_PROVIDER_FIELD, NuvioNative.PROVIDER_TYPE);
+        field(classes, NuvioNative.HILT_COMPONENT_TYPE, NuvioNative.STREAM_PROVIDER_FIELD, NuvioNative.PROVIDER_TYPE);
+        field(classes, NuvioNative.PROFILE_STORE_TYPE, "f", "Lkotlinx/coroutines/flow/StateFlow;");
+        field(classes, NuvioNative.STREAM_REPOSITORY_TYPE, "c", NuvioNative.STREAM_SOURCE_TYPE);
+        field(classes, NuvioNative.ADDON_REPOSITORY_TYPE, "r", "Lkotlinx/coroutines/flow/StateFlow;");
+        field(classes, NuvioNative.STREAM_VIEW_MODEL_TYPE, "t", "Z");
         field(classes, "Lkotlin/jvm/internal/Ref$BooleanRef;", "element", "Z");
         for (String getter : List.of("getBaseUrl", "getDisplayName"))
             contract(classes, "Lcom/nuvio/tv/domain/model/Addon;", getter, List.of(), "Ljava/lang/String;", false);
         contract(classes, "Lcom/nuvio/tv/domain/model/AddonKt;", "enabledAddons", List.of("Ljava/util/List;"), "Ljava/util/List;", true);
-        contract(classes, "Ld9/w1;", "b", List.of(STREAM), "Z", true);
+        contract(classes, NuvioNative.ADDON_SELECTOR_TYPE, "b", List.of(STREAM), "Z", true);
         for (String owner : List.of(STREAM, "Lcom/nuvio/tv/domain/model/AddonStreams;"))
             contract(classes, owner, "getAddonName", List.of(), "Ljava/lang/String;", false);
-        contract(classes, "Lab/fi;", "<init>", List.of("Ljava/lang/Object;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Lm3/n;", "I"), "V", false);
-        NuvioPlaybackButtonsPatch.validateUiMethod(classes.get("Lab/uh;"),
-            "Lab/uh;->m(Ljava/lang/String;Ljava/lang/String;ZLkotlin/jvm/functions/Function0;Lx1/q;Lkotlin/jvm/functions/Function0;ZLk2/e;JZLh1/o;II)V");
-        NuvioPlaybackButtonsPatch.validateUiMethod(classes.get("Lab/uh;"),
-            "Lab/uh;->j(Ljava/lang/String;Ljava/util/List;Ljava/lang/Object;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function0;Ljava/lang/String;FFLh1/o;II)V");
-        NuvioPlaybackButtonsPatch.validateUiMethod(classes.get("Lab/uh;"),
-            "Lab/uh;->a(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lx1/q;Lkotlin/jvm/functions/Function0;ZLk2/e;Lk2/e;JLk2/e;Ljava/lang/Integer;FJLh1/o;III)V");
+        contract(classes, NuvioNative.SETTINGS_PICKER_TYPE, "<init>", List.of("Ljava/lang/Object;", "Ljava/lang/String;", "Ljava/lang/String;", "Ljava/lang/String;", "Lm3/m;", "I"), "V", false);
+        NuvioPlaybackButtonsPatch.validateUiMethod(classes.get(NuvioNative.SETTINGS_ROWS_TYPE),
+            NuvioNative.REF_SETTINGS_ROWS_M);
+        NuvioPlaybackButtonsPatch.validateUiMethod(classes.get(NuvioNative.SETTINGS_ROWS_TYPE),
+            NuvioNative.REF_SETTINGS_ROWS_J);
+        NuvioPlaybackButtonsPatch.validateUiMethod(classes.get(NuvioNative.SETTINGS_ROWS_TYPE),
+            NuvioNative.REF_SETTINGS_ROWS_A);
     }
     static Map<String, MutableMethod> methods(MutableClass snapshot, MutableClass selector) {
         return Map.of("snapshot", NuvioRemainingEpisodesPatch.unique(snapshot, "<init>", 7),
@@ -93,7 +95,7 @@ public final class NuvioPreferredAddonPatch {
             "gate", NuvioRemainingEpisodesPatch.unique(selector, "a", 1));
     }
     static void validate(MutableClass snapshot, MutableClass selector) {
-        if (!snapshot.getType().equals("Lba/m4;") || !selector.getType().equals("Ld9/w1;")) throw new IllegalStateException("Wrong add-on classes");
+        if (!snapshot.getType().equals(NuvioNative.ADDON_SNAPSHOT_TYPE) || !selector.getType().equals(NuvioNative.ADDON_SELECTOR_TYPE)) throw new IllegalStateException("Wrong add-on classes");
         methods(snapshot, selector).forEach(NuvioPreferredAddonPatch::validateMethod);
     }
     static String tryLayout(MutableMethod method) {
@@ -124,7 +126,7 @@ public final class NuvioPreferredAddonPatch {
             if (NuvioRemainingEpisodesPatch.calls(body.get(i), EXTENSION, "registerComponent")) throw new IllegalStateException("Preferred add-on already registered");
             if (body.get(i).getOpcode() == Opcode.RETURN_VOID) returns.add(i);
         }
-        if (returns.size() != 1 || !method.toString().equals("Lq8/e;-><init>(Lm3/a;)V") || (method.getAccessFlags() & 8) != 0)
+        if (returns.size() != 1 || !method.toString().equals(NuvioNative.REF_HILT_COMPONENT_INIT) || (method.getAccessFlags() & 8) != 0)
             throw new IllegalStateException("Preferred add-on Hilt constructor changed");
         method.getImplementation().addInstruction(returns.get(0), new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
             NuvioRemainingEpisodesPatch.parameterStart(method), 1, ref("registerComponent", List.of("Ljava/lang/Object;"), "V")));
@@ -133,10 +135,12 @@ public final class NuvioPreferredAddonPatch {
         validate(snapshot, selector);
         var methods = methods(snapshot, selector);
         var init = methods.get("snapshot").getImplementation();
-        // Constructor v2 = profile ID, v3 = enabled add-ons. No new registers.
-        init.addInstruction(0, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 2, 2,
+        int profile = NuvioAnchors.parameter(methods.get("snapshot"), 0);
+        int addons = NuvioAnchors.parameter(methods.get("snapshot"), 1);
+        if (addons != profile + 1) throw new IllegalStateException("Snapshot parameters are not consecutive");
+        init.addInstruction(0, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, profile, 2,
             ref("prioritize", List.of("I", "Ljava/util/List;"), "Ljava/util/List;")));
-        init.addInstruction(1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, 3));
+        init.addInstruction(1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, addons));
         var order = methods.get("order").getImplementation();
         var originalOrder = NuvioRemainingEpisodesPatch.instructions(methods.get("order"));
         for (int i = originalOrder.size() - 1; i >= 0; i--) if (originalOrder.get(i).getOpcode() == Opcode.RETURN_OBJECT) {
@@ -151,7 +155,7 @@ public final class NuvioPreferredAddonPatch {
         select.addInstruction(0, new BuilderInstruction35c(Opcode.INVOKE_STATIC, 0, 0, 0, 0, 0, 0, ref("autoPlayEnabled", List.of(), "Z")));
         select.addInstruction(1, new BuilderInstruction11x(Opcode.MOVE_RESULT, 0));
         select.addInstruction(2, new BuilderInstruction21t(Opcode.IF_EQZ, 0, original));
-        select.addInstruction(3, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 14, 1,
+        select.addInstruction(3, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, NuvioAnchors.parameter(methods.get("select"), 0), 1,
             ref("select", List.of("Ljava/util/List;"), "Ljava/lang/Object;")));
         select.addInstruction(4, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, 0));
         select.addInstruction(5, new BuilderInstruction21c(Opcode.CHECK_CAST, 0,
@@ -175,28 +179,57 @@ public final class NuvioPreferredAddonPatch {
             "regex", NuvioRemainingEpisodesPatch.unique(selector, "c", 1));
     }
     static void validateLoader(MutableClass loader, MutableClass selector) {
-        if (!loader.getType().equals("Lbb/u1;") || !selector.getType().equals("Ld9/w1;")) throw new IllegalStateException("Wrong preferred loader classes");
+        if (!loader.getType().equals(NuvioNative.STREAM_LOADER_TYPE) || !selector.getType().equals(NuvioNative.ADDON_SELECTOR_TYPE)) throw new IllegalStateException("Wrong preferred loader classes");
         loaderMethods(loader, selector).forEach(NuvioPreferredAddonPatch::validateMethod);
     }
     static void hookLoader(MutableClass loader, MutableClass selector) {
         validateLoader(loader, selector);
         var methods = loaderMethods(loader, selector);
+        int[] selection = selectionAnchor(methods.get("apply"));
+        int[] reuse = reuseAnchor(methods.get("load"));
         // All native result branches converge here. Preserve manual selection and
         // the native resolved-session flag, while overriding cached binge choices.
         var apply = methods.get("apply").getImplementation();
-        var branch = (BuilderInstruction21t) apply.getInstructions().get(339);
+        int at = selection[0], result = selection[1];
+        var branch = (BuilderInstruction21t) apply.getInstructions().get(at);
         var target = branch.getTarget();
-        apply.replaceInstruction(339, new BuilderInstruction35c(Opcode.INVOKE_STATIC, 4, 9, 3, 1, 2, 0,
+        apply.replaceInstruction(at, new BuilderInstruction35c(Opcode.INVOKE_STATIC, 4, result, selection[2], selection[3], selection[4], 0,
             ref("choose", List.of("Ljava/lang/Object;", "Ljava/util/List;", "Ljava/lang/Object;", "Ljava/lang/Object;"), "Ljava/lang/Object;")));
-        apply.addInstruction(340, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, 9));
-        apply.addInstruction(341, new BuilderInstruction21c(Opcode.CHECK_CAST, 9,
+        apply.addInstruction(at + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, result));
+        apply.addInstruction(at + 2, new BuilderInstruction21c(Opcode.CHECK_CAST, result,
             new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference(STREAM)));
-        apply.addInstruction(342, new BuilderInstruction21t(Opcode.IF_EQZ, 9, target));
+        apply.addInstruction(at + 3, new BuilderInstruction21t(Opcode.IF_EQZ, result, target));
         var load = methods.get("load").getImplementation();
-        // beta.7 instruction 735 reads streamReuseLastLinkEnabled into v1.
-        load.addInstruction(736, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, 1, 1,
+        load.addInstruction(reuse[0], new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE, reuse[1], 1,
             ref("allowNativeReuse", List.of("Z"), "Z")));
-        load.addInstruction(737, new BuilderInstruction11x(Opcode.MOVE_RESULT, 1));
+        load.addInstruction(reuse[0] + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT, reuse[1]));
         wrapBooleanReturns(methods.get("regex"), "autoPlayGate");
+    }
+
+    static int[] selectionAnchor(MutableMethod method) {
+        var body = NuvioRemainingEpisodesPatch.instructions(method);
+        int call = NuvioAnchors.reference(body, NuvioNative.STREAM_SELECTOR_DEFAULT_REF, "native source selection");
+        if (!(body.get(call) instanceof RegisterRangeInstruction) || call + 2 >= body.size() ||
+            body.get(call + 1).getOpcode() != Opcode.MOVE_RESULT_OBJECT || body.get(call + 2).getOpcode() != Opcode.IF_EQZ)
+            throw new IllegalStateException("Native source selection result/branch changed");
+        int result = ((OneRegisterInstruction) body.get(call + 1)).getRegisterA();
+        if (((OneRegisterInstruction) body.get(call + 2)).getRegisterA() != result)
+            throw new IllegalStateException("Native source selection branches on a different value");
+        int streams = ((RegisterRangeInstruction) body.get(call)).getStartRegister();
+        int model = NuvioAnchors.fieldReceiver(body, NuvioNative.RESOLVED_SESSION_FIELD_REF, call);
+        int manual = NuvioAnchors.fieldReceiver(body, NuvioNative.MANUAL_SELECTION_FIELD_REF, call);
+        for (int register : new int[]{result, streams, model, manual}) if (register > 15)
+            throw new IllegalStateException("Preferred-source registers cannot encode invoke-static");
+        return new int[]{call + 2, result, streams, model, manual};
+    }
+
+    static int[] reuseAnchor(MutableMethod method) {
+        var body = NuvioRemainingEpisodesPatch.instructions(method);
+        int read = NuvioAnchors.reference(body, NuvioNative.STREAM_REUSE_FIELD_REF, "native reuse setting");
+        if (body.get(read).getOpcode() != Opcode.IGET_BOOLEAN || read + 1 >= body.size() ||
+            body.get(read + 1).getOpcode() != Opcode.IF_EQZ ||
+            ((OneRegisterInstruction) body.get(read)).getRegisterA() != ((OneRegisterInstruction) body.get(read + 1)).getRegisterA())
+            throw new IllegalStateException("Native source reuse flag/branch changed");
+        return new int[]{read + 1, ((OneRegisterInstruction) body.get(read)).getRegisterA()};
     }
 }

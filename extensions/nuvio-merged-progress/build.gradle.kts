@@ -10,3 +10,5 @@ android {
 dependencies {
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 }
+
+dependencies { compileOnly(project(":nuvio-contracts")) }

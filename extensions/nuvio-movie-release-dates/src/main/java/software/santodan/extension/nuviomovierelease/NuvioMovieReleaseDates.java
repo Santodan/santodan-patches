@@ -1,5 +1,7 @@
 package software.santodan.extension.nuviomovierelease;
 
+import software.santodan.nuvio.NuvioNative;
+
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -89,7 +91,7 @@ public final class NuvioMovieReleaseDates {
             });
             Object noop = Proxy.newProxyInstance(loader, new Class<?>[]{function0}, (proxy, method, args) ->
                 "invoke".equals(method.getName()) ? kotlinUnit(loader) : objectMethod(proxy, method, args));
-            Method row = findStatic(Class.forName("ab.uh", false, loader), "m", 13);
+            Method row = findStatic(Class.forName(NuvioNative.SETTINGS_ROWS_NAME, false, loader), "m", 13);
             row.invoke(null, title,
                 "Show known release dates on unreleased movie posters (dd-MMM-yy).",
                 stateValue(state), toggle, null, noop, false, null, 0L, false, composer, 0, 1008);
@@ -103,7 +105,7 @@ public final class NuvioMovieReleaseDates {
         PREPARED_BADGE.remove();
         if (cardLambda == null) return;
         try {
-            boolean library = cardLambda.getClass().getName().equals("ha.h2");
+            boolean library = cardLambda.getClass().getName().equals(NuvioNative.LIBRARY_CARD_NAME);
             Object item = field(cardLambda, library ? "m" : "o").get(cardLambda);
             String context = CARDS.get(cardLambda);
             if (context == null || !enabled(context)) return;
@@ -136,7 +138,7 @@ public final class NuvioMovieReleaseDates {
             findMethod(revision.getClass(), "getValue", 0).invoke(revision);
             // Subscribe every card so asynchronously loaded movie dates recompose.
             if (badge == null) return;
-            Class<?> text = Class.forName("y5.e2", false, loader);
+            Class<?> text = Class.forName(NuvioNative.TEXT_RENDERER_NAME, false, loader);
             Method method = findStatic(text, "b", 19);
             Object boxScope = staticField(Class.forName("e0.v", false, loader), "a").get(null);
             Object[] style = badgeStyle(loader, boxScope, composer);
@@ -153,7 +155,7 @@ public final class NuvioMovieReleaseDates {
     private static Object[] badgeStyle(ClassLoader loader, Object boxScope, Object composer) throws Exception {
         return (Object[]) findStatic(Class.forName("software.santodan.extension.nuviomenu.NuvioDateLabelStyle",
             false, loader), "build", 5).invoke(null, loader, boxScope, composer,
-                "ha.u1", PREFS);
+                NuvioNative.WIDE_CARD_NAME, PREFS);
     }
 
     private static boolean validId(String id) { return id != null && id.matches("tt[0-9]+"); }
@@ -220,8 +222,8 @@ public final class NuvioMovieReleaseDates {
         synchronized (NuvioMovieReleaseDates.class) {
             result = STATES.get(key);
             if (result == null) {
-                Class<?> compose = Class.forName("h1.h", false, loader);
-                result = findStatic(compose, "s", 1).invoke(null, Boolean.valueOf(enabled(key)));
+                Class<?> compose = Class.forName(NuvioNative.COMPOSE_FACTORY_NAME, false, loader);
+                result = findStatic(compose, NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, Boolean.valueOf(enabled(key)));
                 STATES.put(key, result);
             }
         }
@@ -234,8 +236,8 @@ public final class NuvioMovieReleaseDates {
         synchronized (NuvioMovieReleaseDates.class) {
             result = revisionState;
             if (result == null) {
-                Class<?> compose = Class.forName("h1.h", false, loader);
-                result = findStatic(compose, "s", 1).invoke(null, Integer.valueOf(0));
+                Class<?> compose = Class.forName(NuvioNative.COMPOSE_FACTORY_NAME, false, loader);
+                result = findStatic(compose, NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, Integer.valueOf(0));
                 revisionState = result;
             }
         }

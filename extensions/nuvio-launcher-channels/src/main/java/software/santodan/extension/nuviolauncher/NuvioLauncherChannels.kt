@@ -1,5 +1,9 @@
 package software.santodan.extension.nuviolauncher
 
+import software.santodan.nuvio.NuvioAccess
+
+import software.santodan.nuvio.NuvioNative
+
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
@@ -67,7 +71,7 @@ object NuvioLauncherChannels {
     @JvmStatic fun registerComponent(component: Any) {
         try {
             if (profileJob != null || !publisher.supported()) return
-            val manager = call(field(component, "B")!!, "get")!!
+            val manager = call(NuvioAccess.profileProvider(component)!!, "get")!!
             profileFlow = field(manager, "f") as StateFlow<*>
             for (name in listOf("santodan_nuvio_airing_series", "santodan_nuvio_date_label_style"))
                 app().getSharedPreferences(name, 0).registerOnSharedPreferenceChangeListener(artworkSettingsListener)
@@ -328,11 +332,11 @@ object NuvioLauncherChannels {
         try {
             val loader = composer.javaClass.classLoader!!
             val profile = active() ?: return
-            val stateFactory = method(loader.loadClass("h1.h"), "s", 1)
+            val stateFactory = method(loader.loadClass(NuvioNative.COMPOSE_FACTORY_NAME), NuvioNative.STATE_FACTORY_METHOD, 1)
             val redraw = menuRevision ?: stateFactory.invoke(null, 0).also { menuRevision = it }
             call(redraw, "getValue") // register Compose's observation of changing source choices
             val selected = selected(profile)
-            val toggleRow = method(loader.loadClass("ab.uh"), "m", 13)
+            val toggleRow = method(loader.loadClass(NuvioNative.SETTINGS_ROWS_NAME), "m", 13)
             fun renderSource(source: Source, rowComposer: Any) {
                 val stateKey = profile + ":" + source.key
                 val state = uiStates.getOrPut(stateKey) { stateFactory.invoke(null, source.key in selected) }
@@ -369,7 +373,7 @@ object NuvioLauncherChannels {
     }
     private fun section(composer: Any, key: String, title: String, description: String, body: (Any) -> Unit) {
         val loader = composer.javaClass.classLoader!!
-        val state = uiStates.getOrPut("expanded:" + key) { method(loader.loadClass("h1.h"), "s", 1).invoke(null, false) }
+        val state = uiStates.getOrPut("expanded:" + key) { method(loader.loadClass(NuvioNative.COMPOSE_FACTORY_NAME), NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, false) }
         val toggle = callback(loader) { method(state.javaClass, "setValue", 1).invoke(state, !(call(state, "getValue") as Boolean)) }
         val contentFunction = Proxy.newProxyInstance(loader, arrayOf(loader.loadClass("kotlin.jvm.functions.Function3"))) { proxy, invoked, args ->
             when (invoked.name) {
@@ -380,10 +384,10 @@ object NuvioLauncherChannels {
                 else -> null
             }
         }
-        val content = loader.loadClass("r1.s").getDeclaredConstructor(Int::class.javaPrimitiveType, Any::class.java, Boolean::class.javaPrimitiveType)
+        val content = loader.loadClass(NuvioNative.COMPOSABLE_LAMBDA_NAME).getDeclaredConstructor(Int::class.javaPrimitiveType, Any::class.java, Boolean::class.javaPrimitiveType)
             .newInstance(key.hashCode(), contentFunction, true)
-        val modifier = loader.loadClass("x1.n").getDeclaredField("b").apply { isAccessible = true }.get(null)
-        method(loader.loadClass("ab.kj"), "a", 11).invoke(null,
+        val modifier = loader.loadClass(NuvioNative.EMPTY_MODIFIER_NAME).getDeclaredField("b").apply { isAccessible = true }.get(null)
+        method(loader.loadClass(NuvioNative.SETTINGS_SECTION_NAME), "a", 11).invoke(null,
             title, description, call(state, "getValue"), toggle, modifier, null, null, callback(loader) {}, content, composer, 0)
     }
     private fun callback(loader: ClassLoader, action: () -> Unit): Any =

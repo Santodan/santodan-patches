@@ -24,20 +24,20 @@ public final class VerifyNuvioCurrentStream {
                     for (var c : DexBackedDexFile.fromInputStream(null, input).getClasses()) check(classes.put(c.getType(), c) == null);
                 }
         }
-        MutableClass owner = new MutableClass(classes.get("Lva/z;"));
-        var nativeMethod = new MutableMethod(NuvioRemainingEpisodesPatch.unique(owner, "q", 13));
+        MutableClass owner = new MutableClass(classes.get("Lab/bp;"));
+        var nativeMethod = new MutableMethod(NuvioRemainingEpisodesPatch.unique(owner, "h", 13));
         NuvioCurrentStreamPatch.validate(owner);
         MutableClass missing = new MutableClass(owner);
-        missing.getMethods().removeIf(m -> m.getName().equals("q"));
+        missing.getMethods().removeIf(m -> m.getName().equals("h"));
         rejected(() -> NuvioCurrentStreamPatch.hook(missing));
         MutableClass changed = new MutableClass(owner);
-        NuvioRemainingEpisodesPatch.unique(changed, "q", 13).getImplementation().replaceInstruction(141,
+        NuvioRemainingEpisodesPatch.unique(changed, "h", 13).getImplementation().replaceInstruction(141,
             new com.android.tools.smali.dexlib2.builder.instruction.BuilderInstruction10x(Opcode.NOP));
         rejected(() -> NuvioCurrentStreamPatch.hook(changed));
         MutableClass ambiguous = new MutableClass(owner);
         var parameters = new ArrayList<com.android.tools.smali.dexlib2.iface.MethodParameter>(nativeMethod.getParameters());
         parameters.set(0, new ImmutableMethodParameter("Ljava/lang/Object;", Set.of(), null));
-        ambiguous.getMethods().add(new MutableMethod(new ImmutableMethod(owner.getType(), "q", parameters,
+        ambiguous.getMethods().add(new MutableMethod(new ImmutableMethod(owner.getType(), "h", parameters,
             "V", nativeMethod.getAccessFlags(), Set.of(), Set.of(), nativeMethod.getImplementation())));
         rejected(() -> NuvioCurrentStreamPatch.hook(ambiguous));
         NuvioCurrentStreamPatch.hook(owner);
@@ -46,7 +46,7 @@ public final class VerifyNuvioCurrentStream {
         DexPool.writeTo(output.toString(), new ImmutableDexFile(Opcodes.getDefault(), List.of(owner)));
         try (var input = new BufferedInputStream(new FileInputStream(output))) {
             var reloaded = new MutableClass(DexBackedDexFile.fromInputStream(null, input).getClasses().iterator().next());
-            var body = NuvioAiringSeriesPatch.instructions(NuvioRemainingEpisodesPatch.unique(reloaded, "q", 13));
+            var body = NuvioAiringSeriesPatch.instructions(NuvioRemainingEpisodesPatch.unique(reloaded, "h", 13));
             check(body.size() == NuvioAiringSeriesPatch.instructions(nativeMethod).size() + 2);
             check(body.get(142).getOpcode() == Opcode.INVOKE_STATIC);
             var call = (com.android.tools.smali.dexlib2.iface.instruction.FiveRegisterInstruction)body.get(142);
@@ -55,7 +55,7 @@ public final class VerifyNuvioCurrentStream {
             check(body.get(143).getOpcode() == Opcode.MOVE_RESULT_OBJECT);
             // Remove the inserted block: every original opcode, register, reference,
             // branch target and Compose group must survive the write/reload unchanged.
-            var restored = NuvioRemainingEpisodesPatch.unique(reloaded, "q", 13);
+            var restored = NuvioRemainingEpisodesPatch.unique(reloaded, "h", 13);
             for (int i = 0; i < 2; i++) restored.getImplementation().removeInstruction(142);
             check(NuvioPlaybackButtonsPatch.fingerprint(restored).equals(NuvioPlaybackButtonsPatch.fingerprint(nativeMethod)));
         }

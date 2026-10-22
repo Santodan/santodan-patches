@@ -1,5 +1,7 @@
 package software.santodan.extension.nuvioairing;
 
+import software.santodan.nuvio.NuvioNative;
+
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -90,7 +92,7 @@ public final class NuvioAiringSeries {
             });
             Object noop = Proxy.newProxyInstance(loader, new Class<?>[]{function0}, (proxy, method, args) ->
                 "invoke".equals(method.getName()) ? kotlinUnit(loader) : objectMethod(proxy, method, args));
-            Method row = findStatic(Class.forName("ab.uh", false, loader), "m", 13);
+            Method row = findStatic(Class.forName(NuvioNative.SETTINGS_ROWS_NAME, false, loader), "m", 13);
             row.invoke(null, "Keep airing series in Upcoming",
                 "With Separate Upcoming Row, keep library series there until their latest scheduled episode has aired.",
                 stateValue(state), toggle, null, noop, false, null, 0L, false, composer, 0, 1008);
@@ -159,7 +161,7 @@ public final class NuvioAiringSeries {
             findMethod(revision.getClass(), "getValue", 0).invoke(revision);
             // Subscribe every card so asynchronously loaded finale dates recompose.
             if (badge == null) return;
-            Class<?> text = Class.forName("y5.e2", false, loader);
+            Class<?> text = Class.forName(NuvioNative.TEXT_RENDERER_NAME, false, loader);
             Method method = findStatic(text, "b", 19);
             Object boxScope = staticField(Class.forName("e0.v", false, loader), "a").get(null);
             Object[] style = badgeStyle(loader, boxScope, composer);
@@ -176,7 +178,7 @@ public final class NuvioAiringSeries {
     private static Object[] badgeStyle(ClassLoader loader, Object boxScope, Object composer) throws Exception {
         return (Object[]) findStatic(Class.forName("software.santodan.extension.nuviomenu.NuvioDateLabelStyle",
             false, loader), "build", 5).invoke(null, loader, boxScope, composer,
-                "ha.u1", PREFS);
+                NuvioNative.WIDE_CARD_NAME, PREFS);
     }
 
     private static void fetchFinale(String id) {
@@ -252,8 +254,8 @@ public final class NuvioAiringSeries {
         synchronized (NuvioAiringSeries.class) {
             result = enabledState;
             if (result == null) {
-                Class<?> compose = Class.forName("h1.h", false, loader);
-                result = findStatic(compose, "s", 1).invoke(null, Boolean.valueOf(enabled()));
+                Class<?> compose = Class.forName(NuvioNative.COMPOSE_FACTORY_NAME, false, loader);
+                result = findStatic(compose, NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, Boolean.valueOf(enabled()));
                 enabledState = result;
             }
         }
@@ -266,8 +268,8 @@ public final class NuvioAiringSeries {
         synchronized (NuvioAiringSeries.class) {
             result = revisionState;
             if (result == null) {
-                Class<?> compose = Class.forName("h1.h", false, loader);
-                result = findStatic(compose, "s", 1).invoke(null, Integer.valueOf(0));
+                Class<?> compose = Class.forName(NuvioNative.COMPOSE_FACTORY_NAME, false, loader);
+                result = findStatic(compose, NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, Integer.valueOf(0));
                 revisionState = result;
             }
         }
@@ -366,5 +368,3 @@ public final class NuvioAiringSeries {
         throw new NoSuchMethodException(owner.getName() + '.' + name + '/' + parameters);
     }
 }
-
-

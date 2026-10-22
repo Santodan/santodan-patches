@@ -6,10 +6,10 @@ import java.util.*;
 public final class ButtonLayout {
     public static final List<String> IDS = Collections.unmodifiableList(Arrays.asList(
         "play", "next", "subtitles", "audio", "sources", "engine", "episodes", "party",
-        "speed", "aspect", "external", "info", "report", "introdb"));
+        "chapters", "speed", "aspect", "external", "info", "report", "introdb"));
     public static final List<String> LABELS = Collections.unmodifiableList(Arrays.asList(
         "Play / pause", "Next episode", "Subtitles", "Audio tracks", "Sources", "Player engine",
-        "Episodes", "Watch party", "Playback speed", "Aspect ratio", "External player", "Stream info", "Report playback issue", "Submit segment to IntroDB"));
+        "Episodes", "Watch party", "Chapters", "Playback speed", "Aspect ratio", "External player", "Stream info", "Report playback issue", "Submit segment to IntroDB"));
     public final List<String> order;
     public final Set<String> hidden, more;
     public final boolean enabled;
@@ -27,7 +27,7 @@ public final class ButtonLayout {
         this.hidden = Collections.unmodifiableSet(invisible);
         this.more = Collections.unmodifiableSet(secondary);
     }
-    public static ButtonLayout defaults() { return new ButtonLayout(false, "", "", "speed,aspect,external,info,report"); }
+    public static ButtonLayout defaults() { return new ButtonLayout(false, "", "", "speed,aspect,engine,external,info,report"); }
     private static LinkedHashSet<String> parse(String text) {
         LinkedHashSet<String> values = new LinkedHashSet<>();
         for (String id : text.split(",")) if (IDS.contains(id)) values.add(id);

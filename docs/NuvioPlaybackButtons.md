@@ -1,5 +1,8 @@
 # NuvioTV playback buttons
 
+Current target: **NuvioTV 1.1.0-beta.8 (1071)**. See [beta.8 contracts and verification](NuvioBeta8.md). The older DEX notes and artifact paths below record the beta.7 implementation; beta.8 replaces its native symbols.
+
+
 **NuvioTV - Customize playback buttons** targets `com.nuvio.tv` `1.1.0-beta.7`
 (1070). It is independently selectable and uses the shared, unnamed settings-menu
 dependency. No other optional Nuvio patch is required.

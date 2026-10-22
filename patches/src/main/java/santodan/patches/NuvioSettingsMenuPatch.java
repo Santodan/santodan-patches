@@ -1,5 +1,7 @@
 package santodan.patches;
 
+import software.santodan.nuvio.NuvioNative;
+
 import app.morphe.patcher.patch.BytecodePatch;
 import app.morphe.patcher.patch.PatchKt;
 import app.morphe.patcher.util.proxy.mutableTypes.MutableClass;
@@ -31,11 +33,13 @@ public final class NuvioSettingsMenuPatch {
             builder.execute(context -> {
                 String version = context.getPackageMetadata().getVersionName();
                 NuvioLayout.use(version);
-                if (!"com.nuvio.tv".equals(context.getPackageMetadata().getPackageName()))
+                if (!NuvioNative.PACKAGE_NAME.equals(context.getPackageMetadata().getPackageName()))
                     throw NuvioAiringSeriesPatch.unsupported("Expected com.nuvio.tv");
-                validateStateFactory(new MutableClass(context.classDefBy("Lh1/h;")));
+                validateStateFactory(new MutableClass(context.classDefBy(NuvioNative.COMPOSE_FACTORY_TYPE)));
+                NuvioAccessPatch.install(context.mutableClassDefBy(NuvioAccessPatch.TYPE),
+                    type -> new MutableClass(context.classDefBy(type)));
                 // Install the shared collapsible Layout section.
-                hookLayoutList(context.mutableClassDefBy("Lab/y9;"));
+                hookLayoutList(context.mutableClassDefBy(NuvioNative.LAYOUT_ITEMS_TYPE));
                 return Unit.INSTANCE;
             });
             return Unit.INSTANCE;
@@ -44,11 +48,11 @@ public final class NuvioSettingsMenuPatch {
     }
 
     static void validateStateFactory(MutableClass owner) {
-        MutableMethod method = NuvioRemainingEpisodesPatch.unique(owner, "s", 1);
-        if (!owner.getType().equals("Lh1/h;") ||
+        MutableMethod method = NuvioRemainingEpisodesPatch.unique(owner, NuvioNative.STATE_FACTORY_METHOD, 1);
+        if (!owner.getType().equals(NuvioNative.COMPOSE_FACTORY_TYPE) ||
             !method.getParameterTypes().equals(List.of("Ljava/lang/Object;")) ||
-            !method.getReturnType().equals("Lh1/t1;") || (method.getAccessFlags() & 8) == 0)
-            throw NuvioAiringSeriesPatch.unsupported("Compose state factory must be h1.h.s(Object):h1.t1");
+            !method.getReturnType().equals(NuvioNative.COMPOSE_STATE_TYPE) || (method.getAccessFlags() & 8) == 0)
+            throw NuvioAiringSeriesPatch.unsupported("Compose state factory does not match the reviewed native contract");
     }
 
     static void hookLayoutList(MutableClass owner) {
@@ -57,12 +61,12 @@ public final class NuvioSettingsMenuPatch {
         int matches = 0;
         for (int i = instructions.size() - 1; i >= 0; i--) {
             Instruction instruction = instructions.get(i);
-            if (!NuvioAiringSeriesPatch.calls(instruction, "Lab/da;", "<init>")) continue;
+            if (!NuvioAiringSeriesPatch.calls(instruction, NuvioNative.SETTINGS_ITEM_TYPE, "<init>")) continue;
             MethodReference constructor = (MethodReference) ((ReferenceInstruction) instruction).getReference();
-            if (!constructor.getParameterTypes().contains("Lab/ra;")) continue;
+            if (!constructor.getParameterTypes().contains(NuvioNative.SETTINGS_LAYOUT_TYPE)) continue;
             int anchor = -1;
             for (int j = i + 1; j < Math.min(i + 12, instructions.size()); j++) {
-                if (NuvioAiringSeriesPatch.calls(instructions.get(j), "Lg0/i;", "q")) { anchor = j; break; }
+                if (NuvioAiringSeriesPatch.calls(instructions.get(j), NuvioNative.LAZY_LIST_SCOPE_TYPE, "q")) { anchor = j; break; }
             }
             if (anchor < 0 || !(instructions.get(anchor) instanceof FiveRegisterInstruction))
                 throw NuvioAiringSeriesPatch.unsupported("Layout section list anchor changed");

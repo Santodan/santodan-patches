@@ -1,5 +1,7 @@
 package software.santodan.extension.nuviomerged
 
+import software.santodan.nuvio.NuvioNative
+
 import android.app.Application
 import android.app.Activity
 import android.content.Context
@@ -77,7 +79,7 @@ object NuvioMergedProgress {
         java.util.WeakHashMap<Any, Map<String, Set<Any>>>())
     @Volatile private var repository: Any? = null
     @Volatile private var allProgressMethod = "q"
-    @Volatile private var providerLayout = NuvioProviderLayout.forRepository("ba.ze")
+    @Volatile private var providerLayout = NuvioProviderLayout.forRepository(NuvioNative.PROGRESS_REPOSITORY_NAME)
     @Volatile private var proxyRepository: Any? = null
     @Volatile private var providerProxy: Any? = null
     private val mergedProgress = MutableStateFlow<List<Any>>(emptyList())
@@ -220,7 +222,7 @@ object NuvioMergedProgress {
             val loader = composer.javaClass.classLoader
             var revision = menuRevision
             if (revision == null) {
-                revision = findMethod(loader.loadClass("h1.h"), "s", 1).invoke(null, 0)
+                revision = findMethod(loader.loadClass(NuvioNative.COMPOSE_FACTORY_NAME), NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, 0)
                 menuRevision = revision
             }
             findMethod(revision!!.javaClass, "getValue", 0).invoke(revision)
@@ -233,11 +235,11 @@ object NuvioMergedProgress {
                     else -> "SantodanTrackingContent"
                 }
             }
-            val content = loader.loadClass("r1.s").getDeclaredConstructor(Int::class.javaPrimitiveType, Any::class.java,
+            val content = loader.loadClass(NuvioNative.COMPOSABLE_LAMBDA_NAME).getDeclaredConstructor(Int::class.javaPrimitiveType, Any::class.java,
                 Boolean::class.javaPrimitiveType).newInstance(0x534d4750, body, true)
-            findMethod(loader.loadClass("ab.kj"), "a", 11).invoke(null,
+            findMethod(loader.loadClass(NuvioNative.SETTINGS_SECTION_NAME), "a", 11).invoke(null,
                 "Tracking progress", "Merge services, choose the main tracker and sync", settingsExpanded,
-                toggle, fieldStatic(loader.loadClass("x1.n"), "b"), null, null,
+                toggle, fieldStatic(loader.loadClass(NuvioNative.EMPTY_MODIFIER_NAME), "b"), null, null,
                 menuCallback(loader) {}, content, composer, 0)
             renderTrackingDialog(composer)
         } catch (error: Throwable) { Log.e(TAG, "Merged settings rendering failed", error) }
@@ -263,10 +265,10 @@ object NuvioMergedProgress {
             renderMenuAction(composer, "Main tracking: ${trackingLabel(mainTracking())}") { chooseMainTracking() }
             renderMenuAction(composer, "Services to merge: ${selectedTrackings().joinToString { trackingLabel(it) }}") { chooseTrackings() }
             renderMenuAction(composer, if (merging.get()) "Sync in progress" else "Sync now") { showSync() }
-            findMethod(composer.javaClass.classLoader.loadClass("ab.kj"), "e", 6).invoke(null,
+            findMethod(composer.javaClass.classLoader.loadClass(NuvioNative.SETTINGS_SECTION_NAME), "e", 6).invoke(null,
                 0, 4, composer, if (syncProfile == snapshotKey()) syncMessage else
                     preferences().getString(trackingKey("last_sync"), "Not synced yet"), null,
-                fieldStatic(composer.javaClass.classLoader.loadClass("x1.n"), "b"))
+                fieldStatic(composer.javaClass.classLoader.loadClass(NuvioNative.EMPTY_MODIFIER_NAME), "b"))
         } catch (error: Throwable) { Log.e(TAG, "Merged settings rendering failed", error) }
     }
 
@@ -282,8 +284,8 @@ object NuvioMergedProgress {
 
     private fun renderMenuAction(composer: Any, title: String, action: () -> Unit) {
         val loader = composer.javaClass.classLoader
-        findMethod(loader.loadClass("ab.kj"), "d", 6).invoke(null, title, menuCallback(loader, action),
-            fieldStatic(loader.loadClass("x1.n"), "b"), menuCallback(loader) {}, composer, 0)
+        findMethod(loader.loadClass(NuvioNative.SETTINGS_SECTION_NAME), "d", 6).invoke(null, title, menuCallback(loader, action),
+            fieldStatic(loader.loadClass(NuvioNative.EMPTY_MODIFIER_NAME), "b"), menuCallback(loader) {}, composer, 0)
     }
 
     private fun openDialog(mode: String) {
@@ -373,7 +375,7 @@ object NuvioMergedProgress {
             findMethod(composer.javaClass, "d0", 1).invoke(composer, 1403088901)
             try {
                 val loader = composer.javaClass.classLoader
-                val revision = menuRevision ?: findMethod(loader.loadClass("h1.h"), "s", 1)
+                val revision = menuRevision ?: findMethod(loader.loadClass(NuvioNative.COMPOSE_FACTORY_NAME), NuvioNative.STATE_FACTORY_METHOD, 1)
                     .invoke(null, 0).also { menuRevision = it }
                 findMethod(revision.javaClass, "getValue", 0).invoke(revision)
                 if (!enabled() || !preferences().getBoolean(SHOW_PROVIDER, false)) return
@@ -385,23 +387,23 @@ object NuvioMergedProgress {
                     app.resources.getIdentifier(resource.substringAfter('/'), resource.substringBefore('/'), resourcePackage)
                 }
                 if (resourceId == 0) return
-                val modifierType = loader.loadClass("x1.q")
-                var modifier = fieldStatic(loader.loadClass("x1.n"), "b")
+                val modifierType = loader.loadClass(NuvioNative.MODIFIER_NAME)
+                var modifier = fieldStatic(loader.loadClass(NuvioNative.EMPTY_MODIFIER_NAME), "b")
                 val scope = fieldStatic(loader.loadClass("e0.v"), "a")
                 modifier = findMethod(scope.javaClass, "a", 2).invoke(scope, modifier,
-                    fieldStatic(loader.loadClass("x1.b"), "i"))
-                val layer = loader.loadClass("x1.v").getDeclaredConstructor(Float::class.javaPrimitiveType)
+                    fieldStatic(loader.loadClass(NuvioNative.ALIGNMENTS_NAME), "i"))
+                val layer = loader.loadClass(NuvioNative.GRAPHICS_MODIFIER_NAME).getDeclaredConstructor(Float::class.javaPrimitiveType)
                     .apply { isAccessible = true }.newInstance(10f)
                 modifier = modifierType.getMethod("d", modifierType).invoke(modifier, layer)
                 modifier = findMethod(loader.loadClass("e0.b"), "u", 2).invoke(null, modifier, 6f)
-                modifier = findMethod(loader.loadClass("y.n"), "g", 3).invoke(null, modifier,
+                modifier = findMethod(loader.loadClass("y.m"), "g", 3).invoke(null, modifier,
                     0xcc10101000000000UL.toLong(), fieldStatic(loader.loadClass("e2.g0"), "b"))
                 modifier = findMethod(loader.loadClass("e0.b"), "u", 2).invoke(null, modifier, 4f)
                 modifier = findMethod(loader.loadClass("androidx.compose.foundation.layout.b"), "n", 2)
                     .invoke(null, modifier, 24f)
-                findMethod(loader.loadClass("eb.m"), "b", 15).invoke(null,
+                findMethod(loader.loadClass(NuvioNative.POSTER_IMAGE_NAME), "b", 15).invoke(null,
                     "android.resource://${app.packageName}/$resourceId", "Progress from $source", modifier,
-                    null, null, null, null, null, fieldStatic(loader.loadClass("x1.b"), "e"),
+                    null, null, null, null, null, fieldStatic(loader.loadClass(NuvioNative.ALIGNMENTS_NAME), "e"),
                     fieldStatic(loader.loadClass("v2.l"), "b"), 1f, composer, 0, 0, 2552)
             } finally { findMethod(composer.javaClass, "p", 1).invoke(composer, false) }
         } catch (error: Throwable) { Log.e(TAG, "Provider badge rendering failed", error) }
@@ -421,7 +423,7 @@ object NuvioMergedProgress {
                 else -> "SantodanMergedSettingsCallback"
             }
         }
-        findMethod(loader.loadClass("ab.uh"), "m", 13).invoke(null,
+        findMethod(loader.loadClass(NuvioNative.SETTINGS_ROWS_NAME), "m", 13).invoke(null,
             title, description, checked, callback(action), null, callback {}, false, null, 0L, false, composer, 0, 1008)
     }
 
@@ -784,7 +786,7 @@ object NuvioMergedProgress {
                 val delta = synchronized(badgeDeltas) { badgeDeltas.getOrPut(home) { NuvioBadgeDelta() } }
                 val changed = delta.changed(mergedWatchedHistory, snapshot)
                 if (changed.isEmpty()) return@execute
-                findMethod(home.javaClass.classLoader.loadClass("sa.m5"), "g", 2)
+                findMethod(home.javaClass.classLoader.loadClass(NuvioNative.HOME_PIPELINE_NAME), "g", 2)
                     .invoke(null, home, changed)
                 val holder = field(home, "u").get(home)
                 val labels = (field(holder, "f").get(holder) as StateFlow<*>).value as Set<*>
@@ -821,7 +823,7 @@ object NuvioMergedProgress {
         if (deferred()) return
         val cacheKey = snapshotKey()
         val started = System.nanoTime()
-        // NuvioTV 1.1.0-beta.7 constructor fields: a = WatchProgressPreferences,
+        // NuvioTV 1.1.0-beta.8 constructor fields: a = WatchProgressPreferences,
         // j = ProfileManager, k = tracking providers.
         val registry = field(repo, "k").get(repo)
         val localStore = field(repo, "a").get(repo)

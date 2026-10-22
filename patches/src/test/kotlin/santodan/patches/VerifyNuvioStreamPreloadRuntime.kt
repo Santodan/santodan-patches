@@ -12,7 +12,7 @@ private class RuntimeProfile { @JvmField val f = MutableStateFlow(1) }
 private class RuntimeProvider(private val value: Any) { fun get(): Any = value }
 private class RuntimeComponent(profile: RuntimeProfile, repository: RuntimeRepository) {
     @JvmField val B = RuntimeProvider(profile)
-    @JvmField val Y2 = RuntimeProvider(repository)
+    @JvmField val e3 = RuntimeProvider(repository)
 }
 private class RuntimeProgress(val contentType: String, val videoId: String, val season: Int?, val episode: Int?)
 private class RuntimeCard(@JvmField val x: RuntimeProgress, @JvmField val y: Any? = null)
@@ -24,10 +24,10 @@ private class RuntimeAddonStreams(val streams: List<String>)
 private class RuntimePlayerNext(@JvmField val a: String, @JvmField val b: Int, @JvmField val c: Int,
                                @JvmField val h: Boolean = true, @JvmField val i: Boolean? = true,
                                @JvmField val g: String? = "2026-01-01")
-private class RuntimePlayerState(@JvmField val z0: String, @JvmField val r1: RuntimePlayerNext?,
+private class RuntimePlayerState(@JvmField val C0: String, @JvmField val v1: RuntimePlayerNext?,
                                 @JvmField val a: Boolean = true, @JvmField val b: Boolean = false,
                                 @JvmField val c: Boolean = false, @JvmField val d: Any? = null,
-                                @JvmField val f1: String? = null, @JvmField val g: String = "")
+                                @JvmField val j1: String? = null, @JvmField val g: String = "")
 private class RuntimePlayerController { @JvmField val T: String = "SERIES" }
 private class RuntimePlayerModel(private val flow: MutableStateFlow<RuntimePlayerState>) {
     @JvmField val Y = RuntimePlayerController()

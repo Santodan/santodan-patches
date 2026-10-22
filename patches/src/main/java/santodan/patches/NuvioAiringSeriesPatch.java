@@ -1,5 +1,7 @@
 package santodan.patches;
 
+import software.santodan.nuvio.NuvioNative;
+
 import app.morphe.patcher.patch.ApkFileType;
 import app.morphe.patcher.patch.AppTarget;
 import app.morphe.patcher.patch.BytecodePatch;
@@ -35,8 +37,8 @@ import kotlin.Unit;
 /** Keeps currently-airing library series in Nuvio's separate Upcoming row. */
 public final class NuvioAiringSeriesPatch {
     public static final String NAME = "NuvioTV - Keep airing series in Upcoming";
-    static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = NuvioLayout.BETA7;
+    static final String PACKAGE = NuvioNative.PACKAGE_NAME;
+    static final String VERSION = NuvioLayout.BETA8;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuvioairing/NuvioAiringSeries;";
 
     private NuvioAiringSeriesPatch() {}
@@ -55,10 +57,10 @@ public final class NuvioAiringSeriesPatch {
                 NuvioLayout.use(version);
                     if (!PACKAGE.equals(context.getPackageMetadata().getPackageName()) || !NuvioLayout.recent(version))
                         throw unsupported("Expected " + PACKAGE + " " + VERSION);
-                    hookNextUpModel(context.mutableClassDefBy("Lsa/q9;"));
-                    hookUpcomingSplit(context.mutableClassDefBy("Lsa/m5;"));
-                    hookCard(context.mutableClassDefBy("Lha/b1;"), "Lc7/a;");
-                    hookWide(context.mutableClassDefBy("Lha/u1;"));
+                    hookNextUpModel(context.mutableClassDefBy(NuvioNative.HOME_ITEM_TYPE));
+                    hookUpcomingSplit(context.mutableClassDefBy(NuvioNative.HOME_PIPELINE_TYPE));
+                    hookCard(context.mutableClassDefBy(NuvioNative.HOME_CARD_TYPE), NuvioNative.PROVIDER_BADGE_TYPE);
+                    hookWide(context.mutableClassDefBy(NuvioNative.WIDE_CARD_TYPE));
                     return Unit.INSTANCE;
                 });
                 return Unit.INSTANCE;
@@ -75,7 +77,7 @@ public final class NuvioAiringSeriesPatch {
             Object reference = ((ReferenceInstruction) instruction).getReference();
             if (!(reference instanceof FieldReference)) continue;
             FieldReference field = (FieldReference) reference;
-            if (!"Lsa/q9;".equals(field.getDefiningClass()) || !"n".equals(field.getName()) || !"Z".equals(field.getType())) continue;
+            if (!NuvioNative.HOME_ITEM_TYPE.equals(field.getDefiningClass()) || !"n".equals(field.getName()) || !"Z".equals(field.getType())) continue;
             if (match >= 0) throw unsupported("Multiple Upcoming split predicates found");
             match = i; value = ((TwoRegisterInstruction) instruction).getRegisterA();
             model = ((TwoRegisterInstruction) instruction).getRegisterB();
@@ -110,7 +112,7 @@ public final class NuvioAiringSeriesPatch {
         MutableMethod target = unique(owner, "invoke", 3);
         List<Instruction> ins = instructions(target);
         int imageCall = -1;
-        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "Leb/m;", "b")) {
+        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), NuvioNative.POSTER_IMAGE_TYPE, "b")) {
             if (imageCall >= 0) throw unsupported("Multiple Continue Watching image anchors found");
             imageCall = i;
         }
@@ -137,7 +139,7 @@ public final class NuvioAiringSeriesPatch {
             throw unsupported("Wide card register layout changed");
         List<Instruction> ins = instructions(target);
         int imageCall = -1;
-        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "Leb/m;", "b")) {
+        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), NuvioNative.POSTER_IMAGE_TYPE, "b")) {
             if (imageCall >= 0) throw unsupported("Multiple Wide image anchors found");
             imageCall = i;
         }
@@ -160,7 +162,7 @@ public final class NuvioAiringSeriesPatch {
                 && method.getImplementation() != null) {
                 // Beta4 has a 27-argument default-mask overload as well as the real
                 // model constructor. Register only fully initialized model instances.
-                if ("Lsa/q9;".equals(owner.getType()) && "<init>".equals(name)
+                if (NuvioNative.HOME_ITEM_TYPE.equals(owner.getType()) && "<init>".equals(name)
                     && !"Lcom/nuvio/tv/domain/model/MDBListRatings;".contentEquals(
                         method.getParameterTypes().get(parameters - 1))) continue;
                 if (result != null) throw unsupported("Multiple " + owner.getType() + "->" + name + " matches");
@@ -223,5 +225,3 @@ public final class NuvioAiringSeriesPatch {
         }
     }
 }
-
-

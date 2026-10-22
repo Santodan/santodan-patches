@@ -1,5 +1,7 @@
 package software.santodan.extension.nuviobuttons;
 
+import software.santodan.nuvio.NuvioNative;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,15 +23,16 @@ final class ButtonsIcons {
         } else {
             String owner, method;
             switch (id) {
-                case "play": owner = "a.a"; method = "B"; break;
-                case "next": owner = "d7.a"; method = "U"; break;
-                case "audio": owner = "x0.k"; method = "c"; break;
-                case "sources": case "engine": owner = "u6.g"; method = "Y"; break;
-                case "party": owner = "ee.b"; method = "n"; break;
-                case "speed": owner = "u9.a5"; method = "p"; break;
-                case "external": owner = "wb.b"; method = "g"; break;
-                case "info": owner = "a.b"; method = "p"; break;
-                case "report": owner = "ee.b"; method = "l"; break;
+                case "play": owner = NuvioNative.ICON_MEDIA_NAME; method = "q"; break;
+                case "next": owner = NuvioNative.ICON_NEXT_NAME; method = "r"; break;
+                case "audio": owner = NuvioNative.ICON_AUDIO_NAME; method = "l"; break;
+                case "sources": case "engine": owner = NuvioNative.RESOURCE_HELPER_NAME; method = "U"; break;
+                case "party": owner = NuvioNative.ICON_PARTY_NAME; method = "q"; break;
+                case "speed": owner = NuvioNative.ICON_SPEED_NAME; method = "m"; break;
+                case "external": owner = NuvioNative.ICON_EXTERNAL_NAME; method = "f"; break;
+                case "info": owner = NuvioNative.ICON_MEDIA_NAME; method = "p"; break;
+                case "report": owner = NuvioNative.ICON_PARTY_NAME; method = "o"; break;
+                case "chapters": return inlineIcon(loader, "chapters");
                 default: throw new IllegalArgumentException(id);
             }
             result = NuvioPlaybackButtons.method(loader.loadClass(owner), method, 0).invoke(null);
@@ -38,19 +41,19 @@ final class ButtonsIcons {
         return result;
     }
     private static Object inlineIcon(ClassLoader loader, String id) throws Exception {
-        String owner = id.equals("subtitles") ? "ee.b" : id.equals("episodes") ? "wa.d0" : "u9.n6";
-        String field = id.equals("subtitles") ? "d" : "a";
+        String owner = id.equals("subtitles") ? NuvioNative.ICON_PARTY_NAME : id.equals("episodes") ? NuvioNative.ICON_EXTERNAL_NAME : id.equals("chapters") ? NuvioNative.ICON_CHAPTERS_NAME : NuvioNative.ICON_ASPECT_NAME;
+        String field = id.equals("subtitles") ? "d" : id.equals("chapters") ? "c" : "a";
         java.lang.reflect.Field nativeCache = loader.loadClass(owner).getDeclaredField(field);
         nativeCache.setAccessible(true);
         Object existing = nativeCache.get(null);
         if (existing != null) return existing;
         // These native glyphs are initialized inline by the player, with no callable factory.
         // Supply the same caption/list/aspect symbols when Settings opens before playback.
-        Object vector = loader.loadClass("k2.d").getDeclaredConstructor(String.class, float.class, float.class,
+        Object vector = loader.loadClass(NuvioNative.VECTOR_BUILDER_NAME).getDeclaredConstructor(String.class, float.class, float.class,
             float.class, float.class, long.class, int.class, boolean.class, int.class)
             .newInstance("Santodan.Playback." + id, 24f, 24f, 24f, 24f, 0L, 0, false, 96);
         Object path = loader.loadClass("io.sentry.d2").getDeclaredConstructor(int.class).newInstance(1);
-        if (id.equals("episodes")) {
+        if (id.equals("episodes") || id.equals("chapters")) {
             for (int y : new int[]{5, 11, 17}) {
                 polygon(path, 3,y, 5,y, 5,y+2, 3,y+2);
                 polygon(path, 7,y, 21,y, 21,y+2, 7,y+2);
@@ -70,11 +73,11 @@ final class ButtonsIcons {
             for (int x : new int[]{7, 13}) polygon(path, x,8, x+4,8, x+4,10, x+2,10,
                 x+2,14, x+4,14, x+4,16, x,16);
         }
-        java.lang.reflect.Field black = loader.loadClass("e2.z").getDeclaredField("b"); black.setAccessible(true);
+        java.lang.reflect.Field black = loader.loadClass(NuvioNative.COLOR_NAME).getDeclaredField("b"); black.setAccessible(true);
         Object brush = loader.loadClass("e2.y0").getDeclaredConstructor(long.class).newInstance(black.get(null));
         java.lang.reflect.Field nodes = path.getClass().getDeclaredField("b"); nodes.setAccessible(true);
-        NuvioPlaybackButtons.method(loader.loadClass("k2.d"), "a", 4).invoke(null, vector, nodes.get(path), 0, brush);
-        return NuvioPlaybackButtons.method(loader.loadClass("k2.d"), "b", 0).invoke(vector);
+        NuvioPlaybackButtons.method(loader.loadClass(NuvioNative.VECTOR_BUILDER_NAME), "a", 4).invoke(null, vector, nodes.get(path), 0, brush);
+        return NuvioPlaybackButtons.method(loader.loadClass(NuvioNative.VECTOR_BUILDER_NAME), "b", 0).invoke(vector);
     }
     private static void polygon(Object path, float... points) throws Exception {
         NuvioPlaybackButtons.method(path.getClass(), "o", 2).invoke(path, points[0], points[1]);

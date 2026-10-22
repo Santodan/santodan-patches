@@ -23,31 +23,31 @@ fun main(args: Array<String>) {
         "x1.n" to """package x1; public class n {public static Modifier b=new Modifier();}""",
         "p2.b" to """package p2; public class b {public android.view.KeyEvent a;public b(android.view.KeyEvent e){a=e;}}""",
         "p2.d" to """package p2; public class d {public static x1.Modifier e(x1.Modifier m,kotlin.jvm.functions.Function1 f){m=m.copy();m.key=f;return m;}}""",
-        "c2.a0" to """package c2; public class a0 {public int requests;}""",
-        "c2.d" to """package c2; public class d {public static x1.Modifier d(x1.Modifier m,a0 f){m=m.copy();m.focus=f;return m;}}""",
-        "h1.j" to """package h1; public class j {public static int created;public static c2.a0 f(l0 c){created++;c2.a0 focus=new c2.a0();c.o0(focus);return focus;}}""",
-        "h1.f0" to """package h1; public class f0 {public static void d(Object composer,Object key,kotlin.jvm.functions.Function2 action){l0 c=(l0)composer;Object old=c.R();if(!key.equals(old)){c.o0(key);action.invoke(null,null);}}}""",
-        "ab.i1" to """package ab; public class i1 implements kotlin.jvm.functions.Function2 {c2.a0 focus;
-            public i1(int mode,c2.a0 f,kotlin.coroutines.Continuation c){if(mode!=4)throw new AssertionError();focus=f;}
+        "c2.z" to """package c2; public class z {public int requests;}""",
+        "c2.d" to """package c2; public class d {public static x1.Modifier d(x1.Modifier m,c2.z f){m=m.copy();m.focus=f;return m;}}""",
+        "g.e" to """package g; public class e {public static int created;public static c2.z g(h1.k0 c){created++;c2.z focus=new c2.z();c.o0(focus);return focus;}}""",
+        "h1.e0" to """package h1; public class e0 {public static void d(Object composer,Object key,kotlin.jvm.functions.Function2 action){h1.k0 c=(h1.k0)composer;Object old=c.R();if(!key.equals(old)){c.o0(key);action.invoke(null,null);}}}""",
+        "fb.f0" to """package fb; public class f0 implements kotlin.jvm.functions.Function2 {c2.z focus;
+            public f0(int mode,c2.z f,kotlin.coroutines.Continuation c){if(mode!=4)throw new AssertionError();focus=f;}
             public Object invoke(Object a,Object b){focus.requests++;return kotlin.Unit.INSTANCE;} }""",
         "androidx.compose.foundation.layout.b" to """package androidx.compose.foundation.layout; public class b {public static x1.Modifier i(x1.Modifier m,float min,float max,int defaults){if(min!=0||max!=360||defaults!=1)throw new AssertionError();m=m.copy();m.height=max;return m;}}""",
         "e0.o1" to """package e0; public class o1 {public o1(float a,float b,float c,float d){}}""",
         "e0.i" to """package e0; public class i {public static Object g(float spacing){return new Object();}}""",
-        "g0.f0" to """package g0; public class f0 {public static int scrolls,lastIndex;public void k(int index,int offset,boolean force){if(offset!=0||force)throw new AssertionError();scrolls++;lastIndex=index;}}""",
-        "g0.j0" to """package g0; public class j0 {public static boolean fail;static class Factory {}static class Holder {f0 state=new f0();}
-            public static f0 b(int index,int offset,Object composer,int flags,int defaults){if(index<0||offset!=0||defaults!=2)throw new AssertionError();
-                h1.l0 c=(h1.l0)composer;Object factory=c.R();if(factory==h1.n.a)c.o0(factory=new Factory());
+        "g0.i0" to """package g0; public class i0 {public static int scrolls,lastIndex;public void k(int index,int offset,boolean force){if(offset!=0||force)throw new AssertionError();scrolls++;lastIndex=index;}}""",
+        "g0.m0" to """package g0; public class m0 {public static boolean fail;static class Factory {}static class Holder {g0.i0 state=new g0.i0();}
+            public static g0.i0 b(int index,int offset,Object composer,int flags,int defaults){if(index<0||offset!=0||defaults!=2)throw new AssertionError();
+                h1.k0 c=(h1.k0)composer;Object factory=c.R();if(factory==h1.m.a)c.o0(factory=new Factory());
                 if(!(factory instanceof Factory))throw new ClassCastException("Initializer slot corrupted");
                 if(fail)throw new IllegalStateException("List state initialization failure");
-                Object holder=c.R();if(holder==h1.n.a)c.o0(holder=new Holder());return ((Holder)holder).state;}}""",
-        "g0.i" to """package g0; public class i {Object composer;public i(Object c){composer=c;}
+                Object holder=c.R();if(holder==h1.m.a)c.o0(holder=new Holder());return ((Holder)holder).state;}}""",
+        "g0.j" to """package g0; public class j {Object composer;public j(Object c){composer=c;}
             public void q(int count,kotlin.jvm.functions.Function1 key,kotlin.jvm.functions.Function1 type,r1.s content){
                 java.util.Set<Object> keys=new java.util.HashSet<>();
                 for(int index=0;index<count;index++){Object id=key.invoke(index);if(!(id instanceof String)||!keys.add(id))throw new AssertionError("Unstable key");
                     if(type.invoke(index)!=null)throw new AssertionError();((kotlin.jvm.functions.Function4)content.content).invoke(null,index,composer,0);}}
         }""",
-        "eb.p" to """package eb; public class p {public static void i(x1.Modifier modifier,g0.f0 state,Object padding,Object spacing,Object align,Object fling,boolean scroll,Object overscroll,kotlin.jvm.functions.Function1 items,Object composer,int flags,int defaults){
-            if(modifier.height!=360||defaults!=488||!scroll||padding==null||spacing==null)throw new AssertionError("Non-scrolling list");items.invoke(new g0.i(composer));}}""",
+        "g0.c" to """package g0; public class c {public static void i(x1.Modifier modifier,g0.i0 state,Object padding,Object spacing,Object align,Object fling,boolean scroll,Object overscroll,kotlin.jvm.functions.Function1 items,Object composer,int flags,int defaults){
+            if(modifier.height!=360||defaults!=488||!scroll||padding==null||spacing==null)throw new AssertionError("Non-scrolling list");items.invoke(new g0.j(composer));}}""",
         "android.content.SharedPreferences" to """package android.content;
             public class SharedPreferences {
                 public java.util.Map<String,Object> values=new java.util.HashMap<>();
@@ -65,21 +65,21 @@ fun main(args: Array<String>) {
             public static Application app=new Application(); public static Application currentApplication(){return app;}
         }""",
         "android.util.Log" to """package android.util; public class Log {public static int e(String tag,String message,Throwable error){throw new AssertionError(message,error);}}""",
-        "h1.n" to """package h1; public class n {public static final Object a=new Object();}""",
-        "h1.l0" to """package h1; public class l0 {public int depth;String path="root";int cursor;
+        "h1.m" to """package h1; public class m {public static final Object a=new Object();}""",
+        "h1.k0" to """package h1; public class k0 {public int depth;String path="root";int cursor;
             java.util.Map<String,java.util.List<Object>> slots=new java.util.HashMap<>();java.util.ArrayDeque<String> paths=new java.util.ArrayDeque<>();
             java.util.ArrayDeque<Integer> cursors=new java.util.ArrayDeque<>();
             public void begin(){if(depth!=0)throw new AssertionError("Unbalanced groups");path="root";cursor=0;}
             public void d0(int key){depth++;paths.push(path);cursors.push(cursor);path+="/"+key;cursor=0;}
             public void p(boolean node){if(--depth<0)throw new AssertionError("Unbalanced groups");path=paths.pop();cursor=cursors.pop();}
-            public Object R(){java.util.List<Object> values=slots.computeIfAbsent(path,k->new java.util.ArrayList<>());int at=cursor++;return at<values.size()?values.get(at):n.a;}
+            public Object R(){java.util.List<Object> values=slots.computeIfAbsent(path,k->new java.util.ArrayList<>());int at=cursor++;return at<values.size()?values.get(at):h1.m.a;}
             public void o0(Object value){if(cursor==0)throw new AssertionError("Remember write without reading a slot");
-                java.util.List<Object> values=slots.computeIfAbsent(path,k->new java.util.ArrayList<>());while(values.size()<cursor)values.add(n.a);values.set(cursor-1,value);}
+                java.util.List<Object> values=slots.computeIfAbsent(path,k->new java.util.ArrayList<>());while(values.size()<cursor)values.add(h1.m.a);values.set(cursor-1,value);}
         }""",
         "h1.State" to """package h1; public class State { private Object value; public State(Object value){this.value=value;} public Object getValue(){return value;} public void setValue(Object v){value=v;} }""",
-        "h1.h" to """package h1; public class h { public static State s(Object v){return new State(v);} }""",
+        "h1.h" to """package h1; public class h { public static State t(Object v){return new State(v);} }""",
         "v.c0" to """package v; public interface c0 {}""",
-        "v.b0" to """package v; public class b0 { public static int nativeCalls; public static void d(boolean visible,Object modifier,Object enter,Object exit,Object label,Object content,Object composer,int flags){nativeCalls++;} }""",
+        "v.b0" to """package v; public class b0 { public static int nativeCalls; public static void e(boolean visible,Object modifier,Object enter,Object exit,Object label,Object content,Object composer,int flags){nativeCalls++;} }""",
         "r1.s" to """package r1; public class s { public Object content; public s(int key,Object content,boolean tracked){this.content=content;} }""",
         "k2.e" to """package k2; public class e { public String name; public e(String n){name=n;} }""",
         "software.santodan.extension.nuviointro.NuvioIntroDb" to """package software.santodan.extension.nuviointro; public class NuvioIntroDb {
@@ -90,23 +90,23 @@ fun main(args: Array<String>) {
         "e2.z" to """package e2; public class z {public static long b=0L;}""",
         "io.sentry.d2" to """package io.sentry; public class d2 {public java.util.ArrayList b=new java.util.ArrayList(); public d2(int i){}
             public void o(float x,float y){b.add("move");} public void m(float x,float y){b.add("line");} public void e(){b.add("close");} }""",
-        "a.a" to """package a; public class a {public static k2.e B(){return new k2.e("play");}}""",
-        "a.b" to """package a; public class b {public static k2.e p(){return new k2.e("info");}}""",
-        "d7.a" to """package d7; public class a {public static k2.e U(){return new k2.e("next");}}""",
-        "x0.k" to """package x0; public class k {public static k2.e c(){return new k2.e("audio");}}""",
-        "u6.g" to """package u6; public class g {public static k2.e Y(){return new k2.e("sources");}}""",
-        "ee.b" to """package ee; public class b {public static k2.e d; public static k2.e n(){return new k2.e("party");} public static k2.e l(){return new k2.e("report");}}""",
-        "wa.d0" to """package wa; public class d0 {public static k2.e a;}""",
-        "u9.n6" to """package u9; public class n6 {public static k2.e a;}""",
-        "u9.a5" to """package u9; public class a5 {public static k2.e p(){return new k2.e("speed");}}""",
-        "wb.b" to """package wb; public class b {public static k2.e g(){return new k2.e("external");}}""",
-        "ha.m2" to """package ha; public class m2 {public static void z(kotlin.jvm.functions.Function0 close,String title,String subtitle,float width,
+        "a.PlayIcon" to """package a; public class PlayIcon {public static k2.e B(){return new k2.e("play");}}""",
+        "a.b" to """package a; public class b {public static k2.e p(){return new k2.e("info");}public static k2.e q(){return new k2.e("play");}}""",
+        "d7.a" to """package d7; public class a {public static k2.e r(){return new k2.e("next");}}""",
+        "x4.w" to """package x4; public class w {public static k2.e l(){return new k2.e("audio");}}""",
+        "u6.g" to """package u6; public class g {public static k2.e U(){return new k2.e("sources");}}""",
+        "c6.a" to """package c6; public class a {public static k2.e d; public static k2.e q(){return new k2.e("party");} public static k2.e o(){return new k2.e("report");}}""",
+        "u9.w3" to """package u9; public class w3 {public static k2.e a;public static k2.e f(){return new k2.e("external");}}""",
+        "u9.u6" to """package u9; public class u6 {public static k2.e a;}""",
+        "u9.g5" to """package u9; public class g5 {public static k2.e m(){return new k2.e("speed");}}""",
+        "u9.z6" to """package u9; public class z6 {public static k2.e c;}""",
+        "ma.y1" to """package ma; public class y1 {public static void z(kotlin.jvm.functions.Function0 close,String title,String subtitle,float width,
             int color,boolean full,boolean scroll,Object shape,Object background,float a,float b,float c,float d,Object header,r1.s body,Object composer,int f,int g,int defaults){
                 if(defaults!=10192||c!=16f||d!=8f)throw new AssertionError("Dialog spacing");
-                ab.uh.picker=title;ab.uh.rows.clear();ab.uh.dismiss=close;((kotlin.jvm.functions.Function3)body.content).invoke(null,composer,0);
+                fb.nd.picker=title;fb.nd.rows.clear();fb.nd.dismiss=close;((kotlin.jvm.functions.Function3)body.content).invoke(null,composer,0);
             } }""",
-        "ab.fi" to """package ab; public class fi {public Object id; public String label; public fi(Object id,String label,String sub,String icon,Object meta,int flags){this.id=id;this.label=label;}}""",
-        "ab.uh" to """package ab; import kotlin.jvm.functions.*; public class uh {
+        "fb.wd" to """package fb; public class wd {public Object id; public String label; public wd(Object id,String label,String sub,String icon,Object meta,int flags){this.id=id;this.label=label;}}""",
+        "fb.nd" to """package fb; import kotlin.jvm.functions.*; public class nd {
             public static Function0 toggle,dismiss; public static Function1 choose; public static String picker;
             public static java.util.Map<String,Function0> actions=new java.util.HashMap<>();
             public static java.util.Map<String,Function0> rows=new java.util.LinkedHashMap<>();
@@ -121,28 +121,30 @@ fun main(args: Array<String>) {
             public static void action(String title){actions.get(title).invoke();} public static void select(String id){if(rows.containsKey(id))rows.get(id).invoke();else choose.invoke(id);}
             public static boolean key(String id,int action,int code,int repeat,long down,long time,boolean canceled){return (Boolean)modifiers.get(id).key.invoke(new p2.b(new android.view.KeyEvent(action,code,repeat,down,time,canceled)));}
         }""",
-        "va.yd" to """package va; public class yd {
+        "ab.pl" to """package ab; public class pl {
             public static java.util.List<Object[]> rendered=new java.util.ArrayList<>(); public static boolean fail;
-            public static void b(Object icon,Object painter,Object label,Object click,Object focus,Object up,boolean enabled,Object down,Object focused,long tint,Object composer,int flags,int defaults){
+            public static void c(Object icon,Object painter,Object label,Object click,Object focus,Object up,boolean enabled,Object down,Object focused,long tint,Object composer,int flags,int defaults){
                 if(fail)throw new IllegalStateException("render failure"); rendered.add(new Object[]{label,focus,click,up,defaults});}
-            public static void G(Object id,boolean show,Object click,boolean enabled,Object up,Object down,Object focused,Object composer,int flags){rendered.add(new Object[]{"report",null,click,up,0});}
+            public static void M(Object id,boolean show,Object click,boolean enabled,Object up,Object down,Object focused,Object composer,int flags){rendered.add(new Object[]{"report",null,click,up,0});}
         }""",
         "fixture.Player" to """package fixture; import software.santodan.extension.nuviobuttons.NuvioPlaybackButtons;
             public class Player {
-                public static h1.l0 composer=new h1.l0(); public static boolean expanded,subtitles=true,report=true,intro;
-                public static void run(){va.yd.rendered.clear();
+                public static h1.k0 composer=new h1.k0(); public static boolean expanded,subtitles=true,report=true,intro,chapters,engine;
+                public static void run(){ab.pl.rendered.clear();
                     NuvioPlaybackButtons.play(null,null,"play","play-click","play-focus","up",true,"down","focused",0L,composer,0,0);
                     if(subtitles)NuvioPlaybackButtons.subtitles(null,null,"subtitles","sub-click",null,"up",true,"down","focused",0L,composer,0,16);
+                    if(chapters)NuvioPlaybackButtons.chapters(null,null,"chapters","chapters-click",null,"up",true,"down","focused",0L,composer,0,16);
                     NuvioPlaybackButtons.registerMore(new More());
                     NuvioPlaybackButtons.more(expanded,null,null,null,null,new Object(),composer,0);
                     if(intro) {
                         Object[] args={"intro-icon",null,"introdb","intro-click",null,"up",true,"down","focused",0L,composer,0,530};
-                        if(!NuvioPlaybackButtons.collectIntroDb(args)) va.yd.b(args[0],args[1],args[2],args[3],args[4],args[5],true,args[7],args[8],0L,composer,0,530);
+                        if(!NuvioPlaybackButtons.collectIntroDb(args)) ab.pl.c(args[0],args[1],args[2],args[3],args[4],args[5],true,args[7],args[8],0L,composer,0,530);
                     }
                     NuvioPlaybackButtons.finish(null,null,"more","toggle",null,"up",true,"down","focused",0L,composer,0,16);
                 }
                 public static class More {
                     public Object invoke(Object scope,Object composer,Object flags){if(!(scope instanceof v.c0))throw new AssertionError();
+                        if(engine)NuvioPlaybackButtons.engine(null,null,"engine","engine-click",null,"up",true,"down","focused",0L,composer,0,16);
                         NuvioPlaybackButtons.speed(null,null,"speed","speed-click",null,"up",true,"down","focused",0L,composer,0,16);
                         NuvioPlaybackButtons.info(null,null,"info","info-click","info-focus","up",true,"down","focused",0L,composer,0,0);
                         if(report)NuvioPlaybackButtons.report("report-id",false,"report-click",true,"report-up","down","focused",composer,0);
@@ -177,8 +179,8 @@ fun main(args: Array<String>) {
     isolated.use { loader ->
         val runtime = loader.loadClass("software.santodan.extension.nuviobuttons.NuvioPlaybackButtons")
         val player = loader.loadClass("fixture.Player")
-        val native = loader.loadClass("va.yd")
-        val ui = loader.loadClass("ab.uh")
+        val native = loader.loadClass("ab.pl")
+        val ui = loader.loadClass("fb.nd")
         val layout = runtime.getDeclaredField("layout").apply { isAccessible = true }
         val frames = runtime.getDeclaredField("frames").apply { isAccessible = true }.get(null) as ThreadLocal<*>
         val composer = player.getField("composer").get(null)
@@ -217,16 +219,25 @@ fun main(args: Array<String>) {
         check(rendered()[0][1] == "play-focus" && rendered()[0][2] == "play-click")
         settings(); (ui.getField("toggle").get(null) as kotlin.jvm.functions.Function0<*>).invoke()
         check((layout.get(null) as ButtonLayout).enabled)
+        player.getField("chapters").setBoolean(null, true)
+        player.getField("engine").setBoolean(null, true)
+        check("chapters" in run() && "engine" !in run())
+        player.getField("expanded").setBoolean(null, true)
+        check("chapters" in run() && "engine" in run())
+        player.getField("expanded").setBoolean(null, false)
+        player.getField("chapters").setBoolean(null, false)
+        player.getField("engine").setBoolean(null, false)
+
         settings(); action("Edit playback buttons"); settings()
         check(ui.getField("picker").get(null) == "Playback buttons")
-        check((ui.getField("rows").get(null) as Map<*, *>).size == 13)
+        check((ui.getField("rows").get(null) as Map<*, *>).size == 14)
         val firstFocus = (ui.getField("modifiers").get(null) as Map<*, *>)["play"]!!.let { it.javaClass.getField("focus").get(it) }
         repeat(12) { settings() }
         val recomposedFocus = (ui.getField("modifiers").get(null) as Map<*, *>)["play"]!!.let { it.javaClass.getField("focus").get(it) }
-        check(firstFocus === recomposedFocus && loader.loadClass("h1.j").getField("created").getInt(null) == 1)
-        loader.loadClass("g0.j0").getField("fail").setBoolean(null, true)
+        check(firstFocus === recomposedFocus && loader.loadClass("g.e").getField("created").getInt(null) == 1)
+        loader.loadClass("g0.m0").getField("fail").setBoolean(null, true)
         check(runCatching { settings() }.isFailure && composer.javaClass.getField("depth").getInt(composer) == 0)
-        loader.loadClass("g0.j0").getField("fail").setBoolean(null, false)
+        loader.loadClass("g0.m0").getField("fail").setBoolean(null, false)
         settings()
         check(!(ui.getField("actions").get(null) as Map<*, *>).containsKey("Next buttons"))
         button("speed"); select("group"); settings()
@@ -254,7 +265,7 @@ fun main(args: Array<String>) {
         // Hold OK picks up the focused stable-key row; arrows scroll and change only the draft.
         hold("speed"); move("speed", 19, 8)
         check((ui.getField("rows").get(null) as Map<*, *>).keys.first() == "speed")
-        check(loader.loadClass("g0.f0").getField("lastIndex").getInt(null) == 0)
+        check(loader.loadClass("g0.i0").getField("lastIndex").getInt(null) == 0)
         check(run() == listOf("play", "subtitles", "speed", "more"))
         drop("speed")
         check(run() == listOf("speed", "play", "subtitles", "more"))

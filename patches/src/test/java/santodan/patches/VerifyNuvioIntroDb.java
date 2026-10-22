@@ -27,9 +27,9 @@ public final class VerifyNuvioIntroDb {
                     for (ClassDef c : DexBackedDexFile.fromInputStream(null, input).getClasses()) check(classes.put(c.getType(), c) == null);
                 }
         }
-        ClassDef originalMain = classes.get("Lva/bd;"), originalMore = classes.get("Lpa/a;"), originalActivity = classes.get("Lcom/nuvio/tv/MainActivity;");
+        ClassDef originalMain = classes.get("Lab/cj;"), originalMore = classes.get("Lab/ij;"), originalActivity = classes.get("Lcom/nuvio/tv/MainActivity;");
         MutableClass main = new MutableClass(originalMain), activity = new MutableClass(originalActivity);
-        NuvioIntroDbPatch.validateState(new MutableClass(classes.get("Lva/re;")));
+        NuvioIntroDbPatch.validateState(new MutableClass(classes.get("Lab/nm;")));
         check(java.util.stream.StreamSupport.stream(classes.get("Lkotlinx/coroutines/Job$DefaultImpls;").getMethods().spliterator(), false)
             .filter(m -> m.getName().equals("cancel$default") && m.getParameterTypes().size() == 4).count() == 2);
         for (String signature : NuvioIntroDbPatch.UI) {
@@ -51,8 +51,8 @@ public final class VerifyNuvioIntroDb {
             List.of(new ImmutableMethodParameter("Ljava/lang/String;", Set.of(), null), nativeInvoke.getParameters().get(1)),
             nativeInvoke.getReturnType(), nativeInvoke.getAccessFlags(), nativeInvoke.getAnnotations(), nativeInvoke.getHiddenApiRestrictions(), nativeInvoke.getImplementation())));
         rejected(() -> NuvioIntroDbPatch.hook(ambiguous, new MutableClass(originalActivity)));
-        MutableClass badState = new MutableClass(classes.get("Lva/re;"));
-        badState.getFields().removeIf(f -> f.getName().equals("x0"));
+        MutableClass badState = new MutableClass(classes.get("Lab/nm;"));
+        badState.getFields().removeIf(f -> f.getName().equals("A0"));
         rejected(() -> NuvioIntroDbPatch.validateState(badState));
         NuvioIntroDbPatch.hook(main, activity);
         rejected(() -> NuvioIntroDbPatch.hook(main, activity));
@@ -62,7 +62,7 @@ public final class VerifyNuvioIntroDb {
             if (first) NuvioIntroDbPatch.hook(combined, a);
             NuvioPlaybackButtonsPatch.hook(combined, more);
             if (!first) NuvioIntroDbPatch.hook(combined, a);
-            check(NuvioPlaybackButtonsPatch.fingerprint(NuvioIntroDbPatch.originalMain(NuvioPlaybackButtonsPatch.invoke(combined, 2))).equals("2c382f8f1152d222b534cab5f4e8fc70c38cbf80515be32533ed434002e75f00"));
+            check(NuvioPlaybackButtonsPatch.fingerprint(NuvioIntroDbPatch.originalMain(NuvioPlaybackButtonsPatch.invoke(combined, 2))).equals("f85add171d7abfd57224e7f09c2846646f4da568717bd400d53e04de9b1800f3"));
             var instructions = NuvioAiringSeriesPatch.instructions(NuvioPlaybackButtonsPatch.invoke(combined, 2));
             int introAt = -1, finishAt = -1;
             for (int i = 0; i < instructions.size(); i++) {

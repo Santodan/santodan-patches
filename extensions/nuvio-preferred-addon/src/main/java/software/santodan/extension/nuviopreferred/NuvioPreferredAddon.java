@@ -1,5 +1,7 @@
 package software.santodan.extension.nuviopreferred;
 
+import software.santodan.nuvio.NuvioNative;
+
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -21,17 +23,16 @@ public final class NuvioPreferredAddon {
     private static Object value(Object flow) throws Exception {
         return Class.forName("kotlinx.coroutines.flow.StateFlow").getMethod("getValue").invoke(flow);
     }
-    private static Object provided(String name) throws Exception {
-        Object provider = field(component, name);
+    private static Object provided(Object provider) throws Exception {
         Method get = provider.getClass().getDeclaredMethod("get");
         get.setAccessible(true);
         return get.invoke(provider);
     }
     private static int profile() throws Exception {
-        return ((Number) value(field(provided("B"), "f"))).intValue();
+        return ((Number) value(field(provided(software.santodan.nuvio.NuvioAccess.profileProvider(component)), "f"))).intValue();
     }
     private static List<?> addons() throws Exception {
-        Object repository = provided("Y2");
+        Object repository = provided(software.santodan.nuvio.NuvioAccess.streamProvider(component));
         List<?> installed = (List<?>) value(field(field(repository, "c"), "r"));
         return (List<?>) Class.forName("com.nuvio.tv.domain.model.AddonKt")
             .getDeclaredMethod("enabledAddons", List.class).invoke(null, installed);
@@ -90,7 +91,7 @@ public final class NuvioPreferredAddon {
             int id = profile();
             String name = selectedName(id, addons());
             if (name == null || !preferences(id).getBoolean("autoplay", false)) return null;
-            Method playable = Class.forName("d9.w1").getDeclaredMethod("b", Class.forName("com.nuvio.tv.domain.model.Stream"));
+            Method playable = Class.forName(NuvioNative.ADDON_SELECTOR_NAME).getDeclaredMethod("b", Class.forName("com.nuvio.tv.domain.model.Stream"));
             playable.setAccessible(true);
             for (Object stream : streams)
                 if (name.equals(text(stream, "getAddonName")) && (Boolean) playable.invoke(null, stream))
@@ -111,7 +112,7 @@ public final class NuvioPreferredAddon {
     private static Object state(ClassLoader loader, String key, Object initial) throws Exception {
         Object state = states.get(key);
         if (state == null) {
-            state = loader.loadClass("h1.h").getDeclaredMethod("s", Object.class).invoke(null, initial);
+            state = loader.loadClass(NuvioNative.COMPOSE_FACTORY_NAME).getDeclaredMethod(NuvioNative.STATE_FACTORY_METHOD, Object.class).invoke(null, initial);
             states.put(key, state);
         }
         return state;
@@ -150,7 +151,7 @@ public final class NuvioPreferredAddon {
         String name = selectedName(id, installed);
         String label = name == null ? "None" : name;
         if (!prefs.getString("addon", "").isEmpty() && name == null) label = "Unavailable or duplicate name — select an add-on";
-        method(loader, "ab.uh", "a", 18).invoke(null, "Preferred source add-on",
+        method(loader, NuvioNative.SETTINGS_ROWS_NAME, "a", 18).invoke(null, "Preferred source add-on",
             "Start this add-on's refresh first and show its results first. Applies to the next search.", label,
             change, null, noop, true, null, null, 0L, null, null, 0f, 0L, composer, 0, 0, 16336);
         Object toggle = callback(loader, "Function0", args -> {
@@ -158,12 +159,12 @@ public final class NuvioPreferredAddon {
             prefs.edit().putBoolean("autoplay", !prefs.getBoolean("autoplay", false)).apply();
             set(revision, ((Number) get(revision)).intValue() + 1);
         });
-        method(loader, "ab.uh", "m", 13).invoke(null, "Automatically play preferred add-on",
+        method(loader, NuvioNative.SETTINGS_ROWS_NAME, "m", 13).invoke(null, "Automatically play preferred add-on",
             "Play its first playable stream when available. If none is available, choose a source manually.",
             prefs.getBoolean("autoplay", false), toggle, null, noop, false, null, 0L, false, composer, 0, 1008);
         if (!(Boolean) get(dialog)) return;
         List<Object> options = new ArrayList<>();
-        Constructor<?> option = loader.loadClass("ab.fi").getDeclaredConstructor(Object.class, String.class, String.class, String.class, loader.loadClass("m3.n"), int.class);
+        Constructor<?> option = loader.loadClass(NuvioNative.SETTINGS_PICKER_NAME).getDeclaredConstructor(Object.class, String.class, String.class, String.class, loader.loadClass("m3.m"), int.class);
         options.add(option.newInstance("", "None", null, null, null, 28));
         Set<String> allowed = new HashSet<>(); allowed.add("");
         for (Object addon : installed) {
@@ -179,7 +180,7 @@ public final class NuvioPreferredAddon {
             set(dialog, false);
         });
         Object dismiss = callback(loader, "Function0", args -> set(dialog, false));
-        method(loader, "ab.uh", "j", 11).invoke(null, "Preferred source add-on", options,
+        method(loader, NuvioNative.SETTINGS_ROWS_NAME, "j", 11).invoke(null, "Preferred source add-on", options,
             prefs.getString("addon", ""), select, dismiss, null, 420f, 320f, composer, 0, 32);
     }
 }

@@ -1,5 +1,8 @@
 # Preferred source add-on
 
+Current target: **NuvioTV 1.1.0-beta.8 (1071)**. See [beta.8 contracts and verification](NuvioBeta8.md). The older DEX notes and artifact paths below record the beta.7 implementation; beta.8 replaces its native symbols.
+
+
 Select **NuvioTV - Preferred source add-on** for `com.nuvio.tv`
 `1.1.0-beta.7` (version code `1070`). Configure it under **Settings > Layout >
 Santodan-Patches > Streams**:

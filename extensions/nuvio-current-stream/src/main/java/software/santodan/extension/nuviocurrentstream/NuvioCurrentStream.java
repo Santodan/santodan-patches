@@ -1,5 +1,7 @@
 package software.santodan.extension.nuviocurrentstream;
 
+import software.santodan.nuvio.NuvioNative;
+
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -30,11 +32,11 @@ public final class NuvioCurrentStream {
     }
     public static void renderSettings(Object composer) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
-        if (menuState == null) menuState = loader.loadClass("h1.h").getDeclaredMethod("s", Object.class).invoke(null, enabled());
+        if (menuState == null) menuState = loader.loadClass(NuvioNative.COMPOSE_FACTORY_NAME).getDeclaredMethod(NuvioNative.STATE_FACTORY_METHOD, Object.class).invoke(null, enabled());
         boolean value = (Boolean) menuState.getClass().getMethod("getValue").invoke(menuState);
         Object toggle = callback(loader, true);
         Method row = null;
-        for (Method candidate : loader.loadClass("ab.uh").getDeclaredMethods())
+        for (Method candidate : loader.loadClass(NuvioNative.SETTINGS_ROWS_NAME).getDeclaredMethods())
             if (candidate.getName().equals("m") && candidate.getParameterCount() == 13) {
                 if (row != null) throw new NoSuchMethodException("Ambiguous current stream settings row");
                 row = candidate;

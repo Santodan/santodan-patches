@@ -18,14 +18,14 @@ public final class VerifyNuvioTrackingDialogs {
             "package kotlin.jvm.functions; public interface Function"+arity+" { Object invoke("+
                 (arity==0?"":arity==1?"Object a":"Object a,Object b,Object c")+"); }");
         sources.put("q1.s", "package q1; public class s { public final Object body; public s(int key,Object body,boolean tracked){if(!tracked)throw new AssertionError();this.body=body;} }");
-        sources.put("ab.e", "package ab; public class e { public long h=11,e=22; }");
-        sources.put("ab.z0", "package ab; public class z0 { public static final Object a=new Object(); }");
-        sources.put("g1.Composer", "package g1; public class Composer { public int group; public final ab.e colors=new ab.e(); public Object j(Object local){if(local!=ab.z0.a)throw new AssertionError();return colors;} public void d0(int key){group=key;} public void p(boolean insert){group=0;} }");
+        sources.put("fb.z0", "package fb; public class z0 { public long h=11,e=22; }");
+        sources.put("fb.b0", "package fb; public class b0 { public static final Object a=new Object(); }");
+        sources.put("g1.Composer", "package g1; public class Composer { public int group; public final fb.z0 colors=new fb.z0(); public Object j(Object local){if(local!=ab.z0.a)throw new AssertionError();return colors;} public void d0(int key){group=key;} public void p(boolean insert){group=0;} }");
         sources.put("w1.q", "package w1; public class q { public float fraction,height; public long color; public q(){} public q(q a){fraction=a.fraction;height=a.height;color=a.color;} }");
         sources.put("w1.n", "package w1; public class n extends q { public static final n b=new n(); }");
         sources.put("androidx.compose.foundation.layout.b", "package androidx.compose.foundation.layout; public class b { public static w1.q e(w1.q base,float fraction){w1.q q=new w1.q(base);q.fraction=fraction;return q;} public static w1.q g(w1.q base,float height){w1.q q=new w1.q(base);q.height=height;return q;} }");
         sources.put("l0.g", "package l0; public class g { public static Object b(float radius){if(radius!=3f)throw new AssertionError();return new Object();} }");
-        sources.put("y.l", "package y; public class l { public static w1.q g(w1.q base,long color,Object shape){if(shape==null)throw new AssertionError();w1.q q=new w1.q(base);q.color=color;return q;} }");
+        sources.put("y.k", "package y; public class k { public static w1.q g(w1.q base,long color,Object shape){if(shape==null)throw new AssertionError();w1.q q=new w1.q(base);q.color=color;return q;} }");
         sources.put("e0.b", "package e0; public class b { public static w1.q track; private static q1.s remembered; private static int group; public static void a(w1.q modifier,Object alignment,q1.s content,Object composer,int flags,int defaults){if(defaults!=2)throw new AssertionError(); int key=((g1.Composer)composer).group; if(track==null||track.fraction!=modifier.fraction||track.height!=modifier.height||track.color!=modifier.color||group!=key){remembered=content;group=key;} track=modifier;((kotlin.jvm.functions.Function3)remembered.body).invoke(null,composer,0);} }");
         sources.put("e0.q", "package e0; public class q { public static final java.util.List<w1.q> fills=new java.util.ArrayList<>();public static void a(w1.q modifier,Object composer,int flags){fills.add(modifier);} }");
         sources.put("xa.cc", "package xa; public class cc { public final Object id; public final String label; public cc(Object id,String label,String desc,String trailing,Object font,int defaults){if(defaults!=28)throw new AssertionError();this.id=id;this.label=label;} }");

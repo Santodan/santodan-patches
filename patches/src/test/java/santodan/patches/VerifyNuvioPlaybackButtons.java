@@ -28,9 +28,9 @@ public final class VerifyNuvioPlaybackButtons {
                         check(classes.put(c.getType(), c) == null);
                 }
         }
-        ClassDef originalMain = classes.get("Lva/bd;"), originalMore = classes.get("Lpa/a;");
+        ClassDef originalMain = classes.get("Lab/cj;"), originalMore = classes.get("Lab/ij;");
         MutableClass main = new MutableClass(originalMain), more = new MutableClass(originalMore);
-        NuvioPlaybackButtonsPatch.validateRuntime(new MutableClass(classes.get("Lva/yd;")),
+        NuvioPlaybackButtonsPatch.validateRuntime(new MutableClass(classes.get("Lab/pl;")),
             new MutableClass(classes.get("Lv/b0;")), new MutableClass(classes.get("Lv/c0;")));
         NuvioPlaybackButtonsPatch.validate(main, more);
         for (String signature : NuvioPlaybackButtonsPatch.UI_CONTRACTS)
@@ -66,17 +66,17 @@ public final class VerifyNuvioPlaybackButtons {
                 if (m.getImplementation() != null) for (var i : m.getImplementation().getInstructions())
                     if (NuvioPlaybackButtonsPatch.reference(i).startsWith(NuvioPlaybackButtonsPatch.EXTENSION)) calls++;
         }
-        check(calls == 16); // 13 controls, More toggle, animation bridge, and native content registration.
+        check(calls == 17); // 13 controls, More toggle, animation bridge, and native content registration.
         ButtonLayout defaults = ButtonLayout.defaults();
-        check(!defaults.enabled && defaults.more.size() == 5 && defaults.hidden.isEmpty());
+        check(!defaults.enabled && defaults.more.size() == 6 && defaults.hidden.isEmpty());
         ButtonLayout value = defaults.change("speed", "group").change("speed", "left").change("audio", "visibility").enabled(true);
-        check(!value.more.contains("speed") && value.order.indexOf("speed") < value.order.indexOf("party") && value.hidden.contains("audio"));
+        check(!value.more.contains("speed") && value.order.indexOf("speed") < value.order.indexOf("chapters") && value.hidden.contains("audio"));
         value = value.change("speed", "right").change("audio", "visibility");
         check(!value.hidden.contains("audio"));
         ButtonLayout persisted = new ButtonLayout(value.enabled, String.join(",", value.order), String.join(",", value.hidden), String.join(",", value.more));
         check(value.order.equals(persisted.order) && value.more.equals(persisted.more));
         ButtonLayout corrupt = new ButtonLayout(true, "bogus,speed,speed", String.join(",", ButtonLayout.IDS), String.join(",", ButtonLayout.IDS));
-        check(corrupt.order.size() == 14 && !corrupt.hidden.contains("play") && !corrupt.more.contains("play"));
+        check(corrupt.order.size() == 15 && !corrupt.hidden.contains("play") && !corrupt.more.contains("play"));
         check(corrupt.visible(List.of("play"), false).equals(List.of("play")));
         check(value.visible(List.of("play", "speed"), false).contains("speed"));
         check(!value.visible(List.of("play"), false).contains("next"));

@@ -1,5 +1,7 @@
 package santodan.patches;
 
+import software.santodan.nuvio.NuvioNative;
+
 import app.morphe.patcher.patch.*;
 import app.morphe.patcher.util.proxy.mutableTypes.*;
 import com.android.tools.smali.dexlib2.Opcode;
@@ -16,7 +18,7 @@ public final class NuvioLauncherChannelsPatch {
     public static BytecodePatch getNuvioLauncherChannelsPatch() {
         return PatchKt.bytecodePatch("NuvioTV - Android TV launcher channels",
             "Choose individual catalogs and tracking lists, Library, and Upcoming to publish as Android TV launcher channels.", false, builder -> {
-            builder.compatibleWith(new Compatibility("com.nuvio.tv", "NuvioTV", null, ApkFileType.APK,
+            builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
                 null, null, NuvioLayout.modernTargets(), false));
             builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
             builder.dependsOn(NuvioLauncherResourcesKt.getNuvioLauncherArtworkResourcesPatch());
@@ -30,12 +32,12 @@ public final class NuvioLauncherChannelsPatch {
                 NuvioStreamPreloadPatch.validateTarget(context.getPackageMetadata().getPackageName(),
                     context.getPackageMetadata().getVersionName());
                 hookContinueWatching(context.mutableClassDefBy("Ln9/k;"));
-                hookReturn(NuvioRemainingEpisodesPatch.unique(context.mutableClassDefBy("Lq8/e;"), "<init>", 1), "registerComponent");
-                MutableClass home = context.mutableClassDefBy("Lsa/x3;");
+                hookReturn(NuvioRemainingEpisodesPatch.unique(context.mutableClassDefBy(NuvioNative.HILT_COMPONENT_TYPE), "<init>", 1), "registerComponent");
+                MutableClass home = context.mutableClassDefBy(NuvioNative.HOME_MODEL_TYPE);
                 hookReturn(NuvioRemainingEpisodesPatch.unique(home, "<init>", 27), "observeHome");
                 insert(NuvioRemainingEpisodesPatch.unique(home, "onCleared", 0), 0, "stopHome");
                 hookReturn(NuvioRemainingEpisodesPatch.unique(context.mutableClassDefBy(
-                    "Lba/h1;"), "<init>", 8), "observeLibrary");
+                    NuvioNative.LIBRARY_REPOSITORY_TYPE), "<init>", 8), "observeLibrary");
                 return Unit.INSTANCE;
             });
             return Unit.INSTANCE;
@@ -51,7 +53,7 @@ public final class NuvioLauncherChannelsPatch {
             if (!(instruction instanceof com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction) ||
                 !(instruction instanceof com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction)) continue;
             var reference = ((com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction) instruction).getReference();
-            if (!reference.toString().equals("Lcom/nuvio/tv/data/local/t0;->n:Z")) continue;
+            if (!reference.toString().equals("Lcom/nuvio/tv/data/local/v0;->n:Z")) continue;
             var registers = (com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction) instruction;
             target.getImplementation().replaceInstruction(i, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
                 registers.getRegisterB(), 1, new ImmutableMethodReference(EXTENSION, "effectiveCachedHasAired", List.of("Ljava/lang/Object;"), "Z")));

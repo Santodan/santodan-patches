@@ -1,5 +1,7 @@
 package santodan.patches;
 
+import software.santodan.nuvio.NuvioNative;
+
 import app.morphe.patcher.patch.*;
 import app.morphe.patcher.util.proxy.mutableTypes.*;
 import com.android.tools.smali.dexlib2.Opcode;
@@ -24,7 +26,7 @@ public final class NuvioMergedProgressPatch {
         return PatchKt.bytecodePatch(NAME,
             "Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh.",
             false, builder -> {
-                builder.compatibleWith(new Compatibility("com.nuvio.tv", "NuvioTV", null, ApkFileType.APK,
+                builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
                     null, null, NuvioLayout.targets(), false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
                 builder.extendWith(NuvioMergedProgressPatch::extensionStream);
@@ -32,31 +34,31 @@ public final class NuvioMergedProgressPatch {
                     String version = context.getPackageMetadata().getVersionName();
                 NuvioLayout.use(version);
                     NuvioLayout.modern(version);
-                    MutableClass repository = context.mutableClassDefBy("Lba/ze;");
+                    MutableClass repository = context.mutableClassDefBy(NuvioNative.PROGRESS_REPOSITORY_TYPE);
                     hookRepository(repository);
                     hookLocalProgressWrites(repository);
                     {
-                        NuvioRemainingEpisodesPatch.hookCard(context.mutableClassDefBy("Lha/b1;"),
-                            "Lc7/a;", EXT, "prepareProviderBadge", "renderProviderBadge");
-                        hookNavigation(context.mutableClassDefBy("Lq8/l;"));
+                        NuvioRemainingEpisodesPatch.hookCard(context.mutableClassDefBy(NuvioNative.HOME_CARD_TYPE),
+                            NuvioNative.PROVIDER_BADGE_TYPE, EXT, "prepareProviderBadge", "renderProviderBadge");
+                        hookNavigation(context.mutableClassDefBy(NuvioNative.ROOT_NAVIGATION_TYPE));
                         hookActivity(context.mutableClassDefBy("Lcom/nuvio/tv/MainActivity;"));
-                        hookPlaybackScrobblers(context.mutableClassDefBy("Lq9/h0;"));
-                        hookInlinedCutoff(context.mutableClassDefBy("Lsa/a5;"));
-                        hookInlinedCutoff(context.mutableClassDefBy("Lab/jc;"));
-                        hookBadgeCacheHit(context.mutableClassDefBy("Lba/g2;"));
-                        hookBadgeGroupProgress(context.mutableClassDefBy("Lsa/m5;"));
+                        hookPlaybackScrobblers(context.mutableClassDefBy(NuvioNative.SCROBBLER_REGISTRY_TYPE));
+                        hookInlinedCutoff(context.mutableClassDefBy(NuvioNative.HOME_CUTOFF_TYPE));
+                        hookInlinedCutoff(context.mutableClassDefBy(NuvioNative.SETTINGS_CUTOFF_TYPE));
+                        hookBadgeCacheHit(context.mutableClassDefBy(NuvioNative.BADGE_CACHE_TYPE));
+                        hookBadgeGroupProgress(context.mutableClassDefBy(NuvioNative.HOME_PIPELINE_TYPE));
                     }
-                    hookInlinedNextUpSeedPolicy(context.mutableClassDefBy("Lsa/m5;"));
-                    hookMergedProvider(context.mutableClassDefBy("Lba/hd;"));
-                    hookEffectiveSource(context.mutableClassDefBy("Ln3/j;"));
-                    hookWatchProgressEnum(context.mutableClassDefBy("Lcom/nuvio/tv/data/local/vb;"));
+                    hookInlinedNextUpSeedPolicy(context.mutableClassDefBy(NuvioNative.HOME_PIPELINE_TYPE));
+                    hookMergedProvider(context.mutableClassDefBy(NuvioNative.PROVIDER_SELECTION_TYPE));
+                    hookEffectiveSource(context.mutableClassDefBy(NuvioNative.TRACKING_POLICY_TYPE));
+                    hookWatchProgressEnum(context.mutableClassDefBy("Lcom/nuvio/tv/data/local/wb;"));
 
                     {
-                        hookSettingsStore(context.mutableClassDefBy("Lq9/a1;"));
-                        hookSettingsComponent(context.mutableClassDefBy("Lq8/e;"));
+                        hookSettingsStore(context.mutableClassDefBy(NuvioNative.TRACKING_COORDINATOR_TYPE));
+                        hookSettingsComponent(context.mutableClassDefBy(NuvioNative.HILT_COMPONENT_TYPE));
                     }
-                    hookWatchProgressSelection(context.mutableClassDefBy("Lab/cg;"));
-                    hookWatchProgressSummary(context.mutableClassDefBy("Lab/co;"), "z");
+                    hookWatchProgressSelection(context.mutableClassDefBy(NuvioNative.SETTINGS_SELECTION_TYPE));
+                    hookWatchProgressSummary(context.mutableClassDefBy(NuvioNative.SETTINGS_SUMMARY_TYPE), "z");
                     return Unit.INSTANCE;
                 });
                 return Unit.INSTANCE;
@@ -69,7 +71,7 @@ public final class NuvioMergedProgressPatch {
             MutableMethod target = unique(owner, entry.getKey(), 0);
             if (!target.getReturnType().equals("V") || instructions(target).stream()
                     .noneMatch(i -> i.getOpcode() == Opcode.INVOKE_SUPER && calls(i,
-                        entry.getKey().equals("onDestroy") ? "Lq8/j;" : "Landroid/app/Activity;", entry.getKey())))
+                        entry.getKey().equals("onDestroy") ? NuvioNative.HILT_ACTIVITY_TYPE : "Landroid/app/Activity;", entry.getKey())))
                 throw unsupported("MainActivity lifecycle changed: " + entry.getKey());
             if (instructions(target).stream().anyMatch(i -> calls(i, EXT, entry.getValue())))
                 throw unsupported("MainActivity lifecycle already hooked");
@@ -85,15 +87,15 @@ public final class NuvioMergedProgressPatch {
     static void hookLocalProgressWrites(MutableClass owner) {
         List<MutableMethod> targets = new ArrayList<>();
         for (MutableMethod candidate : owner.getMethods()) {
-            if (!List.of("C", "s").contains(candidate.getName())) continue;
+            if (!List.of("E", "s").contains(candidate.getName())) continue;
             if (!candidate.getParameterTypes().equals(List.of("I", "Lcom/nuvio/tv/domain/model/WatchProgress;",
                     "Lkotlin/coroutines/jvm/internal/ContinuationImpl;", "Z")) ||
                 !candidate.getReturnType().equals("Ljava/lang/Object;") || candidate.getImplementation() == null)
                 throw unsupported("Native progress save signature changed");
             List<Instruction> ins = instructions(candidate);
             if (ins.stream().anyMatch(i -> calls(i, EXT, "syncLocalProgress"))) throw unsupported("Progress writes already hooked");
-            if (ins.stream().noneMatch(i -> calls(i, "Lcom/nuvio/tv/data/local/ub;", "C")) ||
-                ins.stream().noneMatch(i -> calls(i, "Lm9/w5;", "o"))) throw unsupported("Native progress save body changed");
+            if (ins.stream().noneMatch(i -> calls(i, "Lcom/nuvio/tv/data/local/vb;", "C")) ||
+                ins.stream().noneMatch(i -> calls(i, NuvioNative.WATCH_PROGRESS_WRITER_TYPE, "o"))) throw unsupported("Native progress save body changed");
             if (candidate.getImplementation().getRegisterCount() > 256) throw unsupported("Progress save register layout changed");
             targets.add(candidate);
         }
@@ -115,7 +117,7 @@ public final class NuvioMergedProgressPatch {
         for (int i = 0; i + 1 < ins.size(); i++) {
             if (ins.get(i) instanceof ReferenceInstruction &&
                 ((ReferenceInstruction) ins.get(i)).getReference().toString().equals(
-                    "Ln3/j;->V([Lm5/c1;Lh1/o;)Lm5/n0;")) {
+                    NuvioNative.REF_TRACKING_POLICY_F0)) {
                 if (anchor >= 0 || ins.get(i + 1).getOpcode() != Opcode.MOVE_RESULT_OBJECT)
                     throw unsupported("Navigation controller anchor changed or ambiguous");
                 anchor = i + 2;
@@ -142,7 +144,7 @@ public final class NuvioMergedProgressPatch {
                 anchor = i;
             }
         }
-        boolean hasScrobbler = ins.stream().anyMatch(i -> calls(i, "Lq9/e0;", "a"));
+        boolean hasScrobbler = ins.stream().anyMatch(i -> calls(i, NuvioNative.SCROBBLER_TYPE, "a"));
         if (anchor < 0 || !hasScrobbler) throw unsupported("Connected scrobbler layout changed");
         int register = ((OneRegisterInstruction) ins.get(anchor)).getRegisterA();
         target.getImplementation().addInstruction(anchor++, new BuilderInstruction3rc(Opcode.INVOKE_STATIC_RANGE,
@@ -172,7 +174,7 @@ public final class NuvioMergedProgressPatch {
         int anchor = -1;
         for (int i = 0; i + 2 < ins.size(); i++) {
             if (ins.get(i).getOpcode() != Opcode.IGET_OBJECT || !(ins.get(i) instanceof ReferenceInstruction) || !((ReferenceInstruction) ins.get(i)).getReference()
-                .toString().equals("Lsa/x3;->X0:Ljava/util/Set;")) continue;
+                .toString().equals(NuvioNative.REF_HOME_MODEL_X0)) continue;
             if (anchor >= 0 || !calls(ins.get(i + 1), "Lkotlin/jvm/internal/Intrinsics;", "areEqual")
                 || ins.get(i + 2).getOpcode() != Opcode.MOVE_RESULT)
                 throw unsupported("Badge ID cache comparison changed");
@@ -198,7 +200,7 @@ public final class NuvioMergedProgressPatch {
         for (int i = 0; i < ins.size(); i++) {
             Instruction instruction = ins.get(i);
             if (instruction instanceof ReferenceInstruction && ((ReferenceInstruction) instruction).getReference()
-                .toString().equals("Lsa/x3;->V0:Ljava/util/Map;")) {
+                .toString().equals(NuvioNative.REF_HOME_MODEL_V0)) {
                 int receiver = ((TwoRegisterInstruction) instruction).getRegisterB();
                 if (home >= 0 && home != receiver) throw unsupported("Badge group Home register changed");
                 home = receiver;
@@ -237,7 +239,7 @@ public final class NuvioMergedProgressPatch {
         int hook = -1;
         int register = -1;
         for (int i = 0; i + 1 < ins.size(); i++) {
-            if (!calls(ins.get(i), "Lq9/z;", "x")) continue;
+            if (!calls(ins.get(i), NuvioNative.PROVIDER_INTERFACE_TYPE, "x")) continue;
             if (hook >= 0 || ins.get(i + 1).getOpcode() != Opcode.MOVE_RESULT_OBJECT)
                 throw unsupported("Inlined cutoff anchor changed: " + owner.getType());
             hook = i + 2;
@@ -255,7 +257,7 @@ public final class NuvioMergedProgressPatch {
     private static void hookMergedProvider(MutableClass owner) {
         MutableMethod target = unique(owner, "invokeSuspend", 1);
         List<Instruction> ins = instructions(target);
-        long lookups = ins.stream().filter(i -> calls(i, "Lq9/a0;", "a")).count();
+        long lookups = ins.stream().filter(i -> calls(i, NuvioNative.PROVIDER_REGISTRY_TYPE, "a")).count();
         long returns = ins.stream().filter(i -> i.getOpcode() == Opcode.RETURN_OBJECT).count();
         if (lookups != 1 || returns != 2 || ins.stream().anyMatch(i -> calls(i, EXT, "mergedProvider")))
             throw unsupported("Provider mapper lookup/return layout changed or already hooked");
@@ -275,7 +277,7 @@ public final class NuvioMergedProgressPatch {
             }
             target.getImplementation().addInstruction(i + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, result));
             target.getImplementation().addInstruction(i + 2, new BuilderInstruction21c(Opcode.CHECK_CAST, result,
-                new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lq9/z;")));
+                new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference(NuvioNative.PROVIDER_INTERFACE_TYPE)));
         }
     }
 
@@ -320,7 +322,7 @@ public final class NuvioMergedProgressPatch {
     private static void hookEffectiveSource(MutableClass owner) {
         MutableMethod target = null;
         for (MutableMethod method : owner.getMethods()) {
-            if (method.getParameterTypes().size() == 2 && "Lcom/nuvio/tv/data/local/vb;".equals(method.getReturnType())) {
+            if (method.getParameterTypes().size() == 2 && "Lcom/nuvio/tv/data/local/wb;".equals(method.getReturnType())) {
                 if (target != null) throw unsupported("Multiple effective source methods found");
                 target = method;
             }
@@ -331,7 +333,7 @@ public final class NuvioMergedProgressPatch {
             method(EXT, "effectiveSource", List.of("Ljava/lang/Object;", "Ljava/lang/Object;"), "Ljava/lang/Object;")));
         target.getImplementation().addInstruction(1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, first));
         target.getImplementation().addInstruction(2, new BuilderInstruction21c(Opcode.CHECK_CAST, first,
-            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lcom/nuvio/tv/data/local/vb;")));
+            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lcom/nuvio/tv/data/local/wb;")));
     }
 
     private static void hookWatchProgressEnum(MutableClass owner) {
@@ -354,7 +356,7 @@ public final class NuvioMergedProgressPatch {
     }
 
     private static int addEnumValue(MutableClass owner, MutableMethod clinit, int at, String name) {
-        String type = "Lcom/nuvio/tv/data/local/vb;";
+        String type = "Lcom/nuvio/tv/data/local/wb;";
         clinit.getImplementation().addInstruction(at++, new BuilderInstruction21c(Opcode.NEW_INSTANCE, 1,
             new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference(type)));
         clinit.getImplementation().addInstruction(at++, new BuilderInstruction21c(Opcode.CONST_STRING, 2,
@@ -380,7 +382,7 @@ public final class NuvioMergedProgressPatch {
         int hook = -1;
         int source = -1;
         for (int i = 0; i < ins.size(); i++) {
-            if (!calls(ins.get(i), "Lq9/a1;", "f") || !(ins.get(i) instanceof FiveRegisterInstruction)) continue;
+            if (!calls(ins.get(i), NuvioNative.TRACKING_COORDINATOR_TYPE, "f") || !(ins.get(i) instanceof FiveRegisterInstruction)) continue;
             FiveRegisterInstruction call = (FiveRegisterInstruction) ins.get(i);
             if (hook >= 0) throw unsupported("Multiple watch progress persistence anchors found");
             hook = i;
@@ -392,7 +394,7 @@ public final class NuvioMergedProgressPatch {
             method(EXT, "selectSource", List.of("Ljava/lang/Object;"), "Ljava/lang/Object;")));
         target.getImplementation().addInstruction(hook + 1, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, source));
         target.getImplementation().addInstruction(hook + 2, new BuilderInstruction21c(Opcode.CHECK_CAST, source,
-            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lcom/nuvio/tv/data/local/vb;")));
+            new com.android.tools.smali.dexlib2.immutable.reference.ImmutableTypeReference("Lcom/nuvio/tv/data/local/wb;")));
     }
 
     private static void hookWatchProgressSummary(MutableClass owner, String labelMethod) {
@@ -402,7 +404,7 @@ public final class NuvioMergedProgressPatch {
         int source = -1;
         int label = -1;
         for (int i = 0; i + 1 < ins.size(); i++) {
-            if (!calls(ins.get(i), "Lab/og;", labelMethod) || !(ins.get(i) instanceof FiveRegisterInstruction)
+            if (!calls(ins.get(i), NuvioNative.SETTINGS_STYLE_TYPE, labelMethod) || !(ins.get(i) instanceof FiveRegisterInstruction)
                 || !(ins.get(i + 1) instanceof OneRegisterInstruction)) continue;
             if (hook >= 0) throw unsupported("Multiple Watch Progress summary labels found");
             hook = i + 2;

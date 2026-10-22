@@ -1,5 +1,9 @@
 package software.santodan.extension.nuviostreams.engine
 
+import software.santodan.nuvio.NuvioAccess
+
+import software.santodan.nuvio.NuvioNative
+
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.Locale
@@ -50,8 +54,8 @@ object StreamTargets {
 
     fun player(state: Any, profile: Any?, enabled: Boolean, normalizeType: Boolean = false,
                requestType: String? = null): NextEpisodePreloader.Snapshot {
-        val current = field(state, "z0") as? String
-        val next = field(state, "r1")
+        val current = NuvioAccess.currentVideo(state) as? String
+        val next = NuvioAccess.nextEpisode(state)
         val nativeType = if (normalizeType) requestType else field(state, "g") as? String
         val type = if (normalizeType) nativeType?.lowercase(Locale.ROOT).let {
             if (it == "tv") "series" else it
@@ -61,6 +65,6 @@ object StreamTargets {
             media(type, field(next, "a"), field(next, "b"), field(next, "c")) else null
         return NextEpisodePreloader.Snapshot(profile, current, target, enabled,
             field(state, "a") == true && field(state, "b") == false && field(state, "c") == false &&
-                field(state, "d") == null && (field(state, "f1") as? String).isNullOrBlank())
+                field(state, "d") == null && (NuvioAccess.playbackError(state) as? String).isNullOrBlank())
     }
 }

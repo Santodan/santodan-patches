@@ -1,5 +1,7 @@
 package santodan.patches;
 
+import software.santodan.nuvio.NuvioNative;
+
 import app.morphe.patcher.patch.ApkFileType;
 import app.morphe.patcher.patch.BytecodePatch;
 import app.morphe.patcher.patch.Compatibility;
@@ -18,8 +20,8 @@ import kotlin.Unit;
 /** Adds independently configurable upcoming movie dates to library and collection posters. */
 public final class NuvioMovieReleaseDatesPatch {
     public static final String NAME = "NuvioTV - Upcoming movie dates in library and collections";
-    static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = NuvioLayout.BETA7;
+    static final String PACKAGE = NuvioNative.PACKAGE_NAME;
+    static final String VERSION = NuvioLayout.BETA8;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuviomovierelease/NuvioMovieReleaseDates;";
 
     private NuvioMovieReleaseDatesPatch() {}
@@ -40,9 +42,9 @@ public final class NuvioMovieReleaseDatesPatch {
                         throw NuvioFinaleDatesPatch.unsupported("Expected " + PACKAGE + " " + VERSION);
                     for (String type : NuvioFinaleDatesPatch.itemOwners())
                         NuvioFinaleDatesPatch.hookItems(context.mutableClassDefBy(type), EXTENSION);
-                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy("Lha/h2;"), EXTENSION);
-                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy("Lha/s0;"), EXTENSION);
-                    for (String type : List.of("Lha/h2;", "Lha/s0;", "Lha/i2;", "Lha/t0;"))
+                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy(NuvioNative.LIBRARY_CARD_TYPE), EXTENSION);
+                    NuvioFinaleDatesPatch.hookCard(context.mutableClassDefBy(NuvioNative.COLLECTION_CARD_TYPE), EXTENSION);
+                    for (String type : List.of(NuvioNative.LIBRARY_CARD_TYPE, NuvioNative.COLLECTION_CARD_TYPE, NuvioNative.LIBRARY_RESTART_TYPE, NuvioNative.COLLECTION_RESTART_TYPE))
                         NuvioFinaleDatesPatch.hookContext(context.mutableClassDefBy(type), EXTENSION);
                     return Unit.INSTANCE;
                 });

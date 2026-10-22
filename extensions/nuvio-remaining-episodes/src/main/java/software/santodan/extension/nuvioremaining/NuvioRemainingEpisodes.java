@@ -1,5 +1,7 @@
 package software.santodan.extension.nuvioremaining;
 
+import software.santodan.nuvio.NuvioNative;
+
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -159,7 +161,7 @@ public final class NuvioRemainingEpisodes {
                 "invoke".equals(method.getName()) ? kotlinUnit(loader) : objectMethod(proxy, method, args));
             String description = "Show aired, unwatched episode counts for Local, Trakt, Simkl, and other tracking sources.";
             {
-                Method row = findStatic(Class.forName("ab.uh", false, loader), "m", 13);
+                Method row = findStatic(Class.forName(NuvioNative.SETTINGS_ROWS_NAME, false, loader), "m", 13);
                 row.invoke(null, "Show remaining episodes", description, stateValue(state), toggle,
                     null, noop, false, null, 0L, false, composer, 0, 1008);
             }
@@ -205,7 +207,7 @@ public final class NuvioRemainingEpisodes {
             // Subscribe every card to count changes, including cards whose count
             // is not available during their first composition.
             if (count == null) return;
-            Class<?> text = Class.forName("y5.e2", false, loader);
+            Class<?> text = Class.forName(NuvioNative.TEXT_RENDERER_NAME, false, loader);
             Method method = findStatic(text, "b", 19);
             Object[] style = badgeStyle(loader, composer);
             method.invoke(null, Integer.toString(count), style[0], style[1], 0L, null, null, 0L, null, 0L,
@@ -218,30 +220,30 @@ public final class NuvioRemainingEpisodes {
 
     private static Object[] badgeStyle(ClassLoader loader, Object composer) throws Exception {
         Method compositionLocal = findMethod(composer.getClass(), "j", 1);
-        Class<?> colorsOwner = Class.forName("db.x0", false, loader);
+        Class<?> colorsOwner = Class.forName(NuvioNative.NATIVE_COLOR_LOCAL_NAME, false, loader);
         Object colors = compositionLocal.invoke(composer, staticField(colorsOwner, "a").get(null));
         long surface = ((Number) field(colors, "a").get(colors)).longValue();
         long content = ((Number) field(colors, "l").get(colors)).longValue();
-        long background = ((Number) findStatic(Class.forName("e2.z", false, loader), "b", 2)
+        long background = ((Number) findStatic(Class.forName(NuvioNative.COLOR_NAME, false, loader), "b", 2)
             .invoke(null, Long.valueOf(surface), Float.valueOf(0.8f))).longValue();
 
-        Class<?> typographyOwner = Class.forName("y5.g2", false, loader);
+        Class<?> typographyOwner = Class.forName(NuvioNative.TEXT_STYLE_LOCAL_NAME, false, loader);
         Object typography = compositionLocal.invoke(composer, staticField(typographyOwner, "a").get(null));
         Object textStyle = field(typography, "o").get(typography);
 
-        Object dimensions = staticField(Class.forName("db.l0", false, loader), "a").get(null);
+        Object dimensions = staticField(Class.forName(NuvioNative.NATIVE_SPACING_LOCAL_NAME, false, loader), "a").get(null);
         float horizontal = ((Number) field(dimensions, "e").get(dimensions)).floatValue();
         float vertical = ((Number) field(dimensions, "d").get(dimensions)).floatValue();
 
-        Class<?> modifierOwner = Class.forName("x1.n", false, loader);
+        Class<?> modifierOwner = Class.forName(NuvioNative.EMPTY_MODIFIER_NAME, false, loader);
         Object modifier = staticField(modifierOwner, "b").get(null);
         modifier = findStatic(Class.forName("e0.b", false, loader), "u", 2)
             .invoke(null, modifier, Float.valueOf(horizontal));
-        Object shape = staticField(Class.forName("ha.u1", false, loader), "a").get(null);
+        Object shape = staticField(Class.forName(NuvioNative.WIDE_CARD_NAME, false, loader), "a").get(null);
         modifier = findStatic(Class.forName("b2.j", false, loader), "b", 2)
             .invoke(null, modifier, shape);
         Object rectangle = staticField(Class.forName("e2.g0", false, loader), "b").get(null);
-        modifier = findStatic(Class.forName("y.n", false, loader), "g", 3)
+        modifier = findStatic(Class.forName("y.m", false, loader), "g", 3)
             .invoke(null, modifier, Long.valueOf(background), rectangle);
         modifier = findStatic(Class.forName("e0.b", false, loader), "v", 3)
             .invoke(null, modifier, Float.valueOf(horizontal), Float.valueOf(vertical));
@@ -429,8 +431,8 @@ public final class NuvioRemainingEpisodes {
         synchronized (NuvioRemainingEpisodes.class) {
             result = enabledState;
             if (result == null) {
-                Class<?> compose = Class.forName("h1.h", false, loader);
-                result = findStatic(compose, "s", 1).invoke(null, Boolean.valueOf(enabled()));
+                Class<?> compose = Class.forName(NuvioNative.COMPOSE_FACTORY_NAME, false, loader);
+                result = findStatic(compose, NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, Boolean.valueOf(enabled()));
                 enabledState = result;
             }
         }
@@ -443,8 +445,8 @@ public final class NuvioRemainingEpisodes {
         synchronized (NuvioRemainingEpisodes.class) {
             result = revisionState;
             if (result == null) {
-                Class<?> compose = Class.forName("h1.h", false, loader);
-                result = findStatic(compose, "s", 1).invoke(null, Integer.valueOf(0));
+                Class<?> compose = Class.forName(NuvioNative.COMPOSE_FACTORY_NAME, false, loader);
+                result = findStatic(compose, NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, Integer.valueOf(0));
                 revisionState = result;
             }
         }

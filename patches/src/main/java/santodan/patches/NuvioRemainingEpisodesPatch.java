@@ -1,5 +1,7 @@
 package santodan.patches;
 
+import software.santodan.nuvio.NuvioNative;
+
 import app.morphe.patcher.patch.ApkFileType;
 import app.morphe.patcher.patch.BytecodePatch;
 import app.morphe.patcher.patch.Compatibility;
@@ -35,8 +37,8 @@ import kotlin.Unit;
 /** Adds an opt-in aired/unwatched episode count to Nuvio's Continue Watching cards. */
 public final class NuvioRemainingEpisodesPatch {
     public static final String NAME = "NuvioTV - Remaining episodes in Continue Watching";
-    static final String PACKAGE = "com.nuvio.tv";
-    static final String VERSION = NuvioLayout.BETA7;
+    static final String PACKAGE = NuvioNative.PACKAGE_NAME;
+    static final String VERSION = NuvioLayout.BETA8;
     static final String EXTENSION = "Lsoftware/santodan/extension/nuvioremaining/NuvioRemainingEpisodes;";
 
     private NuvioRemainingEpisodesPatch() {}
@@ -54,12 +56,12 @@ public final class NuvioRemainingEpisodesPatch {
                     String version = context.getPackageMetadata().getVersionName();
                     validateTarget(context.getPackageMetadata().getPackageName(), version);
                     NuvioLayout.use(version);
-                    String state = "Lsa/x3;";
-                    hookNextUpModel(context.mutableClassDefBy("Lsa/q9;"));
-                    hookEpisodeSets(context.mutableClassDefBy("Lsa/m5;"), state);
+                    String state = NuvioNative.HOME_MODEL_TYPE;
+                    hookNextUpModel(context.mutableClassDefBy(NuvioNative.HOME_ITEM_TYPE));
+                    hookEpisodeSets(context.mutableClassDefBy(NuvioNative.HOME_PIPELINE_TYPE), state);
 
-                    hookCard(context.mutableClassDefBy("Lha/b1;"),
-                        "Lc7/a;");
+                    hookCard(context.mutableClassDefBy(NuvioNative.HOME_CARD_TYPE),
+                        NuvioNative.PROVIDER_BADGE_TYPE);
                     return Unit.INSTANCE;
                 });
                 return Unit.INSTANCE;
@@ -73,7 +75,7 @@ public final class NuvioRemainingEpisodesPatch {
     }
 
     static void hookNextUpModel(MutableClass owner) {
-        MutableMethod target = unique(owner, "<init>", "Lsa/q9;".equals(owner.getType()) ? 27 : 26);
+        MutableMethod target = unique(owner, "<init>", NuvioNative.HOME_ITEM_TYPE.equals(owner.getType()) ? 27 : 26);
         List<Instruction> ins = instructions(target);
         int instance = parameterStart(target);
         if (instance < 0 || instance > 15)
@@ -94,7 +96,7 @@ public final class NuvioRemainingEpisodesPatch {
             throw unsupported("Aired/watched reconciliation register layout changed");
         target.getImplementation().addInstruction(0,
             new BuilderInstruction22c(Opcode.IGET_OBJECT, 0, 11,
-                new ImmutableFieldReference(stateType, "Lsa/x3;".equals(stateType) ? "T0" : "M0", "Ljava/util/Map;")));
+                new ImmutableFieldReference(stateType, NuvioNative.HOME_MODEL_TYPE.equals(stateType) ? "T0" : "M0", "Ljava/util/Map;")));
         target.getImplementation().addInstruction(1,
             new BuilderInstruction35c(Opcode.INVOKE_STATIC, 2, 0, 12, 0, 0, 0,
                 method(EXTENSION, "update", List.of("Ljava/util/Map;", "Ljava/util/Map;"), "V")));
@@ -111,7 +113,7 @@ public final class NuvioRemainingEpisodesPatch {
         MutableMethod target = unique(owner, "invoke", 3);
         List<Instruction> ins = instructions(target);
         int imageCall = -1;
-        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), "Leb/m;", "b")) {
+        for (int i = 0; i < ins.size(); i++) if (calls(ins.get(i), NuvioNative.POSTER_IMAGE_TYPE, "b")) {
             if (imageCall >= 0) throw unsupported("Multiple Continue Watching image anchors found");
             imageCall = i;
         }
@@ -140,7 +142,7 @@ public final class NuvioRemainingEpisodesPatch {
                 && method.getImplementation() != null) {
                 // Beta4 has a 27-argument default-mask overload as well as the real
                 // model constructor. Register only fully initialized model instances.
-                if ("Lsa/q9;".equals(owner.getType()) && "<init>".equals(name)
+                if (NuvioNative.HOME_ITEM_TYPE.equals(owner.getType()) && "<init>".equals(name)
                     && !"Lcom/nuvio/tv/domain/model/MDBListRatings;".contentEquals(
                         method.getParameterTypes().get(parameters - 1))) continue;
                 if (result != null) throw unsupported("Multiple " + owner.getType() + "->" + name + " matches");

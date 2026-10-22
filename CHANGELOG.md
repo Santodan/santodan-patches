@@ -1,3 +1,13 @@
+## [0.13.0](https://github.com/Santodan/santodan-patches/compare/v0.12.0...v0.13.0) (2026-10-22)
+
+### 🐛 Bug Fixes
+
+* **nuviotv:** support beta8 and centralize native contracts [skip ci] ([7bc4157](https://github.com/Santodan/santodan-patches/commit/7bc4157e03df49d06e2325a1f31b99b6137b5d51))
+
+### ✨ New Features
+
+* **NuvioTV:** add native GitHub APK updates [skip ci] ([15bd85e](https://github.com/Santodan/santodan-patches/commit/15bd85ed1778e7e342088212bc2a0bfb195766a0))
+
 ## [0.12.0](https://github.com/Santodan/santodan-patches/compare/v0.11.2...v0.12.0) (2026-10-21)
 
 ### ✨ New Features

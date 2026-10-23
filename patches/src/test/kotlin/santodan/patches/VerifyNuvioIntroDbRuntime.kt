@@ -9,6 +9,9 @@ import javax.tools.ToolProvider
 fun main(args: Array<String>) {
     val root = Files.createTempDirectory(File(args[1]).apply { mkdirs() }.toPath(), "introdb-native-runtime-").toFile()
     val sources = mapOf(
+        "fixture.Overloads" to """package fixture; public class Overloads {
+            public void action(String value){} public void action(Integer value){}
+        }""",
         "software.santodan.extension.nuviobuttons.NuvioPlaybackButtons" to """package software.santodan.extension.nuviobuttons; public class NuvioPlaybackButtons {
             public static boolean collect; public static Object[] captured;
             public static boolean collectIntroDb(Object[] args){if(collect)captured=args;return collect;} }""",
@@ -223,6 +226,16 @@ fun main(args: Array<String>) {
     val compileClasspath = listOf(jsonJar, contractsJar).joinToString(File.pathSeparator) { File(it.toURI()).path }
     check(ToolProvider.getSystemJavaCompiler().run(null, null, null, "--release", "11", "-classpath", compileClasspath, "-d", output.path, *files.map { it.path }.toTypedArray()) == 0)
     URLClassLoader(arrayOf(output.toURI().toURL(), jsonJar, contractsJar), ClassLoader.getSystemClassLoader().parent).use {
+        val lookup = it.loadClass("software.santodan.extension.nuviointro.IntroUi")
+            .getDeclaredMethod("method", Class::class.java, String::class.java, Int::class.javaPrimitiveType)
+            .apply { isAccessible = true }
+        val composerType = it.loadClass("h1.k0")
+        val groupMethod = lookup.invoke(null, composerType, "d0", 1)
+        repeat(1_000) { check(lookup.invoke(null, composerType, "d0", 1) === groupMethod) }
+        check(runCatching { lookup.invoke(null, it.loadClass("fixture.Overloads"), "action", 1) }
+            .exceptionOrNull()?.cause is NoSuchMethodException)
+        check(runCatching { lookup.invoke(null, composerType, "missing", 0) }
+            .exceptionOrNull()?.cause is NoSuchMethodException)
         it.loadClass("fixture.Runner").getMethod("run").invoke(null)
     }
     println("PASS: Anime Skip single-line key editor and Cancel/Clear/Save, three distinct segment icons, exact cancellation overload with legacy overload trap, two-press review, native actions, timer lifecycle, HTTPS failures/cancellation, credential-safe logging and balanced Compose groups")

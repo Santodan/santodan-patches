@@ -207,8 +207,38 @@ sync gate follows the root navigation flow and activity lifecycle, not stream-se
 pause signals. Main-service playback writes and service inclusion are configured
 in the Tracking progress submenu; verify standalone and combined bundles.
 Progress and next-up flows await only the lightweight profile CW cache on IO.
-Full watched history and automatic merge wait for the native fully-drawn reporter;
-legacy snapshots migrate by streaming past the history fields during startup.
+Startup sync waits for Home and the native fully-drawn reporter. Quick startup
+reuses validated cached remote history and applies newer local playback; the
+manual button (or an unvalidated/missing cache) uses full USER_INITIATED refresh.
+Full refresh waits for provider p() readiness before accepting empty snapshots.
+Cached sync reads per-profile `membership_v2` preferences: compressed dictionary,
+distinct episode/alias sets and references, plus full-history timestamp. Old JSON
+membership/full caches migrate once after Home; do not expand shared sets back
+into duplicate JSON arrays. The previous JSON split still took 65–83s to hydrate.
+Keep buffering between Data streams and GZIP: unbuffered NMC1 restoration still
+took 27s on the TV. Startup already uses saved timestamps for local deltas; native
+provider refresh accepts intent, not a uniform remote `since` argument.
+Quick startup must publish restored membership to remaining counts. The merge
+patch must not refresh library providers or take over native library syncing;
+leave that to Nuvio's Tracking settings. Cached resume cards need count registration
+before native NextUpInfo; first/late registration and overlapping counter updates
+must invalidate/recount. Keep quick membership readiness distinct from full model
+readiness so this does not restart the large badge metadata batch.
+Keep legacy history preferences lazy when there is nothing to migrate. Sync
+completion summaries include preparation time; local stages are timed in logs.
+The native updater host/banner now displays sync status; the custom Android-view
+overlay was removed. Keep native drawing/theme/animations and real-update priority.
+See NuvioNativeSyncBanner for guarded root/status hooks and the production banner
+runtime verifier for callback, preference/active-update, grouping and error checks.
+Do not restore episode membership or full history on the launch path: that
+experiment added 46–51 seconds before Home. Use the dedicated `startup_light`
+cache; migrate the older oversized startup file only after Home. Saved full watched
+history is a cancellable failure fallback; successful syncs read fresh provider
+history without hydrating the old large cache first. Manual sync requests survive
+automatic-worker cancellation and use native USER_INITIATED refresh. Preparation
+and refresh have separate time budgets; see `docs/NuvioBeta8.md` for the latest
+runtime checks and device-log findings.
+Legacy snapshots migrate by streaming past history fields in the post-Home worker.
 Keep full history in its separate preferences file: sharing settings XML with
 large snapshot strings makes even the first Boolean settings read load them.
 Legacy history moves after Home, with a durable copy before settings cleanup.
@@ -343,7 +373,7 @@ the new original to inspect candidates; update the reviewed contract after
 proving changes. Run `:patches:verifyNuvioLatest` after building. Do not edit
 generated `NuvioNative.java`, guess ambiguous matches, or remove exact guards.
 
-The fourteen published NuvioTV patches target beta.8 (version code 1071).
+The sixteen published NuvioTV patches target beta.8 (version code 1071).
 Use verified beta.8 symbols directly. Read `docs/NuvioBeta8.md` for provenance,
 DEX contracts and verification commands. Important reflection contracts include
 `h1.h.t(Object):h1.r1`, `ba.a5.l(String,String,Integer,Integer,boolean):Flow`,
@@ -358,6 +388,11 @@ both native callbacks and availability. The new collection card has 63 registers
 use the beta.8 original and verifiers, retaining historical fixtures unchanged.
 
 Regenerate compatibility metadata with `:patches:generatePatchesList`.
+
+The independent, disabled-by-default startup track reselection patch guards
+ExoPlayer's missing playing period before seeking. Next-episode preload cooldowns
+survive pause/buffering for the same target. See `docs/NuvioBeta8.md` for the
+reviewed DEX contract and focused scheduler/guard verification tasks.
 
 ## Reddit 2026.37.0
 

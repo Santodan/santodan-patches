@@ -4,6 +4,14 @@
 
 * **nuviotv:** add the optional beta.8 startup track-reselection guard, preserving active-period seeks.
 
+### Fixes
+
+* **nuviotv:** read the correct playback state, retain preload cooldowns across pause/buffering and cache reflection used by playback controls.
+* **nuviotv:** defer merge work until Home, retain cached Continue Watching entries, validate provider readiness and apply local playback changes during quick startup sync.
+* **nuviotv:** reuse the native update-download banner for merge progress, elapsed time and errors; keep library refreshing under native Tracking settings.
+* **nuviotv:** restore compact episode membership and update remaining counts for resumed cards, late registration and overlapping count requests.
+* **verification:** cover the startup guard, native banner, cached history, count races and unchanged native library methods across standalone and combined beta.8 patches.
+
 ## [0.13.0](https://github.com/Santodan/santodan-patches/compare/v0.12.0...v0.13.0) (2026-10-22)
 
 ### 🐛 Bug Fixes

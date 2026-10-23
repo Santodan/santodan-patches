@@ -41,6 +41,7 @@ public final class NuvioMergedProgressPatch {
                     {
                         NuvioRemainingEpisodesPatch.hookCard(context.mutableClassDefBy(NuvioNative.HOME_CARD_TYPE),
                             NuvioNative.PROVIDER_BADGE_TYPE, EXT, "prepareProviderBadge", "renderProviderBadge");
+                        NuvioNativeSyncBanner.hook(context);
                         hookNavigation(context.mutableClassDefBy(NuvioNative.ROOT_NAVIGATION_TYPE));
                         hookActivity(context.mutableClassDefBy("Lcom/nuvio/tv/MainActivity;"));
                         hookPlaybackScrobblers(context.mutableClassDefBy(NuvioNative.SCROBBLER_REGISTRY_TYPE));

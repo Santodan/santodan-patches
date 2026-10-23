@@ -188,6 +188,8 @@ public final class VerifyNuvioBeta8 {
         hook("hookRepository", owner(repository));
         if (newer) {
             verifyMergeHooks();
+            NuvioNativeSyncBanner.hookRoot(owner("Lq8/l;"));
+            NuvioNativeSyncBanner.hookBanner(owner("Lmb/a;"));
             NuvioMergedProgressPatch.hookNavigation(owner("Lq8/l;"));
             NuvioMergedProgressPatch.hookActivity(owner("Lcom/nuvio/tv/MainActivity;"));
             NuvioMergedProgressPatch.hookPlaybackScrobblers(owner("Lq9/h0;"));
@@ -318,7 +320,13 @@ public final class VerifyNuvioBeta8 {
             String playerState = "Lab/nm;";
             String nextInfo = "Lab/s4;";
             field(playerModel, "Y", playerController);
-            method(playerModel, "f", 0);
+            NuvioStreamPreloadPatch.validatePlayerState(owner(playerModel));
+            MutableClass wrongState = new MutableClass(owner(playerModel));
+            wrongState.getMethods().removeIf(m -> m.getName().equals("e") && m.getParameterTypes().isEmpty());
+            boolean missingStateRejected = false;
+            try { NuvioStreamPreloadPatch.validatePlayerState(wrongState); }
+            catch (IllegalStateException expected) { missingStateRejected = true; }
+            if (!missingStateRejected) throw new AssertionError("Missing player state accepted with void f() present");
             field(playerController, "F0", "Lkotlinx/coroutines/flow/StateFlow;");
             for (String name : List.of("a", "b", "c")) field(playerState, name, "Z");
             for (String name : List.of("g", "C0", "j1")) field(playerState, name, "Ljava/lang/String;");
@@ -434,6 +442,8 @@ public final class VerifyNuvioBeta8 {
     }
 
     private static void verifyMergeHooks() {
+        verifyMergeHook("Lq8/l;", NuvioNativeSyncBanner::hookRoot, "invoke");
+        verifyMergeHook("Lmb/a;", NuvioNativeSyncBanner::hookBanner, "b");
         verifyMergeHook("Lq8/l;", NuvioMergedProgressPatch::hookNavigation, "invoke");
         verifyMergeHook("Lq9/h0;", NuvioMergedProgressPatch::hookPlaybackScrobblers, "a");
         verifyMergeHook("Lba/re;", NuvioMergedProgressPatch::hookLocalProgressWrites, "E");

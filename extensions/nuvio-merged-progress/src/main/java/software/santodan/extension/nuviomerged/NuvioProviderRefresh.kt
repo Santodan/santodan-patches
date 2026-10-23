@@ -21,6 +21,22 @@ import kotlinx.coroutines.flow.merge
 
 /** Await the native refresh before sampling flows that can emit cached values immediately. */
 object NuvioProviderRefresh {
+    /** A cold provider may return placeholder empty lists before its disk hydration finishes. */
+    @Suppress("UNCHECKED_CAST")
+    suspend fun ready(provider: Any, accessor: String) {
+        val method = provider.javaClass.methods.single { it.name == accessor && it.parameterCount == 0 }
+        (method.invoke(provider) as Flow<Any?>).first { it == true }
+    }
+
+    /** Saved episode membership must not start a bulk metadata batch during startup. */
+    fun badgeCacheHit(nativeHit: Boolean, enabled: Boolean, ready: Boolean,
+                      playback: Boolean, retry: Boolean): Boolean = when {
+        !enabled -> nativeHit
+        !ready || playback -> true
+        retry -> false
+        else -> nativeHit
+    }
+
     /** Move only cached snapshots; never discard the source before a durable copy. */
     fun migrateSnapshots(legacy: Map<String, *>, contains: (String) -> Boolean,
         store: (Map<String, String>) -> Boolean, remove: (Set<String>) -> Boolean): Boolean {
@@ -90,12 +106,12 @@ object NuvioProviderRefresh {
         }
     }
 
-    suspend fun await(provider: Any, methodName: String) {
+    suspend fun await(provider: Any, methodName: String, manual: Boolean = false) {
         val method = provider.javaClass.methods.single {
             it.name == methodName && it.parameterCount == 2
         }
         val intent = requireNotNull(method.parameterTypes[0].enumConstants).single {
-            (it as Enum<*>).name == "AUTOMATIC"
+            (it as Enum<*>).name == if (manual) "USER_INITIATED" else "AUTOMATIC"
         }
         suspendCancellableCoroutine<Any?> { completion ->
             val result = method.invoke(provider, intent, NuvioSourceContinuation(completion))

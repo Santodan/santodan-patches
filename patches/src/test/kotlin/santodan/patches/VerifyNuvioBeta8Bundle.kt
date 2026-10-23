@@ -26,6 +26,8 @@ import java.lang.reflect.InvocationTargetException
 fun main(args: Array<String>) = runBlocking {
     NuvioLayout.use("1.1.0-beta.8")
     val originals = mutableMapOf<String, ClassDef>()
+    val libraryTypes = setOf("Lba/e1;", "Lq9/i;", "Lq9/j;", "Lba/lc;", "Lca/h3;", "Lu9/g6;",
+        "Lba/q8;", "Lca/f7;", "Lu9/b3;")
     val pickerCallers = mutableListOf<String>()
     val originalDex = File(args[2], "original-dex").apply { mkdirs() }
     ZipFile(args[0]).use { zip ->
@@ -33,7 +35,7 @@ fun main(args: Array<String>) = runBlocking {
             zip.getInputStream(entry).use { input -> File(originalDex, entry.name).outputStream().use { input.copyTo(it) } }
             zip.getInputStream(entry).buffered().use { input ->
                 for (owner in DexBackedDexFile.fromInputStream(null, input).classes) {
-                    if (owner.type in setOf("Lab/fh;", "Lab/qm;", "Lab/mc;")) originals[owner.type] = owner
+                    if (owner.type in libraryTypes || owner.type in setOf("Lab/fh;", "Lab/qm;", "Lab/mc;")) originals[owner.type] = owner
                     for (method in owner.methods) for (instruction in method.implementation?.instructions ?: emptyList()) {
                         val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
                         if (ref.toString() == "Lab/fh;->E(Lab/mc;Lcom/nuvio/tv/domain/model/Video;Z)V")
@@ -135,6 +137,7 @@ fun main(args: Array<String>) = runBlocking {
             val nativeHooks = mutableMapOf<String, Int>()
             var stabilityGuards = 0
             val mergeHooks = mutableMapOf<String, Int>()
+            val bannerHooks = mutableMapOf<String, Int>()
             var introHooks = 0
             var currentLabels = 0
             var updaterVersions = 0
@@ -174,6 +177,25 @@ fun main(args: Array<String>) = runBlocking {
                 target.inputStream().buffered().use { input ->
                     for (owner in DexBackedDexFile.fromInputStream(null, input).classes) {
                         classes += owner.type
+                        if (owner.type in libraryTypes) {
+                            val native = originals.getValue(owner.type)
+                            val expected = MutableClass(native)
+                            // The independent launcher-channels patch already observes
+                            // library construction; preserve that existing hook only.
+                            if (combined && owner.type == "Lba/e1;") {
+                                NuvioLauncherChannelsPatch.hookReturn(expected.methods.single {
+                                    it.name == "<init>" && it.parameterTypes.size == 8
+                                }, "observeLibrary")
+                            }
+                            fun bodies(type: ClassDef) = type.methods.associate { method ->
+                                method.toString() to (method.implementation?.let {
+                                    NuvioPlaybackButtonsPatch.fingerprint(MutableMethod(method))
+                                } ?: "abstract")
+                            }
+                            check(bodies(owner) == bodies(expected)) { "Native library code changed: ${owner.type}" }
+                            check(owner.fields.map { "${it.name}:${it.type}:${it.accessFlags}" }.toSet() ==
+                                native.fields.map { "${it.name}:${it.type}:${it.accessFlags}" }.toSet())
+                        }
                         if (owner.type == NuvioPlayerStabilityPatch.OWNER) {
                             val seek = owner.methods.single { it.name == NuvioPlayerStabilityPatch.METHOD }
                             if (stabilityOnly || combined) {
@@ -245,6 +267,8 @@ fun main(args: Array<String>) = runBlocking {
                             }
                             for (instruction in instructions) {
                                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
+                                if (ref.definingClass == NuvioNativeSyncBanner.EXT && !owner.type.startsWith("Lsoftware/santodan/extension/"))
+                                    bannerHooks[ref.name] = (bannerHooks[ref.name] ?: 0) + 1
                                 if (ref.definingClass == NuvioIntroDbPatch.EXT && !owner.type.startsWith("Lsoftware/santodan/extension/")) introHooks++
                                 if ((owner.type.startsWith("Lsoftware/santodan/extension/nuviostreams/") ||
                                     owner.type.startsWith("Lsoftware/santodan/extension/nuviomerged/")) &&
@@ -265,6 +289,8 @@ fun main(args: Array<String>) = runBlocking {
                     }
                 }
             }
+            check(classes.containsAll(libraryTypes)) { "Native library classes missing" }
+            println("PASS: $mode native library preserved; only existing launcher observation allowed when selected")
             check((NuvioPreferredAddonPatch.EXTENSION in classes) == (preferredOnly || combined))
             check(("Lsoftware/santodan/extension/nuviomerged/NuvioStartupActivity;" in classes) == (mergeOnly || combined))
             if (preferredOnly || combined) {
@@ -303,12 +329,20 @@ fun main(args: Array<String>) = runBlocking {
                 check(mergeHooks["syncLocalProgress"] == 2 && mergeHooks["mergedProvider"] == 1)
                 check("setPlaybackPaused" !in mergeHooks) { "Search pause must not control merged sync" }
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioMergePolicy;" in classes)
+                check("Lsoftware/santodan/extension/nuviomerged/NuvioSyncBanner;" in classes)
+                check("Lsoftware/santodan/extension/nuviomerged/NuvioMergeWork\$HomeRequests;" in classes)
+                check("Lsoftware/santodan/extension/nuviomerged/NuvioSyncBanner;->update(Landroid/app/Activity;Ljava/lang/String;IIZZ)V" in definitions)
+                check("Lsoftware/santodan/extension/nuviomerged/NuvioSyncBanner;->hide()V" in definitions)
+                check(bannerHooks == mapOf("host" to 1, "begin" to 1, "end" to 1, "installed" to 1, "groupText" to 4, "formatted" to 1)) {
+                    "Native updater banner hooks changed: $bannerHooks"
+                }
             }
+            else check(bannerHooks.isEmpty())
             check(updaterVersions == if (updatesOnly || combined) 7 else 0)
             check(updaterRepository == if (updatesOnly || combined) 2 else 0)
             check(safeInstaller == if (updatesOnly || combined) 1 else 0)
             check(safeReceiver == if (updatesOnly || combined) 1 else 0)
-            check(updatesOnly || NuvioAccessPatch.TYPE in classes) { "Shared direct native accessors are missing" }
+            check(updatesOnly || stabilityOnly || NuvioAccessPatch.TYPE in classes) { "Shared direct native accessors are missing" }
             fun resolves(reference: String): Boolean {
                 val signature = reference.substringAfter("->")
                 val visited = mutableSetOf<String>()
@@ -326,7 +360,7 @@ fun main(args: Array<String>) = runBlocking {
             check(coroutineCalls.all { resolves(it) }) {
                 "Missing native coroutine APIs: ${coroutineCalls.filter { !resolves(it) }}"
             }
-            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !updatesOnly))
+            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !updatesOnly && !stabilityOnly))
             check(("Lsoftware/santodan/extension/nuviobuttons/NuvioPlaybackButtons;" in classes) == (buttonsOnly || combined))
             check(("Lsoftware/santodan/extension/nuviocwstreams/NuvioContinueWatchingStreams;" in classes) == combined)
             check(("Lsoftware/santodan/extension/nuviodetailstreams/NuvioDetailStreams;" in classes) == combined)

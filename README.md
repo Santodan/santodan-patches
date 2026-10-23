@@ -60,7 +60,7 @@ These sixteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs
 
 ### Continue Watching
 
-- **Merge tracking progress**: Combines Nuvio Sync and connected tracking-provider progress and watched-show history, with a choice between highest progress and the most recent update. Library and collection Watched labels follow the selected provider for each show. Cached progress and watched history load without waiting for provider refresh; synchronization continues in the background. Incremental Watched badge updates process changed cached metadata and limit progress logging.
+- **Merge tracking progress**: Combines Nuvio Sync and connected tracking-provider progress and watched-show history, with a choice between highest progress and the most recent update. Library and collection Watched labels follow the selected provider for each show. Quick startup sync reuses validated saved history and applies local playback changes; Sync now refreshes remote services. Nuvio's native update-download banner shows sync stages, progress and errors. Cached Continue Watching entries remain visible until a complete, ready snapshot replaces them. Library contents and refreshing remain controlled by Nuvio's native Tracking settings.
 
     - Enable **Show merged progress provider** to display the winning provider's icon (Trakt, Simkl, MDBList, or Nuvio) at the bottom-right of each Continue Watching poster. The option is disabled by default and displays icons only while merging is enabled.
 

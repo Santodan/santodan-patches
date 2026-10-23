@@ -40,6 +40,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
@@ -68,7 +69,12 @@ object NuvioMergedProgress {
     @Volatile private var homePresented = false
     private var settingsExpanded = false
     @Volatile private var manualMerge = false
+    @Volatile private var quickMerge = false
     @Volatile private var mergeJob: Job? = null
+    private val mergeWorkCheck = ThreadLocal<() -> Unit>()
+    private val manualRequests = NuvioMergeWork.ManualRequests()
+    private val homeRequests = NuvioMergeWork.HomeRequests()
+    @Volatile private var syncError = false
     @Volatile private var syncMessage = "Not synced yet"
     @Volatile private var syncProfile: String? = null
     @Volatile private var syncStep = 0
@@ -80,6 +86,12 @@ object NuvioMergedProgress {
     private val refreshDeferred = AtomicBoolean(false)
     private val deferredBadges = java.util.Collections.synchronizedMap(java.util.WeakHashMap<Any, Boolean>())
     @Volatile private var activeCacheKey: String? = null
+    @Volatile private var cachedSnapshotAvailable = false
+    @Volatile private var cachedSnapshotTime = 0L
+    @Volatile private var cachedHistoryTime = 0L
+    @Volatile private var cachedSnapshotValidated = false
+    @Volatile private var cachedMembershipReady = false
+    @Volatile private var forceFullSync = false
     private val providerObserverScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val providerObservers = ConcurrentHashMap<Any, Job>()
     private val badgeHistories = java.util.Collections.synchronizedMap(
@@ -128,6 +140,7 @@ object NuvioMergedProgress {
         observeHomePresentation(value)
         refreshDeferred.set(true)
         requestAutomaticSync()
+        refreshSyncBanner()
     }
 
     /** beta.8 ComponentActivity's reporter sets f and invokes g under lock c. */
@@ -153,6 +166,7 @@ object NuvioMergedProgress {
         mergeJob?.cancel()
         providerObservers.values.forEach { it.cancel() }
         providerObservers.clear()
+        NuvioSyncBanner.hide()
     }
 
     @JvmStatic fun activityDestroyed(value: Any) {
@@ -160,6 +174,7 @@ object NuvioMergedProgress {
         activeDialog = null
         dialogProfile = null
         activity.clear()
+        NuvioSyncBanner.hide()
         navigation.foreground(false)
         navigation.navigate(null)
         navigationJob?.cancel()
@@ -180,7 +195,10 @@ object NuvioMergedProgress {
                     val previousRoute = navigation.revision()
                     val enteredHome = navigation.navigate(route)
                     if (navigation.revision() != previousRoute && activeDialog != null) dismissTrackingDialog()
-                    playbackPaused = route?.startsWith("player/") == true
+                    val enteringPlayer = route?.startsWith("player/") == true
+                    if (enteringPlayer && !playbackPaused) playbackRevision.incrementAndGet()
+                    playbackPaused = enteringPlayer
+                    refreshSyncBanner()
                     if (!navigation.allowed(manualMerge)) mergeJob?.cancel()
                     if (!navigation.allowed(false)) {
                         providerObservers.values.forEach { it.cancel() }
@@ -208,7 +226,9 @@ object NuvioMergedProgress {
     }
 
     private fun requestAutomaticSync() {
-        if (navigation.allowed(false) && (refreshDeferred.get() || activeCacheKey != snapshotKey())) mergeAsync()
+        if (merging.get()) return
+        if (enabled() && homeRequests.claim(snapshotKey(), homePresented, navigation.allowed(false)))
+            mergeAsync(true, preferences().getBoolean("quick_startup_sync", true) && !forceFullSync)
     }
 
     private fun trackingKey(name: String) = "${snapshotKey()}_$name"
@@ -239,12 +259,31 @@ object NuvioMergedProgress {
         providers.firstOrNull { providerId(it) == mainTracking() }
     }
 
+    @Volatile private var syncStartedNanos = 0L
+    private fun syncElapsed(): String = "${((System.nanoTime() - syncStartedNanos).coerceAtLeast(0) / 100_000_000) / 10.0}s"
+    private fun logSyncStage(stage: String, started: Long) {
+        Log.d(TAG, "Sync stage: $stage elapsedMs=${(System.nanoTime() - started) / 1_000_000}")
+    }
+
     private fun updateSync(message: String, step: Int = syncStep, total: Int = syncSteps) {
         if (syncProfile != null && syncProfile != snapshotKey()) return
-        syncMessage = message; syncStep = step; syncSteps = total.coerceAtLeast(1)
+        syncMessage = if (syncStartedNanos != 0L &&
+            (message.contains("Sync failed:") || message.startsWith("Sync deferred"))) "$message Elapsed ${syncElapsed()}." else message
+        syncStep = step; syncSteps = total.coerceAtLeast(1)
+        if (merging.get()) Log.d(TAG, "Sync status: step=$step/$total elapsed=${syncElapsed()} message=$syncMessage")
         Handler(Looper.getMainLooper()).post {
             refreshMenu()
+            refreshSyncBanner()
         }
+    }
+
+    private fun refreshSyncBanner() {
+        val owner = activity.get()
+        if (owner == null || !homePresented || !navigation.allowed(true) || !enabled() || syncProfile != snapshotKey()) {
+            NuvioSyncBanner.hide()
+            return
+        }
+        NuvioSyncBanner.update(owner, syncMessage, syncStep, syncSteps, merging.get(), syncError)
     }
 
     /** Uses the same native persistence route as Watch Progress, from the Layout submenu. */
@@ -293,9 +332,17 @@ object NuvioMergedProgress {
                 preferences().edit().putBoolean(SHOW_PROVIDER, !preferences().getBoolean(SHOW_PROVIDER, false)).apply()
                 refreshMenu()
             }
+            renderMenuToggle(composer, "Quick startup sync",
+                "Use saved history and local playback changes at startup. Sync now refreshes all services.",
+                preferences().getBoolean("quick_startup_sync", true)) {
+                preferences().edit().putBoolean("quick_startup_sync", !preferences().getBoolean("quick_startup_sync", true)).apply()
+                homeRequests.reset()
+                refreshMenu()
+            }
             renderMenuAction(composer, "Main tracking: ${trackingLabel(mainTracking())}") { chooseMainTracking() }
             renderMenuAction(composer, "Services to merge: ${selectedTrackings().joinToString { trackingLabel(it) }}") { chooseTrackings() }
-            renderMenuAction(composer, if (merging.get()) "Sync in progress" else "Sync now") { showSync() }
+            renderMenuAction(composer, if (merging.get() && quickMerge) "Refresh all services now"
+                else if (merging.get()) "Sync in progress" else "Sync now") { showSync() }
             findMethod(composer.javaClass.classLoader.loadClass(NuvioNative.SETTINGS_SECTION_NAME), "e", 6).invoke(null,
                 0, 4, composer, if (syncProfile == snapshotKey()) syncMessage else
                     preferences().getString(trackingKey("last_sync"), "Not synced yet"), null,
@@ -339,7 +386,7 @@ object NuvioMergedProgress {
         if (!enabled()) { openDialog("disabled"); return }
         if (activeDialog == "sync") return
         openDialog("sync")
-        if (!merging.get()) mergeAsync(true)
+        mergeAsync(true)
     }
 
     private fun renderTrackingDialog(composer: Any) {
@@ -365,6 +412,8 @@ object NuvioMergedProgress {
                     mainTracking(), { values ->
                         if (profile == snapshotKey()) {
                             preferences().edit().putStringSet(trackingKey("services"), values).apply()
+                            forceFullSync = true
+                            homeRequests.reset()
                             playbackRevision.incrementAndGet(); mergeJob?.cancel()
                             refreshDeferred.set(true)
                         }
@@ -459,6 +508,8 @@ object NuvioMergedProgress {
     }
 
     private fun configureMerge(mergeEnabled: Boolean, strategy: String) {
+        forceFullSync = true
+        homeRequests.reset()
         if (!configuring.compareAndSet(false, true)) return
         Thread({
             val wasEnabled = enabled()
@@ -697,51 +748,134 @@ object NuvioMergedProgress {
             else "Merged - Highest progress"
         } else nativeLabel
 
-    private fun mergeAsync(manual: Boolean = false) {
-        if (!manual && !homePresented) { refreshDeferred.set(true); return }
-        if (!navigation.allowed(manual)) { refreshDeferred.set(true); return }
-        if (!enabled() || !merging.compareAndSet(false, true)) return
+    private fun mergeAsync(manual: Boolean = false, quick: Boolean = false) {
+        // Implicit requests are the same full sync as the button, released only after Home.
+        if (!manual) { requestAutomaticSync(); return }
+        if (!navigation.allowed(manual)) {
+            homeRequests.finish(snapshotKey(), true)
+            refreshDeferred.set(true)
+            return
+        }
+        if (!enabled()) { homeRequests.reset(); return }
+        if (!merging.compareAndSet(false, true)) {
+            if (manual && (!manualMerge || syncProfile != snapshotKey() || (!quick && quickMerge))) {
+                manualRequests.offer(snapshotKey())
+                updateSync("Waiting for the background sync to stop before starting manual sync.")
+                mergeJob?.cancel()
+            }
+            return
+        }
         manualMerge = manual
+        quickMerge = quick && cachedSnapshotValidated
+        syncError = false
         val dispatchedNavigation = navigation.revision()
         val dispatchedProfile = snapshotKey()
+        val dispatchedPlayback = playbackRevision.get()
         syncProfile = dispatchedProfile
+        syncStartedNanos = System.nanoTime()
         refreshDeferred.set(false)
-        updateSync("Starting sync…", 0, 1)
+        updateSync(if (quick) "Starting quick sync…" else "Starting full sync…", 0, 1)
         Thread({
+            var interrupted = false
             try {
-                ensureSnapshotLoaded()
-                migrateSnapshotStorage()
-                restoreWatchedSnapshot(repository?.javaClass?.classLoader)
                 runBlocking {
                     mergeJob = coroutineContext[Job]
-                    try { withTimeout(90_000L) { mergeSnapshot() } }
-                    finally { mergeJob = null }
+                    try {
+                        var checks = 0
+                        NuvioMergeWork.stages({
+                            navigation.current(dispatchedNavigation, manual) && playbackRevision.get() == dispatchedPlayback &&
+                                (++checks % 128 != 1 || (enabled() && snapshotKey() == dispatchedProfile))
+                        }, if (manual) 0 else 1_500, refreshMs = if (manual) 180_000 else 90_000,
+                        prepare = { checkpoint ->
+                            mergeWorkCheck.set(checkpoint)
+                            try {
+                                checkpoint()
+                                updateSync("Loading saved progress…", 1, selectedTrackings().size + 3)
+                                ensureSnapshotLoaded()
+                                checkpoint()
+                                restoreLegacyStartupSnapshot(checkpoint)
+                                checkpoint()
+                                migrateSnapshotStorage()
+                                logSyncStage("prepare", syncStartedNanos)
+                                checkpoint()
+                                // A successful refresh supplies complete history. Do not decode thousands
+                                // of stale watched models only to replace them immediately afterwards.
+                            } finally { mergeWorkCheck.remove() }
+                        }, refresh = { checkpoint ->
+                            mergeWorkCheck.set(checkpoint)
+                            try {
+                                if (quick && cachedSnapshotAvailable && cachedSnapshotValidated) quickSnapshot(checkpoint)
+                                else {
+                                    quickMerge = false
+                                    if (quick) updateSync("Validating saved tracker data with a full sync…", 1)
+                                    mergeSnapshot()
+                                }
+                            } finally { mergeWorkCheck.remove() }
+                        })
+                    } finally { mergeJob = null }
                 }
             }
             catch (error: kotlinx.coroutines.CancellationException) {
                 if (error is kotlinx.coroutines.TimeoutCancellationException) handleMergeFailure(error, dispatchedProfile, manual)
                 else {
+                    interrupted = true
                     refreshDeferred.set(true)
+                    Log.d(TAG, "Merge work deferred; cached snapshot retained")
                     updateSync("Sync deferred until returning to Home. Previous snapshot retained.")
                 }
             }
             catch (error: Throwable) { handleMergeFailure(error, dispatchedProfile, manual) }
             finally {
+                homeRequests.finish(dispatchedProfile, interrupted)
+                quickMerge = false
                 merging.set(false); refreshMenu()
-                if (navigation.revision() != dispatchedNavigation || dispatchedProfile != snapshotKey()) requestAutomaticSync()
+                refreshSyncBanner()
+                if (manualRequests.take(snapshotKey())) mergeAsync(true)
+                else if (navigation.revision() != dispatchedNavigation || dispatchedProfile != snapshotKey()) requestAutomaticSync()
             }
         }, "SantodanMergedProgress").apply { isDaemon = true }.start()
     }
 
     private fun handleMergeFailure(error: Throwable, dispatchedProfile: String, manual: Boolean) {
+        syncError = true
         Log.e(TAG, "Snapshot merge failed", error)
         refreshDeferred.set(true)
         val failedStage = syncMessage
         var fallback = false
+        if (dispatchedProfile == snapshotKey() && navigation.allowed(manual) && !watchedSnapshotReady.value) {
+            val navigationRevision = navigation.revision()
+            runCatching {
+                runBlocking {
+                    mergeJob = coroutineContext[Job]
+                    try {
+                        withTimeout(60_000L) {
+                            NuvioMergeWork.run({ navigation.current(navigationRevision, manual) &&
+                                dispatchedProfile == snapshotKey() && enabled() }) { checkpoint ->
+                                mergeWorkCheck.set(checkpoint)
+                                try { restoreWatchedSnapshot(repository?.javaClass?.classLoader, checkpoint) }
+                                finally { mergeWorkCheck.remove() }
+                            }
+                        }
+                    } finally { mergeJob = null }
+                }
+            }.onFailure { Log.w(TAG, "Cached history fallback unavailable", it) }
+        }
         if (dispatchedProfile == snapshotKey() && navigation.allowed(manual) &&
             mergedProgress.value.isEmpty() && mergedNextUpSeeds.value.isEmpty() && mergedWatchedItems.value.isEmpty()) {
             runCatching {
-                runBlocking { withTimeout(15_000L) { mergeSnapshot(true) } }
+                val navigationRevision = navigation.revision()
+                runBlocking {
+                    mergeJob = coroutineContext[Job]
+                    try {
+                        withTimeout(15_000L) {
+                            NuvioMergeWork.run({ navigation.current(navigationRevision, manual) &&
+                                dispatchedProfile == snapshotKey() && enabled() }) { checkpoint ->
+                                mergeWorkCheck.set(checkpoint)
+                                try { mergeSnapshot(true) } finally { mergeWorkCheck.remove() }
+                            }
+                        }
+                    } finally { mergeJob = null }
+                }
                 fallback = syncMessage.startsWith("Main tracker fallback")
             }.onFailure { Log.w(TAG, "Main tracking fallback unavailable", it) }
         }
@@ -757,17 +891,18 @@ object NuvioMergedProgress {
 
     /** Other patches need full history even when native incremental publication uses a delta. */
     @JvmStatic fun completeWatchedHistory(native: Map<*, *>): Map<*, *> =
-        if (enabled() && watchedSnapshotReady.value) mergedWatchedHistory else native
+        if (enabled() && (cachedMembershipReady || watchedSnapshotReady.value)) mergedWatchedHistory else native
 
     @JvmStatic fun allowBadgeCacheHit(nativeHit: Boolean): Boolean {
         val retry = retryBadgeCache.get() == true
         retryBadgeCache.remove()
-        return if (enabled() && playbackPaused) true else if (enabled() && retry) false else nativeHit
+        return NuvioProviderRefresh.badgeCacheHit(nativeHit, enabled(), watchedSnapshotReady.value, playbackPaused, retry)
     }
 
     /** A persisted deadline cannot replace missing in-memory episode metadata. */
     @JvmStatic fun prepareBadgeValidation(home: Any) {
         retryBadgeCache.set(false)
+        if (enabled() && !cachedMembershipReady && !watchedSnapshotReady.value) deferredBadges[home] = true
         if (!enabled() || !watchedSnapshotReady.value) return
         if (playbackPaused) { deferredBadges[home] = true; return }
         try {
@@ -797,7 +932,7 @@ object NuvioMergedProgress {
     /** Native badge loading normally publishes only after all metadata requests finish. */
     @JvmStatic fun publishCachedWatchedBadges(home: Any) {
         if (playbackPaused) { if (enabled()) deferredBadges[home] = true; return }
-        if (!enabled() || !watchedSnapshotReady.value || !pendingBadgePublications.add(home)) return
+        if (!enabled() || (!cachedMembershipReady && !watchedSnapshotReady.value) || !pendingBadgePublications.add(home)) return
         Handler(Looper.getMainLooper()).postDelayed({
             badgeWorker.execute {
               try {
@@ -823,9 +958,117 @@ object NuvioMergedProgress {
         }, 500L)
     }
 
-    private suspend fun invokeSuspending(target: Any, name: String): Any? = suspendCoroutine { completion ->
+    private suspend fun invokeSuspending(target: Any, name: String): Any? = suspendCancellableCoroutine { completion ->
         val result = findMethod(target.javaClass, name, 1).invoke(target, NuvioSourceContinuation(completion))
         if (result !== COROUTINE_SUSPENDED) completion.resume(result)
+    }
+
+    /** Cache-first startup: no provider refresh or full WatchedItem decoding/serialization. */
+    @Suppress("UNCHECKED_CAST")
+    private suspend fun quickSnapshot(checkpoint: () -> Unit) {
+        var stageStarted = System.nanoTime()
+        val cacheKey = snapshotKey()
+        val origins = HashMap(originByContent)
+        var savedHistory = mergedWatchedHistory
+        var savedAliases = mergedShowSiblings
+        var historyTime = cachedHistoryTime
+        updateSync("Restoring saved episode history…", 1, 3)
+        if (!cachedMembershipReady) {
+            val compact = membershipPreferences().getString(cacheKey, null)
+            logSyncStage("quick.openMembership", stageStarted)
+            val encoded = compact ?: application().getSharedPreferences("${PREFS}_membership", Context.MODE_PRIVATE)
+                .getString(cacheKey, null) ?: historyPreferences().getString(cacheKey, null)
+            if (encoded != null) {
+                val decodeStarted = System.nanoTime()
+                if (NuvioMembershipCache.encoded(encoded)) {
+                    val restored = NuvioMembershipCache.read(encoded, { season, episode -> season to episode }, checkpoint)
+                    savedHistory = restored.history
+                    savedAliases = restored.siblings
+                    historyTime = restored.savedAt
+                } else {
+                    val restored = NuvioWatchedSnapshot.projection(encoded, checkpoint) { season, episode -> season to episode }
+                    check(restored.historyPresent && restored.siblingsPresent) { "Saved episode membership cache is incomplete" }
+                    savedHistory = restored.history
+                    savedAliases = restored.siblings
+                    historyTime = restored.savedAt
+                }
+                checkpoint()
+                logSyncStage("quick.decodeMembership", decodeStarted)
+                Log.d(TAG, "Membership cache: grouped=${NuvioMembershipCache.encoded(encoded)} chars=${encoded.length} shows=${savedHistory.size} aliases=${savedAliases.size}")
+                // One migration for existing installs; subsequent launches never open
+                // the large SharedPreferences XML containing all WatchedItem models.
+                if (compact == null) persistMembership(savedHistory, savedAliases, historyTime, cacheKey)
+            }
+        }
+        logSyncStage("quick.restoreMembership", stageStarted)
+        stageStarted = System.nanoTime()
+        updateSync("Applying local playback changes…", 2, 3)
+        val repo = repository ?: return
+        val store = field(repo, "a").get(repo)
+        val local = (field(store, "q").get(store) as Flow<Any>).first() as? List<Any> ?: emptyList()
+        checkpoint()
+        fun updated(item: Any) = number(item, "getLastWatched").toLong()
+        fun completed(item: Any) = findMethod(item.javaClass, "isCompleted\$default", 4)
+            .invoke(null, item, 0f, 1, null) == true
+        val newestLocal = local.groupBy(::key).values.map { rows -> rows.maxBy(::updated) }
+        val progress = NuvioMergeWork.quickProgress(mergedProgress.value, newestLocal, cachedSnapshotTime, ::key, ::updated, ::completed)
+        val seeds = mergedNextUpSeeds.value.associateByTo(LinkedHashMap(), ::showKey)
+        val history = LinkedHashMap(savedHistory)
+        for (item in newestLocal) {
+            checkpoint()
+            val previous = seeds[showKey(item)]
+            if (updated(item) > cachedSnapshotTime && (previous == null || updated(item) > updated(previous))) seeds[showKey(item)] = item
+            if (completed(item) && updated(item) > historyTime) {
+                val season = findMethod(item.javaClass, "getSeason", 0).invoke(item) as? Int
+                val episode = findMethod(item.javaClass, "getEpisode", 0).invoke(item) as? Int
+                if (season != null && episode != null) {
+                    val id = findMethod(item.javaClass, "getContentId", 0).invoke(item).toString()
+                    history[id] = history[id].orEmpty() + (season to episode)
+                }
+            }
+        }
+        val next = seeds.values.sortedByDescending(::updated)
+        logSyncStage("quick.localChanges", stageStarted)
+        stageStarted = System.nanoTime()
+        val committed = NuvioMergeWork.commit({ action -> Handler(Looper.getMainLooper()).post { action() }; Unit },
+            { cacheKey == snapshotKey() && navigation.allowed(true) }) {
+            mergedWatchedHistory = history
+            mergedShowSiblings = savedAliases
+            cachedHistoryTime = historyTime
+            cachedMembershipReady = true
+            if (mergedProgress.value != progress) mergedProgress.value = progress
+            if (mergedNextUpSeeds.value != next) mergedNextUpSeeds.value = next
+        }
+        if (!committed) return
+        checkpoint()
+        notifyRestoredMembership()
+        persistLightweight(progress, next, origins, cacheKey, true)
+        logSyncStage("quick.publishAndSave", stageStarted)
+        val summary = "Quick sync complete in ${syncElapsed()}: saved remote history retained; local playback applied. Sync now refreshes tracking progress."
+        preferences().edit().putString("${cacheKey}_last_sync", summary).apply()
+        updateSync(summary, 3, 3)
+        Log.d(TAG, "Quick sync complete: progress=${progress.size} seeds=${next.size}; no progress provider refresh; elapsed=${syncElapsed()}")
+    }
+
+    /** Independent extensions are optional; publish only visible counts and already cached metadata. */
+    private fun notifyRestoredMembership() {
+        registerCachedRemainingCards(mergedProgress.value)
+        runCatching {
+            Class.forName("software.santodan.extension.nuvioremaining.NuvioRemainingEpisodes")
+                .getMethod("refreshWatchedHistory", Map::class.java).invoke(null, mergedWatchedHistory)
+        }.onFailure { if (it !is ClassNotFoundException) Log.w(TAG, "Remaining count publication failed", it) }
+        val homes = synchronized(deferredBadges) {
+            deferredBadges.keys.toList().also { deferredBadges.clear() }
+        }
+        homes.forEach(::publishCachedWatchedBadges)
+    }
+
+    private fun registerCachedRemainingCards(progress: List<Any>) {
+        runCatching {
+            val method = Class.forName("software.santodan.extension.nuvioremaining.NuvioRemainingEpisodes")
+                .getMethod("registerProgress", Any::class.java)
+            progress.forEach { method.invoke(null, it) }
+        }.onFailure { if (it !is ClassNotFoundException) Log.w(TAG, "Cached remaining-card registration failed", it) }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -874,15 +1117,16 @@ object NuvioMergedProgress {
         sourceItems["Nuvio Sync"] = localItems
         val providers = findMethod(registry.javaClass, "b", 0).invoke(registry) as Collection<Any>
         val included = providers.filter { providerId(it) in selected }
-        syncSteps = included.size + 2
+        syncSteps = included.size + 3
         var completedProviders = 0
         updateSync(if ("NUVIO_SYNC" in selected) "Read Nuvio Sync: ${localItems.size} progress entries"
-            else "Preparing selected tracking services", 1, syncSteps)
+            else "Preparing selected tracking services", 2, syncSteps)
         val snapshotProviders = LinkedHashMap<String, Any>()
         for (provider in included) {
             if (deferred()) return
             val sourceLabel = providerSource(provider)
-            updateSync("Fetching $sourceLabel…", completedProviders + 1)
+            updateSync("Fetching $sourceLabel…", completedProviders + 2)
+            Log.d(TAG, "Provider refresh started: source=$sourceLabel manual=$manual")
             val authenticated = (findMethod(provider.javaClass, "b", 0).invoke(provider) as Flow<Any>).first() as? Boolean ?: false
             if (deferred()) return
             if (!authenticated) {
@@ -906,13 +1150,17 @@ object NuvioMergedProgress {
             }
             // onStart can launch a refresh without awaiting it (notably MDBList),
             // and Trakt's seed flow has no refresh hook. Wait before reading.
-            if (!onlyMain) NuvioProviderRefresh.await(provider, providerLayout.refreshMethod)
+            if (!onlyMain) NuvioProviderRefresh.await(provider, providerLayout.refreshMethod, manual)
             if (deferred()) return
             // Initialize seed projections before reading progress. The retained
             // observers above request another merge if background sync updates
             // any of these flows after this read.
             val seeds = (findMethod(provider.javaClass, "f", 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
             if (deferred()) return
+            // Trigger projections, then wait for the native readiness signal and re-read.
+            // A refresh call alone does not guarantee these cold flows are hydrated.
+            (findMethod(provider.javaClass, allProgressMethod, 0).invoke(provider) as Flow<Any>).first()
+            NuvioProviderRefresh.ready(provider, providerLayout.snapshotReadyMethod)
             val items = (findMethod(provider.javaClass, allProgressMethod, 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
             if (deferred()) return
             if (items != null) {
@@ -950,7 +1198,7 @@ object NuvioMergedProgress {
                 Log.d(TAG, "Watched source=$source shows=${sourceWatched[source]?.size} items=${sourceWatchedItems[source]?.size} aliases=${aliases.size}")
             }
             completedProviders++
-            updateSync("Read $sourceLabel", completedProviders + 1)
+            updateSync("Read $sourceLabel", completedProviders + 2)
         }
         if (deferred()) return
         Log.d(TAG, "Merge provider reads: ${(System.nanoTime() - started) / 1_000_000}ms")
@@ -998,8 +1246,9 @@ object NuvioMergedProgress {
         }
         if (cacheKey != snapshotKey() || deferred()) return
         val badgeOrigins = origins.mapKeys { (show, _) -> show.substringAfter('|') }
-        val badgeSources = NuvioWatchedHistory.sources(sourceWatched, badgeOrigins, siblings)
-        val watchedHistory = NuvioWatchedHistory.select(sourceWatched, badgeSources, siblings)
+        val checkpoint = Runnable { mergeWorkCheck.get()?.invoke() }
+        val badgeSources = NuvioWatchedHistory.sources(sourceWatched, badgeOrigins, siblings, checkpoint)
+        val watchedHistory = NuvioWatchedHistory.select(sourceWatched, badgeSources, siblings, checkpoint)
         val watchedItems = sourceWatchedItems.flatMap { (source, items) -> items.filter { item ->
             val id = findMethod(item.javaClass, "getContentId", 0).invoke(item).toString()
             (badgeSources[id] ?: badgeOrigins[id] ?: source) == source
@@ -1014,10 +1263,11 @@ object NuvioMergedProgress {
             .sortedByDescending { number(it, "getLastWatched") })
         val previous = mergedProgress.value.associateBy(::key)
         val updated = published.count { previous[key(it)] != it }
-        val removed = previous.keys.count { old -> published.none { key(it) == old } }
-        val committed = suspendCoroutine<Boolean> { completion ->
-            Handler(Looper.getMainLooper()).post {
-                if (cacheKey != snapshotKey() || deferred()) { completion.resume(false); return@post }
+        val publishedKeys = published.mapTo(HashSet(), ::key)
+        val removed = previous.keys.count { it !in publishedKeys }
+        val committed = NuvioMergeWork.commit(
+            { action -> Handler(Looper.getMainLooper()).post { action() }; Unit },
+            { cacheKey == snapshotKey() && !deferred() }) {
                 originByContent.clear()
                 originByContent.putAll(origins)
                 providerBySource.clear()
@@ -1029,15 +1279,17 @@ object NuvioMergedProgress {
                 mergedWatchedItems.value = watchedItems
                 providerRevision.value += 1L
                 watchedSnapshotReady.value = true
+                cachedSnapshotAvailable = true
+                cachedSnapshotValidated = true
+                cachedMembershipReady = true
+                forceFullSync = false
                 mergedSnapshotReady.value = true
                 refreshMenu()
-                completion.resume(true)
-            }
         }
         if (!committed) return
         persistSnapshot(published, publishedSeeds, origins, watchedItems, cacheKey)
         val summary = "${if (onlyMain) "Main tracker fallback" else "Sync complete"}: ${sourceCounts.joinToString()}. ${published.size} progress entries ($updated updated, $removed removed), " +
-            "${publishedSeeds.size} Continue Watching shows, ${watchedItems.size} watched items. ${(System.nanoTime() - started) / 1_000_000_000}s."
+            "${publishedSeeds.size} Continue Watching shows, ${watchedItems.size} watched items. Total ${syncElapsed()}."
         preferences().edit().putString("${cacheKey}_last_sync", summary).apply()
         updateSync(summary, syncSteps)
         Log.d(TAG, "Merge total: ${(System.nanoTime() - started) / 1_000_000}ms")
@@ -1046,11 +1298,13 @@ object NuvioMergedProgress {
     }
 
     private fun key(item: Any): String {
+        mergeWorkCheck.get()?.invoke()
         fun value(name: String) = runCatching { findMethod(item.javaClass, name, 0).invoke(item) }.getOrNull()
         return listOf(value("getContentId"), value("getSeason"), value("getEpisode")).joinToString("|")
     }
 
     private fun showKey(item: Any): String {
+        mergeWorkCheck.get()?.invoke()
         val id = runCatching { findMethod(item.javaClass, "getContentId", 0).invoke(item) }.getOrNull()
         val type = runCatching { findMethod(item.javaClass, "getContentType", 0).invoke(item) }.getOrNull()
         return "$type|$id"
@@ -1132,8 +1386,10 @@ object NuvioMergedProgress {
         }
     }
 
-    private fun number(item: Any, name: String): Double =
-        (runCatching { findMethod(item.javaClass, name, 0).invoke(item) }.getOrNull() as? Number)?.toDouble() ?: 0.0
+    private fun number(item: Any, name: String): Double {
+        mergeWorkCheck.get()?.invoke()
+        return (runCatching { findMethod(item.javaClass, name, 0).invoke(item) }.getOrNull() as? Number)?.toDouble() ?: 0.0
+    }
 
     @Suppress("UNCHECKED_CAST")
     private fun seedFromNativeProvider(provider: Any?) {
@@ -1160,35 +1416,78 @@ object NuvioMergedProgress {
         return (cached as? Collection<*>)?.filterNotNull().orEmpty()
     }
 
+    private fun cacheConfiguration() = "${mainTracking()}|${selectedTrackings().sorted().joinToString(",")}|${preferences().getString(STRATEGY, "highest")}"
+
+    private fun persistLightweight(progress: List<Any>, seeds: List<Any>, origins: Map<String, String>,
+                                   cacheKey: String, validated: Boolean): JSONObject {
+        mergeWorkCheck.get()?.invoke()
+        val root = JSONObject().put("progress", encodeItems(progress)).put("seeds", encodeItems(seeds))
+            .put("savedAt", System.currentTimeMillis()).put("validatedProviders", validated)
+            .put("configuration", cacheConfiguration())
+        val encodedOrigins = JSONObject()
+        origins.forEach(encodedOrigins::put)
+        root.put("origins", encodedOrigins)
+        startupPreferences().edit().putString(cacheKey, root.toString()).apply()
+        cachedSnapshotTime = root.getLong("savedAt")
+        return root
+    }
+
+    /** Small, independent disk store: opening history preferences loads every model's XML. */
+    private fun persistMembership(history: Map<String, Set<Any>>, aliases: Map<String, Set<String>>,
+                                  savedAt: Long, cacheKey: String) {
+        val started = System.nanoTime()
+        val encoded = NuvioMembershipCache.encode(history, aliases, savedAt, { episode ->
+            val pair = episode as Pair<Int, Int>
+            (pair.first.toLong() shl 32) or (pair.second.toLong() and 0xffffffffL)
+        }, { mergeWorkCheck.get()?.invoke(); Unit })
+        mergeWorkCheck.get()?.invoke()
+        check(membershipPreferences().edit().putString(cacheKey, encoded).commit()) {
+            "Could not save merged membership cache"
+        }
+        logSyncStage("saveMembership", started)
+    }
+
     private fun persistSnapshot(progress: List<Any>, seeds: List<Any>, origins: Map<String, String>, watchedItems: List<Any>, cacheKey: String) {
         runCatching {
-            val root = JSONObject()
-                .put("progress", encodeItems(progress))
-                .put("seeds", encodeItems(seeds))
-            val encodedOrigins = JSONObject()
-            origins.forEach(encodedOrigins::put)
-            root.put("origins", encodedOrigins)
-            // A separate preferences file avoids parsing full watched history
-            // or allocating its model objects on the next launch.
-            startupPreferences().edit().putString(cacheKey, root.toString()).apply()
+            mergeWorkCheck.get()?.invoke()
+            // Keep CW available, but do not trust this cache for quick startup
+            // until its matching full history is durably saved.
+            val root = persistLightweight(progress, seeds, origins, cacheKey, false)
+            cachedHistoryTime = root.getLong("savedAt")
             val history = JSONObject()
             mergedWatchedHistory.forEach { (id, episodes) ->
+                mergeWorkCheck.get()?.invoke()
                 history.put(id, JSONArray().also { array -> episodes.forEach { episode ->
+                    mergeWorkCheck.get()?.invoke()
                     val pair = episode as Pair<*, *>
                     array.put(JSONArray(listOf(pair.first, pair.second)))
                 } })
             }
             root.put("watchedHistory", history)
             val aliases = JSONObject()
-            mergedShowSiblings.forEach { (id, ids) -> aliases.put(id, JSONArray(ids.toList())) }
+            mergedShowSiblings.forEach { (id, ids) ->
+                mergeWorkCheck.get()?.invoke()
+                aliases.put(id, JSONArray(ids.toList()))
+            }
             root.put("siblings", aliases)
             root.put("watchedItems", JSONArray().also { array -> watchedItems.forEach { item ->
+                mergeWorkCheck.get()?.invoke()
                 array.put(JSONObject().also { json -> WATCHED_GETTERS.forEach { getter ->
                     json.put(getter, findMethod(item.javaClass, getter, 0).invoke(item) ?: JSONObject.NULL)
                 } })
             } })
-            historyPreferences().edit().putString(cacheKey, root.toString()).apply()
-        }.onFailure { error -> Log.w(TAG, "Unable to persist merged snapshot", error) }
+            mergeWorkCheck.get()?.invoke()
+            val encoded = root.toString()
+            mergeWorkCheck.get()?.invoke()
+            check(historyPreferences().edit().putString(cacheKey, encoded).commit()) { "Could not save merged history cache" }
+            mergeWorkCheck.get()?.invoke()
+            persistMembership(mergedWatchedHistory, mergedShowSiblings, cachedHistoryTime, cacheKey)
+            persistLightweight(progress, seeds, origins, cacheKey, true)
+        }.onFailure { error ->
+            if (error is kotlinx.coroutines.CancellationException) throw error
+            Log.w(TAG, "Unable to persist merged snapshot", error)
+            throw error
+        }
     }
 
     /** Called on IO before exposing the aggregate, independently of Home sync gating. */
@@ -1198,6 +1497,11 @@ object NuvioMergedProgress {
         // Only a profile change invalidates in-memory data. On first launch,
         // retain any native cache seeded while the saved merge is loading.
         if (activeCacheKey != null) {
+            cachedSnapshotAvailable = false
+            cachedSnapshotValidated = false
+            cachedMembershipReady = false
+            cachedSnapshotTime = 0L
+            cachedHistoryTime = 0L
             mergedSnapshotReady.value = false
             watchedSnapshotReady.value = false
             mergedProgress.value = emptyList()
@@ -1216,20 +1520,37 @@ object NuvioMergedProgress {
         }
     }
 
-    private fun restoreSnapshot(loader: ClassLoader?) {
+    /** Legacy cache migration is allowed only inside the post-Home sync worker. */
+    private fun restoreLegacyStartupSnapshot(checkpoint: () -> Unit) {
+        val key = snapshotKey()
+        if (startupPreferences().contains(key)) return
+        checkpoint()
+        val encoded = application().getSharedPreferences("${PREFS}_startup", Context.MODE_PRIVATE)
+            .getString(key, null) ?: preferences().getString(key, null)
+            ?: historyPreferences().getString(key, null) ?: return
+        checkpoint()
+        restoreSnapshot(repository?.javaClass?.classLoader, encoded, checkpoint)
+    }
+
+    private fun restoreSnapshot(loader: ClassLoader?, legacy: String? = null, checkpoint: () -> Unit = {}) {
         val started = System.nanoTime()
-        Log.d(TAG, "Startup CW cache loading")
+        Log.d(TAG, "Startup CW cache loading: legacy=${legacy != null}")
         runCatching {
             val cacheKey = snapshotKey()
-            val lightweight = startupPreferences().getString(cacheKey, null)
-            val encoded = lightweight ?: preferences().getString(cacheKey, null)
-                ?: historyPreferences().getString(cacheKey, null) ?: return
-            val root = if (lightweight != null) JSONObject(encoded) else readStartupSnapshot(encoded)
-            val jsonMs = (System.nanoTime() - started) / 1_000_000
+            // A new, exclusively lightweight file avoids loading the previous giant
+            // preferences file (including its XML decoding) before Home can appear.
+            val encoded = legacy ?: startupPreferences().getString(cacheKey, null) ?: return
+            val root = readStartupSnapshot(encoded, checkpoint)
+            checkpoint()
             val model = requireNotNull(loader).loadClass("com.nuvio.tv.domain.model.WatchProgress")
             val progress = decodeItems(root.optJSONArray("progress"), model)
             val seeds = decodeItems(root.optJSONArray("seeds"), model)
+            checkpoint()
             if (cacheKey != snapshotKey()) return
+            registerCachedRemainingCards(progress)
+            cachedSnapshotAvailable = true
+            cachedSnapshotValidated = root.optBoolean("validatedProviders", false) && root.optString("configuration") == cacheConfiguration()
+            cachedSnapshotTime = root.optLong("savedAt", 0L)
             val encodedOrigins = root.optJSONObject("origins")
             val restoredOrigins = HashMap<String, String>()
             encodedOrigins?.keys()?.forEach { key -> restoredOrigins[key] = encodedOrigins.getString(key) }
@@ -1237,19 +1558,27 @@ object NuvioMergedProgress {
             mergedProgress.value = progress
             mergedNextUpSeeds.value = seeds
             mergedSnapshotReady.value = true
-            if (lightweight == null) startupPreferences().edit().putString(cacheKey, root.toString()).apply()
-            Log.d(TAG, "Startup CW cache ready: progress=${progress.size} nextUp=${seeds.size} legacy=${lightweight == null} jsonMs=$jsonMs elapsedMs=${(System.nanoTime() - started) / 1_000_000}")
-        }.onFailure { error -> Log.w(TAG, "Unable to restore Continue Watching cache", error) }
+            if (legacy != null) startupPreferences().edit().putString(cacheKey, root.toString()).apply()
+            Log.d(TAG, "Startup CW cache ready: progress=${progress.size} nextUp=${seeds.size} legacy=${legacy != null} elapsedMs=${(System.nanoTime() - started) / 1_000_000}")
+        }.onFailure { error ->
+            if (error is kotlinx.coroutines.CancellationException) throw error
+            Log.w(TAG, "Unable to restore Continue Watching cache", error)
+        }
     }
 
     /** Skip legacy history tokens without constructing their JSON trees. */
-    private fun readStartupSnapshot(encoded: String): JSONObject {
-        JsonReader(StringReader(encoded)).use { reader ->
+    private fun readStartupSnapshot(encoded: String, checkpoint: () -> Unit = {}): JSONObject {
+        JsonReader(object : java.io.FilterReader(StringReader(encoded)) {
+            override fun read(buffer: CharArray, offset: Int, length: Int): Int {
+                checkpoint()
+                return super.read(buffer, offset, length.coerceAtMost(1024))
+            }
+        }).use { reader ->
             val root = JSONObject()
             reader.beginObject()
             while (reader.hasNext()) {
                 val name = reader.nextName()
-                if (name in setOf("progress", "seeds", "origins")) root.put(name, readSnapshotValue(reader))
+                if (name in setOf("progress", "seeds", "origins", "savedAt", "validatedProviders", "configuration")) root.put(name, readSnapshotValue(reader))
                 else reader.skipValue()
             }
             reader.endObject()
@@ -1280,9 +1609,10 @@ object NuvioMergedProgress {
         val started = System.nanoTime()
         runCatching {
             val legacy = preferences()
-            val destination = historyPreferences()
+            // Do not open the heavyweight XML when there are no legacy snapshots.
+            val destination by lazy { historyPreferences() }
             var moved = 0
-            val complete = NuvioProviderRefresh.migrateSnapshots(legacy.all, destination::contains,
+            val complete = NuvioProviderRefresh.migrateSnapshots(legacy.all, { key -> destination.contains(key) },
                 { snapshots ->
                     val editor = destination.edit()
                     snapshots.forEach { (key, value) -> editor.putString(key, value) }
@@ -1300,57 +1630,55 @@ object NuvioMergedProgress {
     }
 
     /** Only the post-presentation merge worker restores the heavyweight badge data. */
-    private fun restoreWatchedSnapshot(loader: ClassLoader?) {
+    private suspend fun restoreWatchedSnapshot(loader: ClassLoader?, checkpoint: () -> Unit) {
         if (watchedSnapshotReady.value) return
+        checkpoint()
         val started = System.nanoTime()
         Log.d(TAG, "Deferred watched cache loading")
         runCatching {
             val cacheKey = snapshotKey()
             val encoded = historyPreferences().getString(cacheKey, null)
                 ?: preferences().getString(cacheKey, null) ?: return
-            val root = JSONObject(encoded)
-            val history = root.optJSONObject("watchedHistory")
-            val restoredHistory = history?.keys()?.asSequence()?.associateWith { id ->
-                val array = history.getJSONArray(id)
-                (0 until array.length()).map { index ->
-                    val pair = array.getJSONArray(index)
-                    (pair.getInt(0) to pair.getInt(1)) as Any
-                }.toSet()
-            }.orEmpty()
-            val aliases = root.optJSONObject("siblings")
-            val restoredSiblings = aliases?.keys()?.asSequence()?.associateWith { id ->
-                val array = aliases.getJSONArray(id)
-                (0 until array.length()).map { array.getString(it) }.toSet()
-            }.orEmpty()
-            val watched = root.optJSONArray("watchedItems")
-            val restoredWatchedItems = if (watched != null && watched.length() > 0) {
-                val constructor = requireNotNull(loader).loadClass("com.nuvio.tv.domain.model.WatchedItem")
+            val constructor by lazy {
+                requireNotNull(loader).loadClass("com.nuvio.tv.domain.model.WatchedItem")
                     .declaredConstructors.single { it.parameterCount == 11 }
-                (0 until watched.length()).map { index ->
-                    val json = watched.getJSONObject(index)
-                    constructor.newInstance(*WATCHED_GETTERS.map<String, Any?> { getter ->
-                        when (getter) {
-                            "getSeason", "getEpisode" -> json.nullableInt(getter)
-                            "getWatchedAt" -> json.getLong(getter)
-                            else -> json.nullableString(getter)
-                        }
-                    }.toTypedArray())
+            }
+            var restoredCount = 0
+            var lastProgress = System.nanoTime()
+            updateSync("Restoring saved watched history…", 1)
+            val restored = NuvioWatchedSnapshot.read(encoded, checkpoint, { season, episode -> season to episode }, { values ->
+                require(values["getWatchedAt"] is Long) { "Missing watched timestamp" }
+                constructor.newInstance(*WATCHED_GETTERS.map(values::get).toTypedArray()).also {
+                    restoredCount++
+                    val now = System.nanoTime()
+                    if (now - lastProgress >= 1_000_000_000L) {
+                        updateSync("Restoring saved watched history: $restoredCount items…", 1)
+                        lastProgress = now
+                    }
                 }
-            } else emptyList()
+            })
+            checkpoint()
             if (cacheKey != snapshotKey() || activeCacheKey != cacheKey || watchedSnapshotReady.value) return
-            mergedWatchedHistory = restoredHistory
-            mergedShowSiblings = restoredSiblings
-            mergedWatchedItems.value = restoredWatchedItems
-            watchedSnapshotReady.value = true
-            Log.d(TAG, "Deferred watched cache ready: shows=${restoredHistory.size} items=${restoredWatchedItems.size} elapsedMs=${(System.nanoTime() - started) / 1_000_000}")
-            refreshMenu()
+            withContext(Dispatchers.Main) {
+                // Serialize publication with navigation; cancelled/old-profile partial work stays private.
+                checkpoint()
+                if (cacheKey != snapshotKey() || activeCacheKey != cacheKey || watchedSnapshotReady.value) return@withContext
+                mergedWatchedHistory = restored.history
+                mergedShowSiblings = restored.siblings
+                mergedWatchedItems.value = restored.items
+                watchedSnapshotReady.value = true
+                Log.d(TAG, "Deferred watched cache ready: shows=${restored.history.size} items=${restored.items.size} elapsedMs=${(System.nanoTime() - started) / 1_000_000}")
+                refreshMenu()
+            }
         }.onFailure { error ->
+            if (error is kotlinx.coroutines.CancellationException) throw error
             Log.w(TAG, "Unable to restore merged snapshot", error)
         }
     }
 
     private fun encodeItems(items: List<Any>): JSONArray = JSONArray().also { array ->
         items.forEach { item ->
+            mergeWorkCheck.get()?.invoke()
             val json = JSONObject()
             SNAPSHOT_GETTERS.forEach { (key, getter) ->
                 val value = runCatching { findMethod(item.javaClass, getter, 0).invoke(item) }.getOrNull()
@@ -1465,7 +1793,8 @@ object NuvioMergedProgress {
     }
     private fun preferences() = application().getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     private fun historyPreferences() = application().getSharedPreferences("${PREFS}_history", Context.MODE_PRIVATE)
-    private fun startupPreferences() = application().getSharedPreferences("${PREFS}_startup", Context.MODE_PRIVATE)
+    private fun membershipPreferences() = application().getSharedPreferences("${PREFS}_membership_v2", Context.MODE_PRIVATE)
+    private fun startupPreferences() = application().getSharedPreferences("${PREFS}_startup_light", Context.MODE_PRIVATE)
     private fun application(): Application = Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as Application
     private fun snapshotKey(): String {
         val repo = repository ?: return "${SNAPSHOT}_unavailable"
@@ -1478,12 +1807,14 @@ object NuvioMergedProgress {
             .mapNotNull { type -> runCatching { type.getDeclaredField(name) }.getOrNull() }
             .first().apply { isAccessible = true }
     }
-    private fun findMethod(owner: Class<*>, name: String, count: Int): Method =
-        methods.getOrPut(Triple(owner, name, count)) {
+    private fun findMethod(owner: Class<*>, name: String, count: Int): Method {
+        mergeWorkCheck.get()?.invoke()
+        return methods.getOrPut(Triple(owner, name, count)) {
             owner.declaredMethods.filter { it.name == name && it.parameterCount == count }
                 .ifEmpty { owner.methods.filter { it.name == name && it.parameterCount == count } }
                 .single().apply { isAccessible = true }
         }
+    }
     private val WATCHED_GETTERS = listOf("getContentId", "getContentType", "getTitle",
         "getSeason", "getEpisode", "getWatchedAt", "getPoster", "getReleaseInfo",
         "getTrackingProviderId", "getTrackingProviderItemId", "getTrackingSourceUrl")

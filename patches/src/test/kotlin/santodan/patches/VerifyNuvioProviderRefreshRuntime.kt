@@ -6,6 +6,8 @@ import software.santodan.extension.nuviomerged.NuvioSourceContinuation
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import software.santodan.extension.nuviomerged.NuvioProviderRefresh
+import software.santodan.extension.nuviomerged.NuvioMergeWork
+import software.santodan.extension.nuviomerged.NuvioMergePolicy
 
 enum class RefreshIntent { AUTOMATIC, USER_INITIATED }
 
@@ -40,8 +42,140 @@ class RefreshFixture {
     fun d(): Flow<Any?> = watched
 }
 
+class ReadyFixture {
+    val loaded = MutableStateFlow(false)
+    val progress = MutableStateFlow(emptyList<String>())
+    fun p(): Flow<Boolean> = loaded
+}
+
 fun main() = runBlocking {
     withTimeout(5_000) {
+        data class CachedProgress(val id: String, val at: Long, val done: Boolean = false)
+        val cachedProgress = listOf(CachedProgress("keep", 10), CachedProgress("update", 10), CachedProgress("finish", 10))
+        fun quick(local: List<CachedProgress>) = NuvioMergeWork.quickProgress(cachedProgress, local, 20,
+            { it.id }, { it.at }, { it.done })
+        check(quick(emptyList()).toSet() == cachedProgress.toSet()) { "Empty local progress cleared cached remote entries" }
+        val quickResult = quick(listOf(CachedProgress("update", 30), CachedProgress("finish", 31, true),
+            CachedProgress("new", 32), CachedProgress("stale", 5)))
+        check(quickResult.map { it.id } == listOf("new", "update", "keep"))
+        check(quickResult.single { it.id == "update" }.at == 30L)
+        check(quick(listOf(CachedProgress("finish", 40, true), CachedProgress("finish", 30)))
+            .none { it.id == "finish" }) { "An older duplicate resurrected a completed episode" }
+        val cold = ReadyFixture()
+        val hydratedProvider = async(start = CoroutineStart.UNDISPATCHED) {
+            NuvioProviderRefresh.ready(cold, "p")
+            cold.progress.first()
+        }
+        check(!hydratedProvider.isCompleted) { "Unready empty provider was published" }
+        cold.progress.value = listOf("restored tracker entry")
+        cold.loaded.value = true
+        check(hydratedProvider.await() == listOf("restored tracker entry"))
+        cold.progress.value = emptyList()
+        NuvioProviderRefresh.ready(cold, "p")
+        check(cold.progress.first().isEmpty()) { "Ready empty provider could not remove completed/removed entries" }
+        println("PASS: quick sync preserves remote entries, applies newer local playback, and full sync awaits provider readiness before accepting empty lists")
+        val homeRequests = NuvioMergeWork.HomeRequests()
+        check(!homeRequests.claim("p1", false, true)) { "Sync started before Home presentation" }
+        check(!homeRequests.claim("p1", true, false)) { "Sync started outside Home" }
+        check(homeRequests.claim("p1", true, true))
+        check(!homeRequests.claim("p1", true, true)) { "Repeated Home callback duplicated sync" }
+        homeRequests.finish("p1", true)
+        check(!homeRequests.claim("p1", true, false))
+        check(homeRequests.claim("p1", true, true)) { "Interrupted sync did not retry on Home" }
+        homeRequests.finish("p1", false)
+        check(!homeRequests.claim("p1", true, true)) { "Completed/failed sync restarted on every Home entry" }
+        check(homeRequests.claim("p2", true, true)) { "New profile did not get its own sync" }
+        homeRequests.finish("p1", false)
+        check(!homeRequests.claim("p2", true, true)) { "Old-profile completion changed the new request" }
+        homeRequests.finish("p2", false)
+        homeRequests.reset()
+        check(homeRequests.claim("p2", true, true)) { "Settings changes could not request a new sync" }
+        val fullSyncGate = NuvioMergePolicy().apply { navigate("home") }
+        val fullSyncRevision = fullSyncGate.revision()
+        fullSyncGate.navigate("detail/test")
+        check(fullSyncGate.current(fullSyncRevision, true)) { "Button-style sync stopped during normal browsing" }
+        check(!fullSyncGate.current(fullSyncRevision, false))
+        fullSyncGate.navigate("player/test")
+        check(!fullSyncGate.current(fullSyncRevision, true))
+        fullSyncGate.navigate("home"); fullSyncGate.foreground(false)
+        check(!fullSyncGate.current(fullSyncRevision, true))
+        println("PASS: post-Home sync starts once, retries interruptions, isolates profiles, and uses the button-style browsing/playback gate")
+        // The cache-hit branch uses already cached metadata; a miss launches a bulk fetch.
+        var bulkFetches = 0
+        fun validate(nativeHit: Boolean, enabled: Boolean, ready: Boolean, playback: Boolean, retry: Boolean) {
+            if (!NuvioProviderRefresh.badgeCacheHit(nativeHit, enabled, ready, playback, retry)) bulkFetches++
+        }
+        validate(false, true, false, false, false)
+        validate(false, true, false, true, true)
+        validate(false, true, true, true, true)
+        check(bulkFetches == 0) { "Startup projection or playback launched bulk badge metadata loading" }
+        validate(true, true, true, false, true)
+        check(bulkFetches == 1) { "Completed history could not retry deferred metadata" }
+        validate(true, true, true, false, false)
+        validate(false, false, false, true, true)
+        check(bulkFetches == 2) { "Disabled merging changed native cache behavior" }
+        val requests = NuvioMergeWork.ManualRequests()
+        requests.offer("profile1"); requests.offer("profile1")
+        check(requests.take("profile1") && !requests.take("profile1"))
+        requests.offer("profile1")
+        check(!requests.take("profile2") && !requests.take("profile1"))
+        check(NuvioMergeWork.stages({ true }, preparationMs = 100, refreshMs = 100,
+            prepare = { delay(60) }, refresh = { delay(60); "fresh" }) == "fresh")
+        var refreshedAfterTimeout = false
+        check(runCatching {
+            NuvioMergeWork.stages({ true }, preparationMs = 10, refreshMs = 100,
+                prepare = { delay(100) }, refresh = { refreshedAfterTimeout = true })
+        }.exceptionOrNull() is TimeoutCancellationException && !refreshedAfterTimeout)
+        val mergeGate = NuvioMergePolicy().apply { navigate("home") }
+        var profile = 1
+        var heavyWorkStarted = false
+        val queued = launch {
+            NuvioMergeWork.run({ mergeGate.allowed(false) }, 100) { heavyWorkStarted = true }
+        }
+        yield()
+        mergeGate.navigate("player/test")
+        queued.join()
+        check(queued.isCancelled && !heavyWorkStarted)
+        mergeGate.navigate("home")
+        for (stop in listOf<() -> Unit>({ mergeGate.navigate("stream/test") },
+            { mergeGate.navigate("player/test") }, { mergeGate.foreground(false) }, { profile = 2 })) {
+            mergeGate.foreground(true); mergeGate.navigate("home"); profile = 1
+            val revision = mergeGate.revision()
+            var decoded = 0
+            var published = false
+            val interrupted = launch(start = CoroutineStart.UNDISPATCHED) {
+                NuvioMergeWork.run({ mergeGate.current(revision, false) && profile == 1 }) { checkpoint ->
+                    repeat(10_000) {
+                        checkpoint()
+                        if (++decoded == 3) stop()
+                    }
+                    published = true
+                }
+            }
+            interrupted.join()
+            check(interrupted.isCancelled && decoded == 3 && !published)
+        }
+        var checkpoint: (() -> Unit)? = null
+        val held = launch(start = CoroutineStart.UNDISPATCHED) {
+            NuvioMergeWork.run({ true }) { check -> checkpoint = check; awaitCancellation() }
+        }
+        held.cancelAndJoin()
+        check(runCatching { checkpoint!!() }.exceptionOrNull() is CancellationException)
+        var queuedCommit: (() -> Unit)? = null
+        var committed = false
+        val cancelledCommit = launch(start = CoroutineStart.UNDISPATCHED) {
+            NuvioMergeWork.commit({ queuedCommit = it }, { true }) { committed = true }
+        }
+        cancelledCommit.cancelAndJoin()
+        queuedCommit!!()
+        check(!committed)
+        check(!NuvioMergeWork.commit({ it() }, { false }) { committed = true })
+        check(!committed)
+        check(NuvioMergeWork.commit({ it() }, { true }) { committed = true } && committed)
+        mergeGate.foreground(true); mergeGate.navigate("home")
+        check(NuvioMergeWork.run({ mergeGate.allowed(false) }) { check -> check(); "restored" } == "restored")
+        println("PASS: merge hydration settles before starting, stops CPU work on stream/player navigation, backgrounding, profile change and Job cancellation, and retries on Home")
+
         fun launchDocument(xml: String) = javax.xml.parsers.DocumentBuilderFactory.newInstance().apply {
             isNamespaceAware = true
         }.newDocumentBuilder().parse(java.io.ByteArrayInputStream(xml.toByteArray()))
@@ -127,7 +261,7 @@ fun main() = runBlocking {
             }))
         check(durableWrites == 1 && historyStorage.getValue("snapshot_v2_1").contains("newer"))
         check(legacyStorage.size == 4 && legacyStorage["enabled"] == true)
-        check(NuvioProviderRefresh.migrateSnapshots(legacyStorage, historyStorage::containsKey,
+        check(NuvioProviderRefresh.migrateSnapshots(legacyStorage, { error("Settings-only storage must not open history") },
             { error("Settings-only storage must not load history") }, { error("Unexpected cleanup") }))
         println("PASS: history moves out of settings across profiles; failed writes preserve cache and retries retain newer history")
 
@@ -158,10 +292,15 @@ fun main() = runBlocking {
         val hydrated = CompletableDeferred<Unit>()
         val publications = mutableListOf<List<Any>>()
         val reader = launch(start = CoroutineStart.UNDISPATCHED) {
+            var savedMembershipReady = false
             NuvioProviderRefresh.hydratedSnapshot(snapshot) {
                 hydrated.await()
+                savedMembershipReady = true
                 snapshot.value = cached
-            }.collect { publications.add(it) }
+            }.collect {
+                check(savedMembershipReady) { "Saved seeds reached Home before their watched membership" }
+                publications.add(it)
+            }
         }
         yield()
         check(publications.isEmpty()) { "Published empty startup snapshot before restoration" }
@@ -236,6 +375,12 @@ fun main() = runBlocking {
             check(!refresh.isCompleted && provider.intent == RefreshIntent.AUTOMATIC)
             provider.seeds.value = "episode 20"
             provider.completion!!.resumeWith(Result.success(Unit))
+            val manualRefresh = async(start = CoroutineStart.UNDISPATCHED) {
+                NuvioProviderRefresh.await(provider, method, true)
+            }
+            check(provider.intent == RefreshIntent.USER_INITIATED)
+            provider.completion!!.resumeWith(Result.success(Unit))
+            manualRefresh.await()
             check(refresh.await() == "episode 20") { "Refresh sampled stale cached seeds" }
 
             val failed = async {

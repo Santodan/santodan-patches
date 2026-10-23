@@ -157,7 +157,7 @@ object NuvioStreamPreload {
     @JvmStatic fun observeNextEpisode(model: Any) {
         try {
             @Suppress("UNCHECKED_CAST")
-            val flow = get(model, "f") as StateFlow<Any>
+            val flow = get(model, NuvioNative.PLAYER_STATE_METHOD) as StateFlow<Any>
             // Beta7 ub.q reads controller k8.T for the native request type.
             val requestType = field(field(model, "Y")!!, "T") as? String
             synchronized(nextObservers) {

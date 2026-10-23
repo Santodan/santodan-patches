@@ -1,3 +1,9 @@
+## Unreleased
+
+### New patch
+
+* **nuviotv:** add the optional beta.8 startup track-reselection guard, preserving active-period seeks.
+
 ## [0.13.0](https://github.com/Santodan/santodan-patches/compare/v0.12.0...v0.13.0) (2026-10-22)
 
 ### 🐛 Bug Fixes

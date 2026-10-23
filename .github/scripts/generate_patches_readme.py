@@ -82,6 +82,7 @@ def patches_table(patches):
         a = anchor(p["name"])
         documentation = {
             "NuvioTV - Customize playback buttons": "docs/NuvioPlaybackButtons.md",
+            "NuvioTV - Fix startup track reselection": "docs/NuvioPlayerStability.md",
             "NuvioTV - Indicate current stream": "docs/NuvioCurrentStream.md",
             "NuvioTV - GitHub APK updates": "docs/NuvioApkUpdates.md",
             "NuvioTV - Preferred source add-on": "docs/NuvioPreferredAddon.md",

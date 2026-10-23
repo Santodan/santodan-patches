@@ -1,8 +1,11 @@
 # NuvioTV 1.1.0-beta.8
 
-All fifteen public NuvioTV patches target `com.nuvio.tv` version `1.1.0-beta.8`,
+All sixteen public NuvioTV patches target `com.nuvio.tv` version `1.1.0-beta.8`,
 version code `1071`. No older-version mappings or dispatch branches were added.
 The historical beta.7 fixtures remain on disk.
+
+The independent startup exception guard is documented in
+[NuvioPlayerStability.md](NuvioPlayerStability.md).
 
 The optional [GitHub APK updates patch](NuvioApkUpdates.md) uses the native
 updater with `Santodan/santodan-patches` release assets. Set `releaseVersion`

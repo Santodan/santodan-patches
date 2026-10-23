@@ -14,7 +14,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.13.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.13.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;28 patches total
+> **[v0.13.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.13.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;29 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -51,10 +51,10 @@ MEO 5.7.0 patches provide a separately installable clone and compatibility handl
 </details>
 
 <details>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;15 patches</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;16 patches</summary>
 <br>
 
-These fifteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs/NuvioBeta8.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
+These sixteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs/NuvioBeta8.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
 
 - **GitHub APK updates**: Optional patch that uses NuvioTV's native updater to check, download and install APK releases from `Santodan/santodan-patches`. The installed release version defaults to the bundle version. Includes installer fixes for patched APKs and side-by-side installations. See [GitHub release publishing instructions](docs/NuvioApkUpdates.md).
 
@@ -100,6 +100,8 @@ These fifteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs
 
 ### Playback
 
+- **Fix startup track reselection**: Prevents a seek from dereferencing a missing playing period during startup. Select this independent patch when patching; it has no runtime toggle. Active-period seeks retain their original behavior. See [evidence and verification](docs/NuvioPlayerStability.md).
+
 - **Customize playback buttons**: Choose which native playback controls appear, their order, and placement in the main row or More actions. The customization is opt-in under **Settings > Layout > Santodan-Patches > Playback**. See [settings and verification](docs/NuvioPlaybackButtons.md).
 
 - **Submit segments to IntroDB**: Enable the feature and enter your API key under **Settings > Layout > Santodan-Patches > Playback**, using the same single-line input and Cancel/Clear/Save layout as Anime Skip. A dedicated playback button captures the start on its first press and the end on its second, then opens a native NuvioTV dialog with an Intro/Recap/Outro dropdown and side-by-side Submit/Cancel buttons. Filmstrip play/stop/check icons distinguish the capture stages. Rejections show IntroDB's validation reason when available. See [setup, logcat and verification](docs/NuvioIntroDb.md).
@@ -126,6 +128,7 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 | [NuvioTV - Android TV launcher channels](#nuviotv-android-tv-launcher-channels) | Choose individual catalogs and tracking lists, Library, and Upcoming to publish as Android TV launcher channels. |  |
 | [NuvioTV - Customize playback buttons](docs/NuvioPlaybackButtons.md) | Adds optional playback button visibility, ordering and placement in the main row or More actions, with saved settings and reset. |  |
 | [NuvioTV - Finale dates in library and collections](#nuviotv-finale-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters. |  |
+| [NuvioTV - Fix startup track reselection](docs/NuvioPlayerStability.md) | Prevents a startup ExoPlayer crash when track reselection requests a seek before a playing media period exists. |  |
 | [NuvioTV - GitHub APK updates](docs/NuvioApkUpdates.md) | Checks GitHub APK releases using native updates. Defaults to this bundle's version and uses installation without stock DEX metadata or blocking receiver retries. | • GitHub repository<br>• Installed APK release version |
 | [NuvioTV - Indicate current stream](docs/NuvioCurrentStream.md) | Labels the current stream with [Playing], with an enabled-by-default toggle in Santodan-Patches > Streams. |  |
 | [NuvioTV - Keep airing series in Upcoming](#nuviotv-keep-airing-series-in-upcoming) | Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale. |  |

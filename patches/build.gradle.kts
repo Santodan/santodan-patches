@@ -75,7 +75,7 @@ tasks.register("verifyNuvioLatest") {
         "verifyNuvioBeta8DateStyleRuntime", "verifyNuvioBeta8SettingsMenuRuntime", "verifyNuvioBeta8TrackingDialogs",
         "verifyNuvioCurrentStreamRuntime", "verifyNuvioPreferredAddonRuntime", "verifyNuvioPlaybackButtonsRuntime",
         "verifyNuvioIntroDbRuntime", "verifyNuvioStreamPreloadRuntime", "verifyNuvioProviderRefreshRuntime",
-        "verifyNuvioSettingsStoreRuntime", "verifyNuvioBeta8Bundle")
+        "verifyNuvioSettingsStoreRuntime", "verifyNuvioPlayerStability", "verifyNuvioBeta8Bundle")
 }
 
 dependencies {
@@ -471,6 +471,12 @@ tasks {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyNuvioNextEpisodePreloadKt")
+    }
+    register<JavaExec>("verifyNuvioPlayerStability") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyNuvioPlayerStability")
+        args(nuvioOriginal.absolutePath, file("${layout.buildDirectory.get()}/verification/nuvio-player-stability.dex").absolutePath)
     }
     register<JavaExec>("verifyNuvioNextEpisodeBundle") {
         dependsOn("testClasses", "buildAndroid")

@@ -99,10 +99,11 @@ fun main(args: Array<String>) = runBlocking {
     val baselineIssues = hierarchyIssues(originalDex)
     val nextName = "NuvioTV - Preload streams for next episode"
     check(available.count { it.name == nextName } == 1)
-    for (mode in listOf("next", "merged", "startup-clone", "buttons", "introdb", "current-stream", "preferred", "apk-updates", "combined")) {
+    for (mode in listOf("next", "merged", "startup-clone", "buttons", "introdb", "current-stream", "preferred", "apk-updates", "stability", "combined")) {
         val combined = mode == "combined"
         val startupClone = mode == "startup-clone"
         val updatesOnly = mode == "apk-updates"
+        val stabilityOnly = mode == "stability"
         val mergeOnly = mode == "merged" || startupClone
         val buttonsOnly = mode == "buttons"
         val introOnly = mode == "introdb"
@@ -110,10 +111,11 @@ fun main(args: Array<String>) = runBlocking {
         val preferredOnly = mode == "preferred"
         val selected = available.filter {
             if (startupClone) it.name in setOf("NuvioTV - Merge tracking progress", "NuvioTV - Side-by-side installation")
+            else if (stabilityOnly) it.name == "NuvioTV - Fix startup track reselection"
             else if (combined) it.name?.startsWith("NuvioTV - ") == true && it.name != "NuvioTV - Side-by-side installation"
             else it.name == if (updatesOnly) "NuvioTV - GitHub APK updates" else if (preferredOnly) "NuvioTV - Preferred source add-on" else if (currentOnly) "NuvioTV - Indicate current stream" else if (introOnly) "NuvioTV - Submit segments to IntroDB" else if (buttonsOnly) "NuvioTV - Customize playback buttons" else if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
         }.toSet()
-        check(selected.size == if (combined) 14 else if (startupClone) 2 else 1)
+        check(selected.size == if (combined) 15 else if (startupClone) 2 else 1)
         val output = File(args[2], mode).apply { mkdirs() }
         // Patcher 2 partitions copied/modified DEX differently. Remove only prior
         // generated root DEX files so hierarchy checks see this run's output.
@@ -131,6 +133,7 @@ fun main(args: Array<String>) = runBlocking {
             val coroutineCalls = mutableSetOf<String>()
             val classes = mutableSetOf<String>()
             val nativeHooks = mutableMapOf<String, Int>()
+            var stabilityGuards = 0
             val mergeHooks = mutableMapOf<String, Int>()
             var introHooks = 0
             var currentLabels = 0
@@ -171,6 +174,13 @@ fun main(args: Array<String>) = runBlocking {
                 target.inputStream().buffered().use { input ->
                     for (owner in DexBackedDexFile.fromInputStream(null, input).classes) {
                         classes += owner.type
+                        if (owner.type == NuvioPlayerStabilityPatch.OWNER) {
+                            val seek = owner.methods.single { it.name == NuvioPlayerStabilityPatch.METHOD }
+                            if (stabilityOnly || combined) {
+                                VerifyNuvioPlayerStability.verifyPatched(seek)
+                                stabilityGuards++
+                            } else check(NuvioPlaybackButtonsPatch.fingerprint(MutableMethod(seek)) == NuvioPlayerStabilityPatch.HASH)
+                        }
                         check(owner.type != "Lsoftware/santodan/nuvio/NuvioNative;") { "Compile-only contracts leaked into the APK" }
                         parents[owner.type] = listOfNotNull(owner.superclass) + owner.interfaces
                         for (method in owner.methods) {
@@ -263,7 +273,8 @@ fun main(args: Array<String>) = runBlocking {
             } else check(preferredHooks.isEmpty())
             check(currentLabels == if (currentOnly || combined) 1 else 0)
             check((NuvioCurrentStreamPatch.EXTENSION in classes) == (currentOnly || combined))
-            if (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !updatesOnly) {
+            check(stabilityGuards == if (stabilityOnly || combined) 1 else 0)
+            if (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !updatesOnly && !stabilityOnly) {
             for (hook in listOf("registerComponent", "observeNextEpisode", "stopNextEpisode", "nextEpisodePluginPause"))
                 check(nativeHooks[hook] == 1) { "Expected one $hook hook, found ${nativeHooks[hook]}" }
             check(nativeHooks["nextEpisodePickerRefresh"] == 1) { "Next-episode picker entry must reuse the warmed search" }

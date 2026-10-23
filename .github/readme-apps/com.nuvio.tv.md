@@ -1,4 +1,4 @@
-These fifteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs/NuvioBeta8.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
+These sixteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs/NuvioBeta8.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
 
 - **GitHub APK updates**: Optional patch that uses NuvioTV's native updater to check, download and install APK releases from `Santodan/santodan-patches`. The installed release version defaults to the bundle version. Includes installer fixes for patched APKs and side-by-side installations. See [GitHub release publishing instructions](docs/NuvioApkUpdates.md).
 
@@ -43,6 +43,8 @@ These fifteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs
 - **Preload streams for next episode**: Fetches the next episode's source list after 30 seconds of actual playback, giving the current episode time to buffer. Pauses and buffering do not count toward the delay. Nuvio reuses the results when you open the next episode; expired searches refresh in the background during longer episodes. On beta.8, enabling this switch also suppresses Nuvio's separate threshold preload and prevents the manual next-episode picker from forcing another search. Explicit source refresh remains available. This switch is disabled by default and independent of the other preload switches.
 
 ### Playback
+
+- **Fix startup track reselection**: Prevents a seek from dereferencing a missing playing period during startup. Select this independent patch when patching; it has no runtime toggle. Active-period seeks retain their original behavior. See [evidence and verification](docs/NuvioPlayerStability.md).
 
 - **Customize playback buttons**: Choose which native playback controls appear, their order, and placement in the main row or More actions. The customization is opt-in under **Settings > Layout > Santodan-Patches > Playback**. See [settings and verification](docs/NuvioPlaybackButtons.md).
 

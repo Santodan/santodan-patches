@@ -198,6 +198,33 @@
       "options": []
     },
     {
+      "name": "NuvioTV - Fix startup track reselection",
+      "description": "Prevents a startup ExoPlayer crash when track reselection requests a seek before a playing media period exists.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.nuvio.tv",
+          "name": "NuvioTV",
+          "description": null,
+          "apkFileType": "APK",
+          "formFactor": "TV",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.1.0-beta.8",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "NuvioTV - GitHub APK updates",
       "description": "Checks GitHub APK releases using native updates. Defaults to this bundle's version and uses installation without stock DEX metadata or blocking receiver retries.",
       "default": false,

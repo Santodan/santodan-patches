@@ -13,9 +13,12 @@ to install the update; this does not enable silent installation.
 Patch options:
 
 - `repository`: public GitHub repository, default `Santodan/santodan-patches`.
-- `releaseVersion`: the release version of **the APK being built**, default
-  `0.12.0`. Set this explicitly for every published APK. It is independent of the
-  underlying NuvioTV version and the patch bundle version.
+- `releaseVersion`: the release version of **the APK being built**. Its default
+  is generated from the bundle version during the build, currently `0.13.0`.
+  Leave it at the default when publishing the APK under the matching bundle tag;
+  override it when publishing the APK under a different version. A previously
+  saved patch option can override the new default, so reset an old `0.12.0`
+  option before rebuilding.
 
 For example, patch the first APK with `releaseVersion=0.12.0`, then publish it
 under tag `v0.12.0`. Patch the next APK with `releaseVersion=0.12.1` and publish it
@@ -28,6 +31,45 @@ Use three-part semantic versions, optionally with a prerelease suffix such as
 it. Do not use `+build` metadata to distinguish updates: native semantic version
 comparison ignores build metadata. If you forget to update `releaseVersion`
 inside the new APK, the app can repeatedly offer the release already installed.
+
+## Installer repair and supplied device log (2026-10-23)
+
+The original updater patch incorrectly retained a `0.12.0` default after the
+bundle advanced to `0.13.0`. Downloading/installing an APK does not change that
+compiled updater constant. The corrected default follows the build version.
+An APK already built with the old value must be rebuilt and installed once.
+Inspection of the workspace's `NuvioTV-1.1.0-beta.8-patches-0.13.0.apk`
+confirms all six updater version strings are `0.12.0` and both native fallback
+authorities still name `com.nuvio.tv.fileprovider`.
+
+The native installer can attach original app DEX metadata to a session. These
+profiles describe the original DEX layout and must not be paired with patched
+DEX files. The updater now forces the native `withDexMetadata` argument to false.
+Its result receiver also skips native metadata retry, which could copy the whole
+APK synchronously inside `onReceive()`. Native permission checks, background
+installation policy, session results and the system installer fallback remain.
+
+The independent side-by-side patch now rewrites the two hardcoded
+`com.nuvio.tv.fileprovider` strings in the install action and result receiver to
+the selected clone package's authority. Renaming only the manifest provider left
+the native fallback referencing a provider which does not belong to the clone.
+It works with the updater patch in either order and with side-by-side alone.
+
+Original beta.8 evidence is in `../.inspect-nuvio-beta8/installer-contracts.txt`
+and `installer-lambda-contract.txt`: installer `Lkb/c;->b(Context,File,ZZ)V`,
+receiver `UpdateInstallResultReceiver->onReceive(Context,Intent)V` and install
+action `Lcom/nuvio/tv/data/local/gc;->invokeSuspend(Object)Object`. Original
+instruction/register/branch hashes guard all changes; the receiver validator
+normalizes only the independently applied provider/metadata edits.
+
+The supplied log records cold launches of about 14–37 seconds, two Nuvio ANRs,
+interrupted installer `FileBridge` writes, and frequent blocking garbage
+collection while playback/provider work is active. It also records a successful
+system-installer session later. It does not contain a startup main-thread stack
+or a Java installer crash stack, so it does not prove one cause for all startup
+delays. No device is connected locally for a cold-start/ANR trace. Startup speed
+and on-device installation remain device checks; these repairs do not claim to
+resolve the separate observed memory pressure.
 
 ## Publish the APK on GitHub
 
@@ -90,30 +132,35 @@ is the instance release repository coroutine. Its unique `NuvioMedia` and
 `NuvioTV` constants feed both GitHub release API routes. They are changed in
 place. Contributor queries and unrelated GitHub URLs remain unchanged.
 
-Six native local-version constants also change in place: `Lkb/q0;->a` and `b`
+Seven native local-version constants also change in place: `Lkb/q0;->a` and `b`
 (static UI/post-install reconciliation and channel label),
 `Lkb/m0;->invokeSuspend` (instance update-check coroutine), `Lkb/k;->a`
 (static default channel), and `Lkb/q;->a` and `d` (instance cached-download
-cleanup/restoration). The updater's `Lkb/r0;` semantic parser/comparator,
+cleanup/restoration), and static `UpdateJobService->a` (background update
+comparison). The background job contract is recorded in
+`../.inspect-nuvio-beta8/update-job-contracts.txt`. The updater's `Lkb/r0;` semantic parser/comparator,
 `Lkb/a;->a(List):GitHubAssetDto` asset selection, `Lkb/b;` downloader and
 installation handoff are retained. The visible general app version remains
 the original NuvioTV version; updater comparisons use the patch option.
 
-All seven modified methods are uniquely selected and checked against original
-instruction/register/literal/branch fingerprints before any mutation. Eight
-`const-string` instructions change without changing their registers or width;
-native branches, try regions and coroutine suspension logic are preserved.
+All eight version/repository methods are uniquely selected and checked against
+original instruction/register/literal/branch fingerprints before mutation.
+Nine `const-string` instructions change without changing their registers or
+width. The installer repair additionally inserts two `const/4` flag overrides;
+the independent side-by-side patch changes the two FileProvider strings.
+Native branches, try regions and coroutine suspension logic are preserved.
 
 Run:
 
 ```powershell
 .\build-local.ps1 :patches:buildAndroid :patches:generatePatchesList
 .\build-local.ps1 :patches:verifyNuvioApkUpdates :patches:verifyNuvioBeta8Bundle
+.\build-local.ps1 :patches:verifyNuvioUpdateInstaller :patches:verifyMorpheDesktopImport
 ```
 
 The focused verifier checks missing, changed, ambiguous and already-patched
 rejection, validation before mutation, option validation, and DEX write/reload
-with only the eight intended constants changed. Packaged verification covers
+with only the nine intended constants changed. Packaged verification covers
 standalone APK updates and coexistence with the other NuvioTV behavior patches.
 Device checks remain: publish two correctly versioned/signed APKs, confirm
 native manual/automatic check, stable/beta selection, progress/error UI,
@@ -121,6 +168,29 @@ unknown-source permission, install confirmation, preserved app data and no
 repeat offer after updating. No APK is uploaded or installed by these tests.
 
 ## Local validation results
+
+### 2026-10-23 updater and installer repairs
+
+`buildAndroid`, `generatePatchesList`, `verifyNuvioApkUpdates`,
+`verifyNuvioUpdateInstaller`, `verifyMorpheDesktopImport` and
+`verifyNuvioBeta8Bundle` passed. These cover the generated default, both UI and
+background version comparisons, metadata/retry flags, both clone authorities,
+independent selections, both patch orders, invalid/duplicate inputs and DEX
+roundtrip with preserved try regions. Standalone and combined packaged outputs
+retain the same 36 original optional-library findings.
+
+The current validation APK is
+`../Apps/NuvioTV/NuvioTV-1.1.0-beta.8-updater-repair-unsigned.apk`, rebuilt by
+Desktop 1.19.0 with all fifteen patches. Its inspected updater strings are
+`0.13.0` and its fallback authorities are `com.nuvio.santodan.fileprovider`.
+It is unsigned and has not been installed or tested on a device. Runtime
+startup/installation behavior still requires testing on the affected TV.
+
+Logs: `../.inspect-nuvio-beta8/updater-repair-final.log`,
+`updater-repair-rebuild.log`, `updater-repair-rebuild-result.json` and
+`updater-repair-apk-final.log`.
+
+### Original implementation validation (2026-10-22)
 
 `buildAndroid`, `generatePatchesList`, `verifyNuvioApkUpdates` and
 `verifyNuvioBeta8Bundle` passed. The packaged standalone updater and all fourteen

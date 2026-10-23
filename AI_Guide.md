@@ -160,10 +160,13 @@ retain the target contracts within its context window.
 ## NuvioTV launcher channels
 
 For APK updates from GitHub Releases, see `docs/NuvioApkUpdates.md`. The optional
-**NuvioTV - GitHub APK updates** patch redirects only the native updater's
-repository and six installed-release version constants. Set `releaseVersion`
-for each APK build; publish the signed APK as a Release asset with a matching
-semantic tag. Run `verifyNuvioApkUpdates` and `verifyNuvioBeta8Bundle`.
+**NuvioTV - GitHub APK updates** patch redirects the repository and seven
+installed-release version constants. Its default `releaseVersion` is generated
+from the bundle version; override only for a different APK tag, and reset stale
+saved options. Installer repairs suppress original DEX metadata and blocking
+receiver retries. Side-by-side also fixes both native FileProvider authorities.
+Run `verifyNuvioApkUpdates`, `verifyNuvioUpdateInstaller`,
+`verifyMorpheDesktopImport` and `verifyNuvioBeta8Bundle`.
 
 For source request priority and opt-in autoplay from a preferred installed add-on,
 see `docs/NuvioPreferredAddon.md`. The independent **NuvioTV - Preferred source

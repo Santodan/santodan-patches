@@ -18,6 +18,25 @@ patches {
 // generatePatchesList task but never bundled into the APK.
 val patchListGeneratorClasspath = configurations.create("patchListGeneratorClasspath")
 
+val patchVersionSource = layout.buildDirectory.dir("generated/sources/patchVersion")
+val generatePatchVersion by tasks.registering {
+    inputs.property("bundleVersion", project.version.toString())
+    outputs.dir(patchVersionSource)
+    doLast {
+        val version = project.version.toString()
+        check(version.matches(Regex("[0-9A-Za-z.-]+")))
+        patchVersionSource.get().file("santodan/patches/PatchBundleVersion.java").asFile.apply {
+            parentFile.mkdirs()
+            writeText("package santodan.patches; public final class PatchBundleVersion { public static final String VERSION = \"$version\"; private PatchBundleVersion() {} }\n")
+        }
+    }
+}
+sourceSets["main"].java.srcDir(patchVersionSource)
+tasks.named("compileJava") { dependsOn(generatePatchVersion) }
+tasks.named("compileKotlin") { dependsOn(generatePatchVersion) }
+tasks.named("sourcesJar") { dependsOn(generatePatchVersion) }
+tasks.named("javadoc") { dependsOn(generatePatchVersion) }
+
 // Match Android's SDK lookup on developer machines and GitHub-hosted runners.
 // JVM verification sources reference Android types but must not bundle SDK stubs.
 val androidSdkDirectory = providers.provider {
@@ -52,7 +71,7 @@ tasks.register("verifyNuvioLatest") {
     group = "verification"
     description = "Verify the currently reviewed Nuvio contract, runtime features and packaged patch combinations."
     dependsOn("verifyNuvioMaintenance", "verifyNuvioBeta8", "verifyNuvioBeta8Launcher", "verifyNuvioBeta8Player",
-        "verifyNuvioCurrentStream", "verifyNuvioPreferredAddon", "verifyNuvioPlaybackButtons", "verifyNuvioIntroDb", "verifyNuvioApkUpdates",
+        "verifyNuvioCurrentStream", "verifyNuvioPreferredAddon", "verifyNuvioPlaybackButtons", "verifyNuvioIntroDb", "verifyNuvioApkUpdates", "verifyNuvioUpdateInstaller",
         "verifyNuvioBeta8DateStyleRuntime", "verifyNuvioBeta8SettingsMenuRuntime", "verifyNuvioBeta8TrackingDialogs",
         "verifyNuvioCurrentStreamRuntime", "verifyNuvioPreferredAddonRuntime", "verifyNuvioPlaybackButtonsRuntime",
         "verifyNuvioIntroDbRuntime", "verifyNuvioStreamPreloadRuntime", "verifyNuvioProviderRefreshRuntime",
@@ -672,6 +691,14 @@ tasks.register<JavaExec>("verifyNuvioApkUpdates") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioApkUpdates")
     args(nuvioOriginal.absolutePath, file("${layout.buildDirectory.get()}/verification/nuvio-apk-updates.dex").absolutePath)
+    providers.gradleProperty("nuvioUpdatesApk").orNull?.let { args(file(it).absolutePath) }
+}
+
+tasks.register<JavaExec>("verifyNuvioUpdateInstaller") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioUpdateInstaller")
+    args(nuvioOriginal.absolutePath, file("${layout.buildDirectory.get()}/verification/update-installer").absolutePath)
     providers.gradleProperty("nuvioUpdatesApk").orNull?.let { args(file(it).absolutePath) }
 }
 

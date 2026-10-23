@@ -23,6 +23,9 @@ public final class VerifyMorpheDesktopImport {
             }
             // Force metadata/options access, as the desktop source importer does.
             patch.getOptions().getValues().forEach(option -> { option.getKey(); option.getDefault(); });
+            if (patch.getName().equals("NuvioTV - GitHub APK updates") &&
+                !PatchBundleVersion.VERSION.equals(patch.getOptions().get("releaseVersion").getDefault()))
+                throw new AssertionError("Updater default does not match this bundle version");
         }
         if (!packages.equals(Set.of("com.nuvio.tv", "com.alticelabs.meo.androidtv", "com.ovz.carscanner",
             "com.nexon.tfdc", "xyz.rtrvr.pillo", "com.reddit.frontpage", "h7.hamzio.emuithemeotg")))

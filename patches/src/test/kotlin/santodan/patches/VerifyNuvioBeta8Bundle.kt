@@ -121,6 +121,8 @@ fun main(args: Array<String>) = runBlocking {
             var currentLabels = 0
             var updaterVersions = 0
             var updaterRepository = 0
+            var safeInstaller = 0
+            var safeReceiver = 0
             val preferredHooks = mutableMapOf<String, Int>()
             val patchedDex = patcher.get().dexFiles
             // STRIP_FAST now returns only replacement/new DEX entries. Untouched
@@ -150,10 +152,19 @@ fun main(args: Array<String>) = runBlocking {
                                     preferredHooks[reference.name] = preferredHooks.getOrDefault(reference.name, 0) + 1
                             }
                             val instructions = method.implementation?.instructions ?: continue
+                            if (owner.type == NuvioUpdateInstaller.INSTALLER && method.name == "b" &&
+                                NuvioUpdateInstaller.isZero(instructions.first(), 15)) safeInstaller++
+                            if (owner.type == NuvioUpdateInstaller.RECEIVER && method.name == "onReceive") {
+                                val callback = MutableMethod(method)
+                                val result = NuvioUpdateInstaller.dmResult(callback)
+                                val code = callback.implementation!!.instructions
+                                val register = (code[result] as OneRegisterInstruction).registerA
+                                if (NuvioUpdateInstaller.isZero(code[result + 1], register)) safeReceiver++
+                            }
                             if (owner.type in NuvioApkUpdates.TYPES) {
                                 for (instruction in instructions) {
                                     val value = NuvioApkUpdates.string(instruction)
-                                    if (value == "0.12.0") updaterVersions++
+                                    if (value == PatchBundleVersion.VERSION) updaterVersions++
                                     if (owner.type == "Lkb/j0;" && value in setOf("Santodan", "santodan-patches")) updaterRepository++
                                 }
                             }
@@ -247,8 +258,10 @@ fun main(args: Array<String>) = runBlocking {
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioMergePolicy;" in classes)
             }
             val frameworkAccessor = "Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;->getContext()Landroid/content/Context;"
-            check(updaterVersions == if (updatesOnly || combined) 6 else 0)
+            check(updaterVersions == if (updatesOnly || combined) 7 else 0)
             check(updaterRepository == if (updatesOnly || combined) 2 else 0)
+            check(safeInstaller == if (updatesOnly || combined) 1 else 0)
+            check(safeReceiver == if (updatesOnly || combined) 1 else 0)
             check(updatesOnly || NuvioAccessPatch.TYPE in classes) { "Shared direct native accessors are missing" }
             check(extensionCalls.all { it in definitions || (it == frameworkAccessor &&
                 parents["Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;"]?.contains("Landroid/content/ContentProvider;") == true) }) {

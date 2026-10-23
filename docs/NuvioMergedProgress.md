@@ -1,5 +1,34 @@
 # NuvioTV merged tracking progress
 
+## Startup cache retention (beta.8, 2026-10-23)
+
+The current target is original `com.nuvio.tv` `1.1.0-beta.8` (1071),
+`../OriginalApps/NuvioTV-1.1.0-beta8.apk`; see [NuvioBeta8.md](NuvioBeta8.md).
+The historical implementation notes below describe earlier versions.
+
+Progress and next-up readers now await profile cache restoration on the IO
+dispatcher before their first emission. Repository registration no longer marks
+an empty startup snapshot as ready, and starting a sync no longer clears a native
+snapshot seeded during launch. Cache loading is independent of the Home sync gate.
+Subsequent syncs retain the current snapshot until a complete result is ready;
+unchanged records remain equal, while additions, updates and removals are published
+together. An empty completed result remains valid. Profile changes still invalidate
+the previous profile's data. Restore failures retain the saved cache for diagnosis
+and retain any usable in-memory startup data.
+
+The provider-refresh host verifier covers delayed restoration without an initial
+empty publication, retained entries during refresh, additions/updates/removals,
+unchanged-result suppression, cancellation, and valid empty snapshots. A device
+relaunch check remains necessary to confirm card visibility and focus throughout
+startup and sync.
+
+Verification passed with `build-local.ps1 :patches:buildAndroid
+:patches:verifyNuvioBeta8 :patches:verifyNuvioProviderRefreshRuntime
+:patches:verifyNuvioBeta8Bundle`. Standalone and combined packaged DEX checks
+added no cross-DEX findings beyond the original's 36 optional-library findings.
+Bundle: `patches/build/libs/patches-0.13.0.mpp`. No installable APK was rebuilt,
+signed, installed, or tested on a device.
+
 Target: original `com.nuvio.tv` `1.1.0-beta.6` (1069),
 `../OriginalApps/NuvioTV-1.1.0-beta6.apk`. Input provenance is recorded in
 [NuvioBeta6.md](NuvioBeta6.md).

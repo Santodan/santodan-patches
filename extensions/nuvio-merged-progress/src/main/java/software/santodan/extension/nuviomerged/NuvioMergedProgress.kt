@@ -13,6 +13,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.Continuation
 import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -488,7 +489,6 @@ object NuvioMergedProgress {
         allProgressMethod = providerLayout.allProgressMethod
         Log.d(TAG, "Provider layout: interface=${providerLayout.providerInterface} allProgress=$allProgressMethod")
         if (enabled()) {
-            mergedSnapshotReady.value = true
             refreshDeferred.set(true)
             requestAutomaticSync()
         }
@@ -509,8 +509,8 @@ object NuvioMergedProgress {
             val delegate = mainProvider()
             val identityDelegate = delegate ?: nativeProvider ?: firstProvider(repo)
             seedFromNativeProvider(delegate)
-            val progressFlow = retainedFlow(delegate, allProgressMethod, mergedProgress)
-            val nextUpFlow = retainedFlow(delegate, "f", mergedNextUpSeeds)
+            val progressFlow = retainedFlow(mergedProgress)
+            val nextUpFlow = retainedFlow(mergedNextUpSeeds)
             val created = Proxy.newProxyInstance(repo.javaClass.classLoader, arrayOf(providerInterface)) { proxy, method, args ->
                 when {
                     method.declaringClass == Any::class.java && method.name == "toString" -> "SantodanMergedProgressProvider"
@@ -677,19 +677,7 @@ object NuvioMergedProgress {
         updateSync("Starting sync…", 0, 1)
         Thread({
             try {
-                val cacheKey = snapshotKey()
-                if (activeCacheKey != cacheKey) {
-                    activeCacheKey = cacheKey
-                    mergedProgress.value = emptyList()
-                    mergedNextUpSeeds.value = emptyList()
-                    mergedWatchedItems.value = emptyList()
-                    mergedWatchedHistory = emptyMap()
-                    mergedShowSiblings = emptyMap()
-                    originByContent.clear()
-                    watchedSnapshotReady.value = false
-                    mergedSnapshotReady.value = true
-                    restoreSnapshot(repository?.javaClass?.classLoader)
-                }
+                ensureSnapshotLoaded()
                 runBlocking {
                     mergeJob = coroutineContext[Job]
                     try { withTimeout(90_000L) { mergeSnapshot() } }
@@ -1166,6 +1154,30 @@ object NuvioMergedProgress {
         }.onFailure { error -> Log.w(TAG, "Unable to persist merged snapshot", error) }
     }
 
+    /** Called on IO before exposing the aggregate, independently of Home sync gating. */
+    private fun ensureSnapshotLoaded() = synchronized(this) {
+        val cacheKey = snapshotKey()
+        if (activeCacheKey == cacheKey) return@synchronized
+        // Only a profile change invalidates in-memory data. On first launch,
+        // retain any native cache seeded while the saved merge is loading.
+        if (activeCacheKey != null) {
+            mergedSnapshotReady.value = false
+            watchedSnapshotReady.value = false
+            mergedProgress.value = emptyList()
+            mergedNextUpSeeds.value = emptyList()
+            mergedWatchedItems.value = emptyList()
+            mergedWatchedHistory = emptyMap()
+            mergedShowSiblings = emptyMap()
+            originByContent.clear()
+            providerBySource.clear()
+        }
+        restoreSnapshot(repository?.javaClass?.classLoader)
+        if (cacheKey == snapshotKey()) {
+            activeCacheKey = cacheKey
+            mergedSnapshotReady.value = true
+        }
+    }
+
     private fun restoreSnapshot(loader: ClassLoader?) {
         runCatching {
             val cacheKey = snapshotKey()
@@ -1219,7 +1231,6 @@ object NuvioMergedProgress {
             Log.d(TAG, "Restored merged snapshot: progress=${progress.size}, next-up=${seeds.size}")
             refreshMenu()
         }.onFailure { error ->
-            preferences().edit().remove(snapshotKey()).apply()
             Log.w(TAG, "Unable to restore merged snapshot", error)
         }
     }
@@ -1275,18 +1286,11 @@ object NuvioMergedProgress {
     private fun JSONObject.nullableLong(key: String): Long? = if (isNull(key)) null else getLong(key)
     private fun JSONObject.nullableFloat(key: String): Float? = if (isNull(key)) null else getDouble(key).toFloat()
 
-    @Suppress("UNCHECKED_CAST")
     private fun retainedFlow(
-        provider: Any?,
-        methodName: String,
         merged: StateFlow<List<Any>>,
     ): Flow<List<Any>> {
-        val native = runCatching {
-            if (provider == null) null
-            else findMethod(provider.javaClass, methodName, 0).invoke(provider) as? Flow<Any>
-        }.getOrNull()
-        return NuvioProviderRefresh.retainedSnapshot(native, merged, mergedSnapshotReady) {
-            navigation.allowed(false)
+        return NuvioProviderRefresh.hydratedSnapshot(merged) {
+            withContext(Dispatchers.IO) { ensureSnapshotLoaded() }
         }
     }
 

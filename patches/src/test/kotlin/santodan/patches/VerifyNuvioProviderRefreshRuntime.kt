@@ -27,6 +27,45 @@ class RefreshFixture {
 
 fun main() = runBlocking {
     withTimeout(5_000) {
+        // Cold startup must restore disk data before the first publication.
+        // A refresh retains that list until its complete replacement is ready.
+        val cached = listOf<Any>("unchanged", "old progress", "removed")
+        val snapshot = MutableStateFlow<List<Any>>(emptyList())
+        val hydrated = CompletableDeferred<Unit>()
+        val publications = mutableListOf<List<Any>>()
+        val reader = launch(start = CoroutineStart.UNDISPATCHED) {
+            NuvioProviderRefresh.hydratedSnapshot(snapshot) {
+                hydrated.await()
+                snapshot.value = cached
+            }.collect { publications.add(it) }
+        }
+        yield()
+        check(publications.isEmpty()) { "Published empty startup snapshot before restoration" }
+        hydrated.complete(Unit)
+        yield()
+        check(publications == listOf(cached))
+        // Failed/cancelled refreshes make no publication; successful refreshes
+        // preserve unchanged entries and apply updates, additions and removals.
+        yield()
+        check(publications.last() == cached)
+        val refreshed = listOf<Any>("unchanged", "new progress", "added")
+        snapshot.value = refreshed
+        yield()
+        check(publications == listOf(cached, refreshed))
+        snapshot.value = refreshed.toList()
+        yield()
+        check(publications.size == 2) { "Unchanged refresh republished the snapshot" }
+        reader.cancelAndJoin()
+        val blocked = CompletableDeferred<Unit>()
+        val cancelledReader = launch(start = CoroutineStart.UNDISPATCHED) {
+            NuvioProviderRefresh.hydratedSnapshot(snapshot) { blocked.await() }
+                .collect { error("Cancelled restoration published data") }
+        }
+        cancelledReader.cancelAndJoin()
+        val empty = MutableStateFlow<List<Any>>(emptyList())
+        check(NuvioProviderRefresh.hydratedSnapshot(empty) {}.first().isEmpty())
+        println("PASS: cache hydration precedes publication and refresh preserves entries")
+
         // MDBList progress/seed flows run ensureLoaded/refreshAsync on collection.
         // A complete but empty snapshot is valid, especially without Nuvio Sync.
         for ((ready, allowNative) in listOf(true to false, false to false, true to true)) {

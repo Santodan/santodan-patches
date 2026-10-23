@@ -206,6 +206,9 @@ For merged tracking progress, see `docs/NuvioMergedProgress.md`. Its automatic
 sync gate follows the root navigation flow and activity lifecycle, not stream-search
 pause signals. Main-service playback writes and service inclusion are configured
 in the Tracking progress submenu; verify standalone and combined bundles.
+Progress and next-up flows await profile cache restoration on IO before emitting.
+Do not mark the startup placeholder snapshot ready or clear it before restoring;
+retain the current snapshot until a complete refresh can apply entry changes.
 
 NuvioTV patches target `com.nuvio.tv` `1.1.0-beta.8` only. See
 `docs/NuvioBeta8.md` for native contracts, input provenance, and verification.

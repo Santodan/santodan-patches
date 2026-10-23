@@ -21,6 +21,12 @@ import kotlinx.coroutines.flow.merge
 
 /** Await the native refresh before sampling flows that can emit cached values immediately. */
 object NuvioProviderRefresh {
+    /** Never expose the placeholder empty flow before disk hydration completes. */
+    fun hydratedSnapshot(merged: StateFlow<List<Any>>, prepare: suspend () -> Unit): Flow<List<Any>> = flow {
+        prepare()
+        emitAll(merged)
+    }
+
     /** Shared by the aggregate's progress and next-up readers. */
     fun retainedSnapshot(native: Flow<Any?>?, merged: StateFlow<List<Any>>,
         ready: StateFlow<Boolean>, allowNative: () -> Boolean): Flow<List<Any>> = flow {

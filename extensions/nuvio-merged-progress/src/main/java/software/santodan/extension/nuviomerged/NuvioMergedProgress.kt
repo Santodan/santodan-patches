@@ -8,6 +8,9 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.JsonReader
+import android.util.JsonToken
+import java.io.StringReader
 import android.widget.Toast
 import kotlin.coroutines.suspendCoroutine
 import kotlin.coroutines.resume
@@ -56,10 +59,13 @@ object NuvioMergedProgress {
         Thread(task, "SantodanBadgeValidation").apply { isDaemon = true }
     }
     private val merging = AtomicBoolean(false)
+    private val settingsReadLogged = AtomicBoolean(false)
     private val navigation = NuvioMergePolicy()
     private var navigationOwner: Any? = null
     private var navigationJob: Job? = null
     private var activity = java.lang.ref.WeakReference<Activity>(null)
+    private var startupActivity = java.lang.ref.WeakReference<Activity>(null)
+    @Volatile private var homePresented = false
     private var settingsExpanded = false
     @Volatile private var manualMerge = false
     @Volatile private var mergeJob: Job? = null
@@ -105,15 +111,39 @@ object NuvioMergedProgress {
     @Volatile private var menuRevision: Any? = null
     private val configuring = AtomicBoolean(false)
 
-    @JvmStatic fun registerSettingsStore(value: Any) { NuvioSettingsStoreResolver.registerStore(value) }
-    @JvmStatic fun registerSettingsComponent(value: Any) { NuvioSettingsStoreResolver.registerComponent(value) }
+    private inline fun startupStage(name: String, action: () -> Unit) {
+        val started = System.nanoTime()
+        Log.d(TAG, "Startup begin: stage=$name thread=${Thread.currentThread().name}")
+        try { action() }
+        finally { Log.d(TAG, "Startup end: stage=$name elapsedMs=${(System.nanoTime() - started) / 1_000_000}") }
+    }
+
+    @JvmStatic fun registerSettingsStore(value: Any) = startupStage("merge.settingsStore") { NuvioSettingsStoreResolver.registerStore(value) }
+    @JvmStatic fun registerSettingsComponent(value: Any) = startupStage("merge.settingsComponent") { NuvioSettingsStoreResolver.registerComponent(value) }
 
     /** The same back-stack flow used by MainActivity, including actual player routes. */
-    @JvmStatic fun activityResumed(value: Any) {
+    @JvmStatic fun activityResumed(value: Any) = startupStage("merge.activityResumed") {
         activity = java.lang.ref.WeakReference(value as Activity)
         navigation.foreground(true)
+        observeHomePresentation(value)
         refreshDeferred.set(true)
         requestAutomaticSync()
+    }
+
+    /** beta.8 ComponentActivity's reporter sets f and invokes g under lock c. */
+    private fun observeHomePresentation(owner: Activity) {
+        if (startupActivity.get() === owner) return
+        startupActivity = java.lang.ref.WeakReference(owner)
+        homePresented = false
+        runCatching {
+            NuvioProviderRefresh.afterPresentation(owner) {
+                if (startupActivity.get() === owner) {
+                    homePresented = true
+                    Log.d(TAG, "Startup Home presented; deferred history and automatic sync released")
+                    requestAutomaticSync()
+                }
+            }
+        }.onFailure { Log.e(TAG, "Unable to observe Home presentation; automatic startup work remains deferred", it) }
     }
 
     @JvmStatic fun activityPaused(value: Any) {
@@ -479,12 +509,13 @@ object NuvioMergedProgress {
         }
     }
 
-    @JvmStatic fun registerRepository(value: Any) {
+    @JvmStatic fun registerRepository(value: Any) = startupStage("merge.repository") {
         if (repository !== value) {
             providerObservers.values.forEach { it.cancel() }
             providerObservers.clear()
         }
         repository = value
+        NuvioStartupActivity.profile(snapshotKey().removePrefix("${SNAPSHOT}_"))
         providerLayout = NuvioProviderLayout.forRepository(value.javaClass.name)
         allProgressMethod = providerLayout.allProgressMethod
         Log.d(TAG, "Provider layout: interface=${providerLayout.providerInterface} allProgress=$allProgressMethod")
@@ -667,6 +698,7 @@ object NuvioMergedProgress {
         } else nativeLabel
 
     private fun mergeAsync(manual: Boolean = false) {
+        if (!manual && !homePresented) { refreshDeferred.set(true); return }
         if (!navigation.allowed(manual)) { refreshDeferred.set(true); return }
         if (!enabled() || !merging.compareAndSet(false, true)) return
         manualMerge = manual
@@ -678,6 +710,8 @@ object NuvioMergedProgress {
         Thread({
             try {
                 ensureSnapshotLoaded()
+                migrateSnapshotStorage()
+                restoreWatchedSnapshot(repository?.javaClass?.classLoader)
                 runBlocking {
                     mergeJob = coroutineContext[Job]
                     try { withTimeout(90_000L) { mergeSnapshot() } }
@@ -1134,6 +1168,9 @@ object NuvioMergedProgress {
             val encodedOrigins = JSONObject()
             origins.forEach(encodedOrigins::put)
             root.put("origins", encodedOrigins)
+            // A separate preferences file avoids parsing full watched history
+            // or allocating its model objects on the next launch.
+            startupPreferences().edit().putString(cacheKey, root.toString()).apply()
             val history = JSONObject()
             mergedWatchedHistory.forEach { (id, episodes) ->
                 history.put(id, JSONArray().also { array -> episodes.forEach { episode ->
@@ -1150,7 +1187,7 @@ object NuvioMergedProgress {
                     json.put(getter, findMethod(item.javaClass, getter, 0).invoke(item) ?: JSONObject.NULL)
                 } })
             } })
-            preferences().edit().putString(cacheKey, root.toString()).apply()
+            historyPreferences().edit().putString(cacheKey, root.toString()).apply()
         }.onFailure { error -> Log.w(TAG, "Unable to persist merged snapshot", error) }
     }
 
@@ -1174,18 +1211,104 @@ object NuvioMergedProgress {
         restoreSnapshot(repository?.javaClass?.classLoader)
         if (cacheKey == snapshotKey()) {
             activeCacheKey = cacheKey
+            NuvioStartupActivity.rememberProfile(application(), cacheKey.removePrefix("${SNAPSHOT}_"))
             mergedSnapshotReady.value = true
         }
     }
 
     private fun restoreSnapshot(loader: ClassLoader?) {
+        val started = System.nanoTime()
+        Log.d(TAG, "Startup CW cache loading")
         runCatching {
             val cacheKey = snapshotKey()
-            val encoded = preferences().getString(cacheKey, null) ?: return
-            val root = JSONObject(encoded)
+            val lightweight = startupPreferences().getString(cacheKey, null)
+            val encoded = lightweight ?: preferences().getString(cacheKey, null)
+                ?: historyPreferences().getString(cacheKey, null) ?: return
+            val root = if (lightweight != null) JSONObject(encoded) else readStartupSnapshot(encoded)
+            val jsonMs = (System.nanoTime() - started) / 1_000_000
             val model = requireNotNull(loader).loadClass("com.nuvio.tv.domain.model.WatchProgress")
             val progress = decodeItems(root.optJSONArray("progress"), model)
             val seeds = decodeItems(root.optJSONArray("seeds"), model)
+            if (cacheKey != snapshotKey()) return
+            val encodedOrigins = root.optJSONObject("origins")
+            val restoredOrigins = HashMap<String, String>()
+            encodedOrigins?.keys()?.forEach { key -> restoredOrigins[key] = encodedOrigins.getString(key) }
+            originByContent.putAll(restoredOrigins)
+            mergedProgress.value = progress
+            mergedNextUpSeeds.value = seeds
+            mergedSnapshotReady.value = true
+            if (lightweight == null) startupPreferences().edit().putString(cacheKey, root.toString()).apply()
+            Log.d(TAG, "Startup CW cache ready: progress=${progress.size} nextUp=${seeds.size} legacy=${lightweight == null} jsonMs=$jsonMs elapsedMs=${(System.nanoTime() - started) / 1_000_000}")
+        }.onFailure { error -> Log.w(TAG, "Unable to restore Continue Watching cache", error) }
+    }
+
+    /** Skip legacy history tokens without constructing their JSON trees. */
+    private fun readStartupSnapshot(encoded: String): JSONObject {
+        JsonReader(StringReader(encoded)).use { reader ->
+            val root = JSONObject()
+            reader.beginObject()
+            while (reader.hasNext()) {
+                val name = reader.nextName()
+                if (name in setOf("progress", "seeds", "origins")) root.put(name, readSnapshotValue(reader))
+                else reader.skipValue()
+            }
+            reader.endObject()
+            return root
+        }
+    }
+
+    private fun readSnapshotValue(reader: JsonReader): Any = when (reader.peek()) {
+        JsonToken.BEGIN_OBJECT -> JSONObject().also { value ->
+            reader.beginObject()
+            while (reader.hasNext()) value.put(reader.nextName(), readSnapshotValue(reader))
+            reader.endObject()
+        }
+        JsonToken.BEGIN_ARRAY -> JSONArray().also { value ->
+            reader.beginArray()
+            while (reader.hasNext()) value.put(readSnapshotValue(reader))
+            reader.endArray()
+        }
+        JsonToken.STRING -> reader.nextString()
+        JsonToken.NUMBER -> reader.nextString().let { it.toLongOrNull() ?: it.toDouble() }
+        JsonToken.BOOLEAN -> reader.nextBoolean()
+        JsonToken.NULL -> { reader.nextNull(); JSONObject.NULL }
+        else -> error("Unexpected snapshot token ${reader.peek()}")
+    }
+
+    /** Remove history from the settings file only after its separate copy is durable. */
+    private fun migrateSnapshotStorage() {
+        val started = System.nanoTime()
+        runCatching {
+            val legacy = preferences()
+            val destination = historyPreferences()
+            var moved = 0
+            val complete = NuvioProviderRefresh.migrateSnapshots(legacy.all, destination::contains,
+                { snapshots ->
+                    val editor = destination.edit()
+                    snapshots.forEach { (key, value) -> editor.putString(key, value) }
+                    // Also commit an existing in-memory destination: an earlier
+                    // failed disk write must not permit source removal on retry.
+                    editor.commit()
+                }, { keys ->
+                    moved = keys.size
+                    val editor = legacy.edit()
+                    keys.forEach(editor::remove)
+                    editor.commit()
+                })
+            Log.d(TAG, "History storage migration: complete=$complete profiles=$moved elapsedMs=${(System.nanoTime() - started) / 1_000_000}")
+        }.onFailure { Log.w(TAG, "History storage migration failed; legacy cache retained", it) }
+    }
+
+    /** Only the post-presentation merge worker restores the heavyweight badge data. */
+    private fun restoreWatchedSnapshot(loader: ClassLoader?) {
+        if (watchedSnapshotReady.value) return
+        val started = System.nanoTime()
+        Log.d(TAG, "Deferred watched cache loading")
+        runCatching {
+            val cacheKey = snapshotKey()
+            val encoded = historyPreferences().getString(cacheKey, null)
+                ?: preferences().getString(cacheKey, null) ?: return
+            val root = JSONObject(encoded)
             val history = root.optJSONObject("watchedHistory")
             val restoredHistory = history?.keys()?.asSequence()?.associateWith { id ->
                 val array = history.getJSONArray(id)
@@ -1201,7 +1324,7 @@ object NuvioMergedProgress {
             }.orEmpty()
             val watched = root.optJSONArray("watchedItems")
             val restoredWatchedItems = if (watched != null && watched.length() > 0) {
-                val constructor = loader.loadClass("com.nuvio.tv.domain.model.WatchedItem")
+                val constructor = requireNotNull(loader).loadClass("com.nuvio.tv.domain.model.WatchedItem")
                     .declaredConstructors.single { it.parameterCount == 11 }
                 (0 until watched.length()).map { index ->
                     val json = watched.getJSONObject(index)
@@ -1214,21 +1337,12 @@ object NuvioMergedProgress {
                     }.toTypedArray())
                 }
             } else emptyList()
-            if (cacheKey != snapshotKey()) return
+            if (cacheKey != snapshotKey() || activeCacheKey != cacheKey || watchedSnapshotReady.value) return
             mergedWatchedHistory = restoredHistory
             mergedShowSiblings = restoredSiblings
             mergedWatchedItems.value = restoredWatchedItems
             watchedSnapshotReady.value = true
-            mergedProgress.value = progress
-            mergedNextUpSeeds.value = seeds
-            val encodedOrigins = root.optJSONObject("origins")
-            if (encodedOrigins != null) {
-                val restoredOrigins = HashMap<String, String>()
-                encodedOrigins.keys().forEach { key -> restoredOrigins[key] = encodedOrigins.getString(key) }
-                originByContent.putAll(restoredOrigins)
-            }
-            mergedSnapshotReady.value = true
-            Log.d(TAG, "Restored merged snapshot: progress=${progress.size}, next-up=${seeds.size}")
+            Log.d(TAG, "Deferred watched cache ready: shows=${restoredHistory.size} items=${restoredWatchedItems.size} elapsedMs=${(System.nanoTime() - started) / 1_000_000}")
             refreshMenu()
         }.onFailure { error ->
             Log.w(TAG, "Unable to restore merged snapshot", error)
@@ -1340,8 +1454,18 @@ object NuvioMergedProgress {
         else -> null
     }
 
-    private fun enabled() = preferences().getBoolean(ENABLED, false)
+    private fun enabled(): Boolean {
+        if (settingsReadLogged.get()) return preferences().getBoolean(ENABLED, false)
+        val started = System.nanoTime()
+        val value = preferences().getBoolean(ENABLED, false)
+        if (settingsReadLogged.compareAndSet(false, true)) {
+            Log.d(TAG, "Merge settings first read: elapsedMs=${(System.nanoTime() - started) / 1_000_000}")
+        }
+        return value
+    }
     private fun preferences() = application().getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+    private fun historyPreferences() = application().getSharedPreferences("${PREFS}_history", Context.MODE_PRIVATE)
+    private fun startupPreferences() = application().getSharedPreferences("${PREFS}_startup", Context.MODE_PRIVATE)
     private fun application(): Application = Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null) as Application
     private fun snapshotKey(): String {
         val repo = repository ?: return "${SNAPSHOT}_unavailable"

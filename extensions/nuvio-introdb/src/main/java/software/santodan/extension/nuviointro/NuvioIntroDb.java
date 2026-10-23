@@ -42,8 +42,11 @@ public final class NuvioIntroDb {
     }
     private NuvioIntroDb() {}
     public static void resume(Activity activity) {
+        long started = System.nanoTime();
+        Log.d(TAG, "Startup begin: stage=introdb.activity thread=" + Thread.currentThread().getName());
         foreground = true; preferences = activity.getApplicationContext().getSharedPreferences("santodan_introdb", 0);
         Log.d(TAG, "Runtime ready; Anime Skip key editor, filmstrip stage icons, exact cancellation overload");
+        Log.d(TAG, "Startup end: stage=introdb.activity elapsedMs=" + (System.nanoTime() - started) / 1_000_000);
     }
     public static void pause(Activity activity) { foreground = false; Log.d(TAG, "Activity paused; clearing capture"); reset(); keyText = null; keyFocus = null; keyFocused = null; }
     private static SharedPreferences prefs() throws Exception {

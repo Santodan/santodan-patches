@@ -1,5 +1,154 @@
 # NuvioTV merged tracking progress
 
+## Early full splash before MainActivity (beta.8, 2026-10-23)
+
+Launcher entry now goes through a lightweight `NuvioStartupActivity` before
+constructing the native Hilt-backed MainActivity. It draws the full splash layout:
+the native 48dp wordmark, profile gradient or cached local background, 32dp gap,
+and a 48dp animated loading indicator. This is a framework View renderer of the
+native splash design, avoiding Compose and MainActivity dependencies at this stage.
+MainActivity and its normal Compose splash then take over.
+
+The initial Android launch window uses the gradient and wordmark too, replacing
+the previous square app icon. Framework/Application creation still precedes any
+Activity drawing; the patch does not move Android lifecycle or Hilt initialization
+to an arbitrary background thread. Native startup work continues while the early
+splash is visible. Main-thread native initialization can briefly pause animation.
+
+Original beta.8 manifest/DEX evidence differs from the upstream source: six
+`com.nuvio.tv.launcher.AppIcon*` entries are real Activity subclasses of
+`com.nuvio.tv.MainActivity`, each with a constructor only. Their manifest entries
+become aliases of the early entry, preserving names, enabled state, icons,
+banners, labels and intent filters. The original MainActivity and VIEW filters
+remain intact. The early target is non-exported and has no history. It forwards
+the incoming intent's data, categories, extras, ClipData and URI grants to the
+native class in the installed package. Single-top/clear-top handoff reuses an
+existing native Activity and avoids an extra Back destination or second task.
+
+Splash appearance uses native `startup_splash` preferences (`color_<profile>`,
+`theme_<profile>`, `bg_url_<profile>`). The active profile is supplied by the existing
+repository hook and remembered on the cache IO path. Background decoding runs on
+a bounded worker and is limited to app-owned local cached files, sampled to a
+maximum 1920px dimension. It makes no network requests; missing, remote-only,
+expired or slow backgrounds fall back to the gradient until the native splash
+loads them. Cache preparation has a 1.5s deadline. After the prepared splash has
+drawn, handoff is posted after a renderer frame and only while resumed. Pause,
+destruction and repeated callbacks cannot start a duplicate Activity.
+
+`SantodanStartup` logs early creation, appearance preparation and frame submission
+before native MainActivity starts. Measure total startup from process creation to
+the native Home-presented marker: Android's Displayed/fully-drawn timings now refer
+to separate Activities rather than one continuous launcher Activity.
+
+Verification passed: `build-local.ps1 :patches:buildAndroid :patches:verifyNuvioBeta8
+:patches:verifyNuvioProviderRefreshRuntime :patches:verifyNuvioBeta8Bundle`.
+Tests cover manifest preservation/rejection, prepared-frame and resume gating,
+duplicate/destruction handling, original native contracts, compiled resources,
+packaged classes and exact inherited Android SDK method resolution. The bundle
+verifier applies merge alone, merge plus side-by-side, and all runtime patches
+together. All outputs have no new cross-DEX findings beyond the original's 36
+optional-library findings. No installable APK was rebuilt, signed or installed;
+the transition, selected background, Back/resume, icon selection and TV-launcher
+task behavior still require device tests. Artifact: `patches/build/libs/patches-0.13.0.mpp`.
+
+## Native launch logo and initialization timings (beta.8, 2026-10-23)
+
+The merge patch includes an unnamed resource dependency that replaces the solid
+native launch drawable with the same background plus the original Nuvio logo,
+centered at 160dp. This is the Android launch window shown before Compose can
+render the in-app splash. It requires no runtime disk reads or network requests.
+The native Android 12+ splash configuration remains in place.
+
+Original beta.8 resources prove `drawable/splash_screen_background` (0x7f08011f)
+is `res/0n.xml`: a rectangle with `color/splash_background` (0x7f06005d).
+`drawable/app_logo_mark` (0x7f08004f) points to the existing `res/sR.png`.
+The resource transformation rejects changed or already-layered input and keeps the
+original background shape. Compiled resource checks inspect the merge-only and
+combined resource APKs for the native logo reference.
+
+Logcat has paired `Startup begin` / `Startup end` messages for merge repository,
+settings store/component, activity resume, stream-preload component, launcher
+component, and IntroDB activity setup. They report the calling thread at entry
+and elapsed milliseconds at exit. Use the timestamps alongside process creation,
+activity creation, first frame and fully-drawn events to distinguish patch work
+from the intervals between hooks. Method timings exclude class initialization
+that happens before method entry.
+
+Verification commands: `build-local.ps1 :patches:buildAndroid
+:patches:verifyNuvioBeta8 :patches:verifyNuvioProviderRefreshRuntime
+:patches:verifyNuvioBeta8Bundle :patches:verifyNuvioIntroDbRuntime
+:patches:verifyNuvioStreamPreloadRuntime`.
+All passed, including logo inspection in the compiled merge-only/combined resource
+APKs, resource rejection tests, runtime regressions and cross-DEX checks with no
+new findings beyond the original's optional-library references.
+`generatePatchesList` records the new unnamed resource dependency; the Android
+bundle was rebuilt after generation and its packaged checks rerun.
+The artifact remains `patches/build/libs/patches-0.13.0.mpp`; the visual transition
+and logo size still require a device cold-launch check. No installable APK was
+rebuilt, signed or installed.
+
+## Separate history from startup settings (beta.8, 2026-10-23)
+
+The next device capture showed two cold launches with first-frame times of
+16.896s/16.834s and fully-drawn times of 22.520s/22.312s. Lightweight cache
+restoration improved from 5.165s on legacy migration to 1.776s on the next launch,
+but both processes spent about 12s before activity creation completed. Thus the
+remaining pre-splash delay precedes the Continue Watching restoration stage.
+
+The merge settings and full history still shared one SharedPreferences XML file;
+the first synchronous settings read can wait for Android to load all its large
+snapshot strings. Full snapshots now persist in a separate history preferences
+file. After Home appears, migration copies existing profile snapshots durably
+before removing only their large values from the settings file. Settings, source
+choices, summaries and cached records are retained. Failed copy writes never
+remove the source; retries preserve any newer destination history.
+
+The first launch after this update can still pay the old settings-file load cost.
+Allow `History storage migration: complete=true` to appear before restarting; the
+next cold launch uses the smaller settings file. `Merge settings first read`
+reports its elapsed milliseconds so a new capture can confirm how much of the
+pre-splash delay belongs to this path. Exact attribution and the speed improvement
+remain device checks, rather than conclusions established by host tests.
+
+The same build, beta.8 DEX, provider-refresh runtime and standalone/combined bundle
+commands listed below passed for this change with no new cross-DEX findings.
+Migration checks cover multiple profiles,
+failed writes/cleanup, retry safety, newer destination data and retained settings.
+
+## Split startup cache and defer history (beta.8, 2026-10-23)
+
+Continue Watching restoration no longer waits for full watched history, sibling
+aliases, or watched-item model construction. Progress, next-up seeds and origins
+have a separate small preferences file. Existing installations migrate their
+previous snapshot by streaming past history fields without constructing their JSON
+trees. No cache reset is needed. The current Continue Watching entries remain
+visible until a complete refresh applies additions, updates and removals.
+
+Automatic merge and full history restoration wait for the owning activity's native
+fully-drawn reporter. Manual sync still runs on request. The original beta.8
+`Lc/j;->getFullyDrawnReporter()Lc/m;` exposes the reporter; `Lc/m;->a()V` sets
+`f:Z` and invokes callbacks in `g:ArrayList` under lock `c:Object`. The listener
+uses that same lock, handles an already-reported activity, and ignores an obsolete
+activity's callback. Navigation, foreground, profile and stale-publication guards
+continue to apply. No additional bytecode hooks were needed.
+
+Logcat now includes `Startup CW cache loading`, `Startup CW cache ready`
+(JSON-read/parse and total milliseconds, entry counts, legacy migration flag),
+`Startup Home presented`, and `Deferred watched cache loading/ready` (history
+counts and elapsed milliseconds). These distinguish the first legacy migration
+from subsequent launches and separate cache work from rendering and remote sync.
+
+`build-local.ps1 :patches:buildAndroid :patches:verifyNuvioBeta8
+:patches:verifyNuvioProviderRefreshRuntime :patches:verifyNuvioBeta8Bundle`
+passed. Host tests exercise cache publication before presentation, deferred-work
+release, already-reported activities and separate activity reporters, together
+with the existing cache retention/cancellation regressions. Original DEX contract
+checks and standalone/combined bundle assembly passed with no new cross-DEX
+findings. Bundle: `patches/build/libs/patches-0.13.0.mpp`. No installable APK was
+rebuilt, signed, installed or tested on a device. Startup speed, legacy migration
+and card/focus retention still require device checks on the first and subsequent
+launches.
+
 ## Startup cache retention (beta.8, 2026-10-23)
 
 The current target is original `com.nuvio.tv` `1.1.0-beta.8` (1071),

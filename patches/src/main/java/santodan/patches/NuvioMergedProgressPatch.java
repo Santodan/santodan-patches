@@ -29,6 +29,7 @@ public final class NuvioMergedProgressPatch {
                 builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME, "NuvioTV", null, ApkFileType.APK,
                     null, null, NuvioLayout.targets(), app.morphe.patcher.patch.FormFactor.TV, false));
                 builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
+                builder.dependsOn(NuvioStartupResourcesKt.getNuvioStartupResourcesPatch());
                 builder.extendWith(NuvioMergedProgressPatch::extensionStream);
                 builder.execute(context -> {
                     String version = context.getPackageMetadata().getVersionName();

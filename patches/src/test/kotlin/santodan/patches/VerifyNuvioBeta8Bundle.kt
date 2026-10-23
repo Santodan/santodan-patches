@@ -74,6 +74,19 @@ fun main(args: Array<String>) = runBlocking {
     rejected(installed)
     println("PASS: beta8 picker callers are exclusively next-episode transitions; missing, changed, ambiguous and duplicate route hooks rejected")
     val available = loadPatchesFromJar(setOf(File(args[1])))
+    val frameworkLoader = java.net.URLClassLoader(arrayOf(File(args[3], "platforms/android-36/android.jar").toURI().toURL()), ClassLoader.getSystemClassLoader().parent)
+    fun descriptor(type: Class<*>): String = when {
+        type.isArray -> type.name.replace('.', '/')
+        !type.isPrimitive -> "L${type.name.replace('.', '/')};"
+        else -> mapOf("void" to "V", "boolean" to "Z", "byte" to "B", "char" to "C", "short" to "S", "int" to "I", "long" to "J", "float" to "F", "double" to "D").getValue(type.name)
+    }
+    fun frameworkDefines(type: String, signature: String): Boolean {
+        if (!type.startsWith("Landroid/")) return false
+        val owner = frameworkLoader.loadClass(type.substring(1, type.length - 1).replace('/', '.'))
+        return owner.methods.any { method ->
+            method.name + method.parameterTypes.joinToString("", "(", ")") { descriptor(it) } + descriptor(method.returnType) == signature
+        }
+    }
     val hierarchy = SdkDexVerifier(File(args[3]), null)
     val hierarchyMethod = SdkDexVerifier::class.java.getDeclaredMethod("verifyClassHierarchy", File::class.java).apply { isAccessible = true }
     fun hierarchyIssues(directory: File): List<String> {
@@ -86,19 +99,21 @@ fun main(args: Array<String>) = runBlocking {
     val baselineIssues = hierarchyIssues(originalDex)
     val nextName = "NuvioTV - Preload streams for next episode"
     check(available.count { it.name == nextName } == 1)
-    for (mode in listOf("next", "merged", "buttons", "introdb", "current-stream", "preferred", "apk-updates", "combined")) {
+    for (mode in listOf("next", "merged", "startup-clone", "buttons", "introdb", "current-stream", "preferred", "apk-updates", "combined")) {
         val combined = mode == "combined"
+        val startupClone = mode == "startup-clone"
         val updatesOnly = mode == "apk-updates"
-        val mergeOnly = mode == "merged"
+        val mergeOnly = mode == "merged" || startupClone
         val buttonsOnly = mode == "buttons"
         val introOnly = mode == "introdb"
         val currentOnly = mode == "current-stream"
         val preferredOnly = mode == "preferred"
         val selected = available.filter {
-            if (combined) it.name?.startsWith("NuvioTV - ") == true && it.name != "NuvioTV - Side-by-side installation"
+            if (startupClone) it.name in setOf("NuvioTV - Merge tracking progress", "NuvioTV - Side-by-side installation")
+            else if (combined) it.name?.startsWith("NuvioTV - ") == true && it.name != "NuvioTV - Side-by-side installation"
             else it.name == if (updatesOnly) "NuvioTV - GitHub APK updates" else if (preferredOnly) "NuvioTV - Preferred source add-on" else if (currentOnly) "NuvioTV - Indicate current stream" else if (introOnly) "NuvioTV - Submit segments to IntroDB" else if (buttonsOnly) "NuvioTV - Customize playback buttons" else if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
         }.toSet()
-        check(selected.size == if (combined) 14 else 1)
+        check(selected.size == if (combined) 14 else if (startupClone) 2 else 1)
         val output = File(args[2], mode).apply { mkdirs() }
         // Patcher 2 partitions copied/modified DEX differently. Remove only prior
         // generated root DEX files so hierarchy checks see this run's output.
@@ -124,7 +139,27 @@ fun main(args: Array<String>) = runBlocking {
             var safeInstaller = 0
             var safeReceiver = 0
             val preferredHooks = mutableMapOf<String, Int>()
-            val patchedDex = patcher.get().dexFiles
+            val result = patcher.get()
+            if (combined || mergeOnly) {
+                val resources = requireNotNull(requireNotNull(result.resources).resourcesApk)
+                val buildTools = File(args[3], "build-tools/36.0.0")
+                val aapt = listOf(File(buildTools, "aapt.exe"), File(buildTools, "aapt")).single { it.isFile }
+                val inspection = ProcessBuilder(aapt.absolutePath, "dump", "xmltree", resources.absolutePath, "res/0n.xml")
+                    .redirectErrorStream(true).start()
+                val xml = inspection.inputStream.bufferedReader().readText()
+                check(inspection.waitFor() == 0) { xml }
+                check("layer-list" in xml && "gradient" in xml && "@0x7f080050" in xml) { "Splash appearance missing from compiled resources: $xml" }
+                val manifestProcess = ProcessBuilder(aapt.absolutePath, "dump", "xmltree", resources.absolutePath, "AndroidManifest.xml")
+                    .redirectErrorStream(true).start()
+                val manifestXml = manifestProcess.inputStream.bufferedReader().readText()
+                check(manifestProcess.waitFor() == 0) { manifestXml }
+                check(manifestXml.split("android:targetActivity").drop(1).size == 6)
+                check(manifestXml.lineSequence().filter { "android:targetActivity" in it }.all { NUVIO_STARTUP_ACTIVITY in it })
+                check("com.nuvio.tv.MainActivity" in manifestXml || ".MainActivity" in manifestXml)
+                if (startupClone) check("com.nuvio.santodan" in manifestXml)
+                println("PASS: $mode compiled early splash theme and all six launcher aliases resolve; native activity/deep links remain")
+            }
+            val patchedDex = result.dexFiles
             // STRIP_FAST now returns only replacement/new DEX entries. Untouched
             // original entries remain in the APK and must be included in verification.
             val replacedNames = patchedDex.map { it.name }.toSet()
@@ -221,6 +256,7 @@ fun main(args: Array<String>) = runBlocking {
                 }
             }
             check((NuvioPreferredAddonPatch.EXTENSION in classes) == (preferredOnly || combined))
+            check(("Lsoftware/santodan/extension/nuviomerged/NuvioStartupActivity;" in classes) == (mergeOnly || combined))
             if (preferredOnly || combined) {
                 for (hook in listOf("registerComponent", "prioritize", "select", "choose", "allowNativeReuse", "autoPlayEnabled", "orderGroups", "autoPlayGate"))
                     check(preferredHooks.getOrDefault(hook, 0) > 0) { "Missing preferred add-on hook: $hook" }
@@ -257,22 +293,24 @@ fun main(args: Array<String>) = runBlocking {
                 check("setPlaybackPaused" !in mergeHooks) { "Search pause must not control merged sync" }
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioMergePolicy;" in classes)
             }
-            val frameworkAccessor = "Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;->getContext()Landroid/content/Context;"
             check(updaterVersions == if (updatesOnly || combined) 7 else 0)
             check(updaterRepository == if (updatesOnly || combined) 2 else 0)
             check(safeInstaller == if (updatesOnly || combined) 1 else 0)
             check(safeReceiver == if (updatesOnly || combined) 1 else 0)
             check(updatesOnly || NuvioAccessPatch.TYPE in classes) { "Shared direct native accessors are missing" }
-            check(extensionCalls.all { it in definitions || (it == frameworkAccessor &&
-                parents["Lsoftware/santodan/extension/nuviolauncher/LauncherArtworkProvider;"]?.contains("Landroid/content/ContentProvider;") == true) }) {
-                "Missing extension signatures: ${extensionCalls.filter { it !in definitions }}"
-            }
             fun resolves(reference: String): Boolean {
                 val signature = reference.substringAfter("->")
                 val visited = mutableSetOf<String>()
                 fun find(type: String): Boolean = visited.add(type) &&
-                    ("$type->$signature" in definitions || parents[type].orEmpty().any { find(it) })
+                    ("$type->$signature" in definitions || frameworkDefines(type, signature) || parents[type].orEmpty().any { find(it) })
                 return find(reference.substringBefore("->"))
+            }
+            check(extensionCalls.all { resolves(it) }) {
+                "Missing extension signatures: ${extensionCalls.filter { !resolves(it) }}"
+            }
+            if (mergeOnly || combined) {
+                check(resolves("Lsoftware/santodan/extension/nuviomerged/NuvioStartupActivity;->getPackageName()Ljava/lang/String;"))
+                check(!resolves("Lsoftware/santodan/extension/nuviomerged/NuvioStartupActivity;->missingFrameworkMethod()V"))
             }
             check(coroutineCalls.all { resolves(it) }) {
                 "Missing native coroutine APIs: ${coroutineCalls.filter { !resolves(it) }}"

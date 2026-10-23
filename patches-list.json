@@ -306,7 +306,8 @@
       "description": "Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh.",
       "default": false,
       "dependencies": [
-        "BytecodePatch"
+        "BytecodePatch",
+        "ResourcePatch"
       ],
       "compatiblePackages": [
         {

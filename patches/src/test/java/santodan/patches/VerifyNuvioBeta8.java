@@ -83,6 +83,14 @@ public final class VerifyNuvioBeta8 {
                 classes.put(c.getType(), new MutableClass(c));
         }
         verifyRuntimeSignatures();
+        method("Lc/j;", "getFullyDrawnReporter", 0);
+        field("Lc/m;", "c", "Ljava/lang/Object;");
+        field("Lc/m;", "f", "Z");
+        field("Lc/m;", "g", "Ljava/util/ArrayList;");
+        if (owner("Lc/j;").getMethods().stream().filter(m -> m.getName().equals("getFullyDrawnReporter"))
+                .noneMatch(m -> m.getReturnType().equals("Lc/m;")))
+            throw new AssertionError("Home presentation reporter return type changed");
+        System.out.println("PASS: original beta.8 fully-drawn reporter and deferred startup contracts");
         String repository = "Lba/re;";
         String provider = "Lq9/z;";
         NuvioProviderLayout runtime = NuvioProviderLayout.forRepository(

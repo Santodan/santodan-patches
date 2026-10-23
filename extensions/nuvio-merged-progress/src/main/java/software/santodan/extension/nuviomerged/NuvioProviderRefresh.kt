@@ -21,6 +21,35 @@ import kotlinx.coroutines.flow.merge
 
 /** Await the native refresh before sampling flows that can emit cached values immediately. */
 object NuvioProviderRefresh {
+    /** Move only cached snapshots; never discard the source before a durable copy. */
+    fun migrateSnapshots(legacy: Map<String, *>, contains: (String) -> Boolean,
+        store: (Map<String, String>) -> Boolean, remove: (Set<String>) -> Boolean): Boolean {
+        val snapshots = legacy.entries.filter { (key, value) ->
+            key.startsWith("snapshot_v2_") && value is String && value.startsWith("{")
+        }.associate { it.key to (it.value as String) }
+        if (snapshots.isEmpty()) return true
+        // A previous migration may have copied data but failed to remove its
+        // source. Never overwrite a newer destination with that stale source.
+        val missing = snapshots.filterKeys { !contains(it) }
+        if (!store(missing)) return false
+        return remove(snapshots.keys)
+    }
+
+    /** Proven beta.8 ComponentActivity/FullyDrawnReporter contract. */
+    fun afterPresentation(owner: Any, presented: () -> Unit) {
+        val reporter = owner.javaClass.getMethod("getFullyDrawnReporter").invoke(owner)
+        val type = reporter.javaClass
+        val lock = type.getDeclaredField("c").apply { isAccessible = true }.get(reporter)
+        synchronized(lock) {
+            if (type.getDeclaredField("f").apply { isAccessible = true }.getBoolean(reporter)) presented()
+            else {
+                @Suppress("UNCHECKED_CAST")
+                val callbacks = type.getDeclaredField("g").apply { isAccessible = true }.get(reporter) as MutableList<Any>
+                callbacks.add(presented)
+            }
+        }
+    }
+
     /** Never expose the placeholder empty flow before disk hydration completes. */
     fun hydratedSnapshot(merged: StateFlow<List<Any>>, prepare: suspend () -> Unit): Flow<List<Any>> = flow {
         prepare()

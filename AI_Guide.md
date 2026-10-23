@@ -206,7 +206,19 @@ For merged tracking progress, see `docs/NuvioMergedProgress.md`. Its automatic
 sync gate follows the root navigation flow and activity lifecycle, not stream-search
 pause signals. Main-service playback writes and service inclusion are configured
 in the Tracking progress submenu; verify standalone and combined bundles.
-Progress and next-up flows await profile cache restoration on IO before emitting.
+Progress and next-up flows await only the lightweight profile CW cache on IO.
+Full watched history and automatic merge wait for the native fully-drawn reporter;
+legacy snapshots migrate by streaming past the history fields during startup.
+Keep full history in its separate preferences file: sharing settings XML with
+large snapshot strings makes even the first Boolean settings read load them.
+Legacy history moves after Home, with a durable copy before settings cleanup.
+The merge patch's unnamed startup resource dependency adds the native logo to
+beta.8's launch background. Preserve the original background and verify compiled
+merge-only/combined resources; paired startup logs measure runtime hook bodies.
+The full early splash now precedes MainActivity: original beta.8 uses six launcher
+Activity subclasses, converted to aliases of a lightweight non-exported entry.
+Keep component/icon state and native VIEW routes intact. Gate handoff on a drawn
+prepared frame and foreground lifecycle, and verify the side-by-side combination.
 Do not mark the startup placeholder snapshot ready or clear it before restoring;
 retain the current snapshot until a complete refresh can apply entry changes.
 

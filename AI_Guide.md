@@ -172,7 +172,9 @@ For source request priority and opt-in autoplay from a preferred installed add-o
 see `docs/NuvioPreferredAddon.md`. The independent **NuvioTV - Preferred source
 add-on** patch shares the Streams settings group. Both settings are per profile;
 the native manual/resolved-session guards and playable-stream predicate remain
-authoritative. Verify original DEX roundtrip, runtime settings and profile behavior,
+authoritative. Active native binge-group preference, binge-only selection, and
+reuse retain priority over preferred autoplay, including null/waiting results.
+Verify original DEX roundtrip, runtime settings and profile behavior,
 shared-menu selections, and standalone/combined packaged bundles.
 
 For a visible current-session source label, see `docs/NuvioCurrentStream.md`.

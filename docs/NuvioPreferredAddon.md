@@ -4,7 +4,7 @@ Current target: **NuvioTV 1.1.0-beta.8 (1071)**. See [beta.8 contracts and verif
 
 
 Select **NuvioTV - Preferred source add-on** for `com.nuvio.tv`
-`1.1.0-beta.7` (version code `1070`). Configure it under **Settings > Layout >
+`1.1.0-beta.8` (version code `1071`). Configure it under **Settings > Layout >
 Santodan-Patches > Streams**:
 
 - **Preferred source add-on** defaults to **None**. Choose an enabled installed
@@ -14,16 +14,61 @@ Santodan-Patches > Streams**:
 - **Automatically play preferred add-on** defaults to off. When enabled with an
   add-on selected, the stream screen plays that add-on's first stream accepted by
   Nuvio's native playability predicate as soon as it is available. It takes
-  precedence over native last-link reuse, binge-group matching and regex selection.
+  precedence over ordinary first-stream and regex selection. Native reuse and
+  active binge-group selection retain priority.
   If it returns no playable streams, the source picker remains available. Explicit
   manual source selection and searches already resolved by Nuvio do not auto-launch
-  again. Native next-episode selector calls also use the preferred add-on.
+  again. Next-episode calls respect **Prefer Binge Group (Next Episode)**;
+  the source picker also respects **Reuse Binge Group**. Native matching, source
+  filters, waiting/timeout and no-match fallback remain authoritative whenever a
+  binge-group target is active, even if the preferred provider has already loaded.
 
 Both settings persist separately for each native profile. Selecting **None**
 restores native ordering and autoplay behavior. Disabling just autoplay keeps
 the preferred request/result order and restores native autoplay rules. Changes
 do not cancel or restart searches already in progress. The patch uses native
 repositories and search caching; it adds no network client or background observer.
+
+### Beta.8 binge-group correction (2026-10-23)
+
+The previous preferred-autoplay hooks bypassed the native selector before it
+could match the current binge group, replaced the source picker's persisted-group
+choice, and suppressed native reuse. The beta.8 hooks now forward the selector's
+last three arguments (`String, boolean, boolean`, registers 21–23) to a policy
+guard. Active binge-group preference or binge-only selection runs the original
+selector. The loader forwards its persisted-group argument (register 10) to
+`choose`; both a native match and a null result are preserved with an active
+group. The native reuse Boolean is preserved. Disabled native binge settings
+still permit preferred autoplay. All providers continue their existing concurrent
+search/preload behavior; this correction adds no wait or fetch mechanism.
+
+Original evidence: `../OriginalApps/NuvioTV-1.1.0-beta8.apk`, manifest package
+`com.nuvio.tv`, version `1.1.0-beta.8` / `1071`, SHA-256
+`7aeae6f64e9128be2c7545c50061376839e20a88d47722ac220ba40be7c182f8`.
+All original DEX files were inspected; the unique selector is `Ld9/v1;->e`
+and the source loader is `Lgb/a1;->a`. Their existing exact fingerprints and
+exception-layout checks remain required. Historical beta.7 hook notes below
+describe the original implementation, before this correction.
+
+Correction verification commands (via `build-local.ps1`, with `--offline`):
+
+```powershell
+.\build-local.ps1 :patches:buildAndroid :patches:verifyNuvioPreferredAddon :patches:verifyNuvioPreferredAddonRuntime --offline
+.\build-local.ps1 :patches:verifyNuvioBeta8Bundle --offline
+.\build-local.ps1 :patches:verifyNuvioPreferredAddonApk --offline
+.\build-local.ps1 :patches:verifyNuvioPlaybackApk -PnuvioPlaybackApk=../../Apps/NuvioTV/NuvioTV-1.1.0-beta.8-binge-group-priority-signed.apk -PnuvioRequireStability=true --offline
+```
+
+The bundle is `patches/build/libs/patches-0.13.0.mpp`. The CLI rebuilt and signed
+all sixteen public Nuvio patches into
+`../Apps/NuvioTV/NuvioTV-1.1.0-beta.8-binge-group-priority-signed.apk`.
+Signature and alignment checks pass, and all 108 original native libraries are
+byte-identical. Standalone/combined bundle and rebuilt APK checks find no new
+cross-DEX hierarchy issues beyond the original 36 optional-library findings.
+No installation or device testing was performed. Reproduce by manually changing
+to a non-preferred stream with a binge group, continuing to the next episode with
+native binge settings enabled, then checking disabled settings and missing-group
+fallback separately. Loading is still subject to native timeout/cache readiness.
 
 The preference identifies an installation by its native base URL. Native stream
 groups expose only display names, so autoplay is declined when the selected add-on

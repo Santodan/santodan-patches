@@ -100,11 +100,20 @@ public final class NuvioPreferredAddon {
         return null;
     }
     public static boolean autoPlayGate(boolean nativeValue) { return nativeValue || autoPlayEnabled(); }
-    public static boolean allowNativeReuse(boolean nativeValue) { return nativeValue && !autoPlayEnabled(); }
-    public static Object choose(Object nativeStream, List<?> streams, Object controller, Object resolved) {
+    public static boolean allowNativeReuse(boolean nativeValue) { return nativeValue; }
+    private static boolean hasBingeGroup(String group) { return group != null && !group.trim().isEmpty(); }
+    public static boolean autoPlaySelectionEnabled(String group, boolean preferGroup, boolean groupOnly) {
+        // Keep native source filters, matching, timeout and no-match fallback intact.
+        return !groupOnly && !(preferGroup && hasBingeGroup(group)) && autoPlayEnabled();
+    }
+    public static Object choose(Object nativeStream, List<?> streams, Object controller, Object resolved, String bingeGroup) {
         if (!autoPlayEnabled()) return nativeStream;
         try {
             if ((Boolean) field(controller, "t") || (Boolean) field(resolved, "element")) return null;
+            // The loader supplies a persisted group only when both native binge
+            // settings are enabled. A null native result must also remain null
+            // while the native loader waits or offers manual selection.
+            if (hasBingeGroup(bingeGroup)) return nativeStream;
             return select(streams);
         } catch (Exception error) { Log.e("SantodanPreferred", "Cannot resolve preferred selection", error); return null; }
     }
@@ -160,7 +169,7 @@ public final class NuvioPreferredAddon {
             set(revision, ((Number) get(revision)).intValue() + 1);
         });
         method(loader, NuvioNative.SETTINGS_ROWS_NAME, "m", 13).invoke(null, "Automatically play preferred add-on",
-            "Play its first playable stream when available. If none is available, choose a source manually.",
+            "Play its first playable stream when available. Native binge-group preferences and reuse still apply.",
             prefs.getBoolean("autoplay", false), toggle, null, noop, false, null, 0L, false, composer, 0, 1008);
         if (!(Boolean) get(dialog)) return;
         List<Object> options = new ArrayList<>();

@@ -294,7 +294,7 @@ fun main(args: Array<String>) = runBlocking {
             check((NuvioPreferredAddonPatch.EXTENSION in classes) == (preferredOnly || combined))
             check(("Lsoftware/santodan/extension/nuviomerged/NuvioStartupActivity;" in classes) == (mergeOnly || combined))
             if (preferredOnly || combined) {
-                for (hook in listOf("registerComponent", "prioritize", "select", "choose", "allowNativeReuse", "autoPlayEnabled", "orderGroups", "autoPlayGate"))
+                for (hook in listOf("registerComponent", "prioritize", "select", "choose", "allowNativeReuse", "autoPlaySelectionEnabled", "orderGroups", "autoPlayGate"))
                     check(preferredHooks.getOrDefault(hook, 0) > 0) { "Missing preferred add-on hook: $hook" }
             } else check(preferredHooks.isEmpty())
             check(currentLabels == if (currentOnly || combined) 1 else 0)

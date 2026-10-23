@@ -133,7 +133,7 @@ tasks.register<JavaExec>("verifyNuvioPreferredAddonApk") {
     mainClass.set("santodan.patches.VerifyNuvioPlaybackApkKt")
     maxHeapSize = "3g"
     args(nuvioOriginal.absolutePath,
-        file("../../Apps/NuvioTV/NuvioTV-1.1.0-beta.7-preferred-addon-unsigned.apk").absolutePath,
+        file(providers.gradleProperty("nuvioPreferredApk").getOrElse("../../Apps/NuvioTV/NuvioTV-1.1.0-beta.8-binge-group-priority-signed.apk")).absolutePath,
         file(androidSdkDirectory.get()).absolutePath,
         file("${layout.buildDirectory.get()}/verification/nuvio-preferred-addon-apk").absolutePath,
         "Lsoftware/santodan/extension/nuviopreferred/NuvioPreferredAddon;", "15")

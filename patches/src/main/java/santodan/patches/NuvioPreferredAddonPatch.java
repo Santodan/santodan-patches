@@ -76,6 +76,8 @@ public final class NuvioPreferredAddonPatch {
         field(classes, "Lkotlin/jvm/internal/Ref$BooleanRef;", "element", "Z");
         for (String getter : List.of("getBaseUrl", "getDisplayName"))
             contract(classes, "Lcom/nuvio/tv/domain/model/Addon;", getter, List.of(), "Ljava/lang/String;", false);
+        contract(classes, "Lcom/nuvio/tv/domain/model/Addon;", "getResources", List.of(), "Ljava/util/List;", false);
+        contract(classes, "Lcom/nuvio/tv/domain/model/AddonResource;", "getName", List.of(), "Ljava/lang/String;", false);
         contract(classes, "Lcom/nuvio/tv/domain/model/AddonKt;", "enabledAddons", List.of("Ljava/util/List;"), "Ljava/util/List;", true);
         contract(classes, NuvioNative.ADDON_SELECTOR_TYPE, "b", List.of(STREAM), "Z", true);
         for (String owner : List.of(STREAM, "Lcom/nuvio/tv/domain/model/AddonStreams;"))

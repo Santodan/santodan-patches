@@ -34,8 +34,16 @@ public final class NuvioPreferredAddon {
     private static List<?> addons() throws Exception {
         Object repository = provided(software.santodan.nuvio.NuvioAccess.streamProvider(component));
         List<?> installed = (List<?>) value(field(field(repository, "c"), "r"));
-        return (List<?>) Class.forName("com.nuvio.tv.domain.model.AddonKt")
+        List<?> enabled = (List<?>) Class.forName("com.nuvio.tv.domain.model.AddonKt")
             .getDeclaredMethod("enabledAddons", List.class).invoke(null, installed);
+        List<Object> sources = new ArrayList<>();
+        for (Object addon : enabled) if (supportsStreams(addon)) sources.add(addon);
+        return sources;
+    }
+    private static boolean supportsStreams(Object addon) throws Exception {
+        List<?> resources = (List<?>) addon.getClass().getMethod("getResources").invoke(addon);
+        for (Object resource : resources) if ("stream".equals(text(resource, "getName"))) return true;
+        return false;
     }
     private static SharedPreferences preferences(int profile) throws Exception {
         Application app = (Application) Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null);
@@ -63,7 +71,7 @@ public final class NuvioPreferredAddon {
             String key = preferences(id).getString("addon", "");
             if (key.isEmpty()) return installed;
             List<Object> ordered = new ArrayList<>(installed.size());
-            for (Object addon : installed) if (key.equals(text(addon, "getBaseUrl"))) ordered.add(addon);
+            for (Object addon : installed) if (key.equals(text(addon, "getBaseUrl")) && supportsStreams(addon)) ordered.add(addon);
             if (ordered.isEmpty()) return installed;
             for (Object addon : installed) if (!key.equals(text(addon, "getBaseUrl"))) ordered.add(addon);
             return ordered;

@@ -8,8 +8,9 @@ Select **NuvioTV - Preferred source add-on** for `com.nuvio.tv`
 Santodan-Patches > Streams**:
 
 - **Preferred source add-on** defaults to **None**. Choose an enabled installed
-  add-on to schedule its request first in new or refreshed native searches and
-  show its returned source group first. Other add-ons continue loading concurrently;
+  add-on that advertises a `stream` resource to schedule its request first in new
+  or refreshed native searches and show its returned source group first.
+  Other add-ons continue loading concurrently;
   launch priority cannot guarantee which network request finishes first.
 - **Automatically play preferred add-on** defaults to off. When enabled with an
   add-on selected, the stream screen plays that add-on's first stream accepted by
@@ -72,9 +73,27 @@ fallback separately. Loading is still subject to native timeout/cache readiness.
 
 The preference identifies an installation by its native base URL. Native stream
 groups expose only display names, so autoplay is declined when the selected add-on
-is removed, disabled, or shares its display name with another enabled installation.
+is removed, disabled, or shares its display name with another enabled stream provider.
 Request ordering still uses the exact installation URL. Rename colliding add-ons
 to distinct display names before using preferred autoplay.
+
+The picker excludes catalog/metadata-only add-ons, empty resource lists, and
+disabled installations. Eligibility follows the native manifest capability
+(`Addon.getResources()` / `AddonResource.getName()` equal to `stream`), rather
+than results from a particular title's search. A saved selection that no longer
+advertises streams is unavailable and is not prioritized. Catalog-only add-ons
+with the same display name do not prevent selection of a real stream provider.
+These public getter contracts are validated against the original beta.8 DEX.
+
+The stream-provider filter passed `buildAndroid`, `verifyNuvioPreferredAddon`,
+`verifyNuvioPreferredAddonRuntime`, and `verifyNuvioBeta8Bundle` with `--offline`.
+The updated signed APK is
+`../Apps/NuvioTV/NuvioTV-1.1.0-beta.8-stream-providers-only-signed.apk`;
+`verifyNuvioPreferredAddonApk` passed with `-PnuvioPreferredApk` pointing to it.
+All 15 preferred-provider hooks resolve, with no new cross-DEX findings.
+Signature/alignment checks pass and all 108 original native libraries are
+unchanged. This build includes the binge-group fix; it has not been installed
+or tested on a device.
 
 ## Logcat
 

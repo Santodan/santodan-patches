@@ -187,7 +187,9 @@ and toggling, shared-menu selections, and standalone/combined packaged bundles.
 For optional IntroDB episode submissions, see `docs/NuvioIntroDb.md`. Settings has
 the enable switch and native API-key editor. A dedicated main-row button captures
 start/end positions on two presses and opens a native NuvioDialog. Validate beta.8
-player layout, native engine position helper and controls timer, then run the focused,
+player layout, native engine position helper and both controls-hide/pause-overlay
+timers. IntroDB review cancels standby and guards both schedulers until close,
+including the segment-type dropdown. Then run the focused,
 native runtime, shared-menu, and standalone/combined bundle verifiers.
 
 For playback button visibility, order and placement between the main row and More

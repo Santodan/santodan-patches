@@ -41,6 +41,11 @@ public final class NuvioIntroDb {
         }
     }
     private NuvioIntroDb() {}
+    public static boolean holdControlsTimer(Object controller) {
+        Draft current = draft;
+        return foreground && current != null && current.review && !current.cancelled.get()
+            && current.controller.get() == controller;
+    }
     public static void resume(Activity activity) {
         long started = System.nanoTime();
         Log.d(TAG, "Startup begin: stage=introdb.activity thread=" + Thread.currentThread().getName());
@@ -75,7 +80,9 @@ public final class NuvioIntroDb {
             }
             Object controller = old.controller.get();
             if (foreground && old.review && controller != null) try {
-                IntroUi.method(controller.getClass().getClassLoader().loadClass(NuvioNative.PLAYER_TIMERS_NAME), "F", 1).invoke(null, controller);
+                Class<?> timers = controller.getClass().getClassLoader().loadClass(NuvioNative.PLAYER_TIMERS_NAME);
+                IntroUi.method(timers, "F", 1).invoke(null, controller);
+                IntroUi.method(timers, "H", 1).invoke(null, controller);
             } catch (Exception error) { Log.e(TAG, "Native controls timer restart failed", error); }
         }
         changed();
@@ -164,6 +171,9 @@ public final class NuvioIntroDb {
         current.review = true;
         Object controller = current.controller.get();
         if (controller == null) return;
+        // The full-screen pause overlay owns a separate job from controls hiding.
+        // Use its native cancellation route to clear both the job and visibility.
+        IntroUi.method(controller.getClass().getClassLoader().loadClass(NuvioNative.PLAYER_TIMERS_NAME), "i", 1).invoke(null, controller);
         Object job = IntroUi.field(controller, "T0");
         if (job != null) try {
             ClassLoader loader = controller.getClass().getClassLoader();

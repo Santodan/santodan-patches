@@ -370,7 +370,7 @@ fun main(args: Array<String>) = runBlocking {
             }
             if (introOnly || combined) {
                 check("Lsoftware/santodan/extension/nuviointro/Submission;" in classes)
-                check(introHooks == 3) { "Expected three native IntroDB hooks, found $introHooks" }
+                check(introHooks == 5) { "Expected five native IntroDB hooks, found $introHooks" }
             }
             println("PASS: $mode selection; assembled DEX reloads and hooks resolve")
             check(hierarchyIssues(output) == baselineIssues) { "Patched cross-DEX hierarchy findings differ from original" }

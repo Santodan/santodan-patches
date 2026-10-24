@@ -74,7 +74,7 @@ The original premium unlock is from [Doom's Patches](https://github.com/rushiran
 
 These sixteen patches target NuvioTV beta.8 only. See [beta.8 verification](docs/NuvioBeta8.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
 
-- **GitHub APK updates**: Optional patch that uses NuvioTV's native updater to check, download and install APK releases from `Santodan/santodan-patches`. The installed release version defaults to the bundle version. Includes installer fixes for patched APKs and side-by-side installations. See [GitHub release publishing instructions](docs/NuvioApkUpdates.md).
+- **GitHub APK updates**: Optional patch that checks APK releases from `Santodan/santodan-patches`, shares background download progress with the native banner, and opens Android's normal APK installer for foreground installation progress. The installed release version defaults to the bundle version. Includes installer fixes for patched APKs and side-by-side installations. See [GitHub release publishing instructions](docs/NuvioApkUpdates.md).
 
 ### Continue Watching
 
@@ -147,7 +147,7 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 | [NuvioTV - Customize playback buttons](docs/NuvioPlaybackButtons.md) | Adds optional playback button visibility, ordering and placement in the main row or More actions, with saved settings and reset. |  |
 | [NuvioTV - Finale dates in library and collections](#nuviotv-finale-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters. |  |
 | [NuvioTV - Fix startup track reselection](docs/NuvioPlayerStability.md) | Prevents a startup ExoPlayer crash when track reselection requests a seek before a playing media period exists. |  |
-| [NuvioTV - GitHub APK updates](docs/NuvioApkUpdates.md) | Checks GitHub APK releases using native updates. Defaults to this bundle's version and uses installation without stock DEX metadata or blocking receiver retries. | • GitHub repository<br>• Installed APK release version |
+| [NuvioTV - GitHub APK updates](docs/NuvioApkUpdates.md) | Checks GitHub APK releases, shares native download progress and opens Android's APK installer for foreground install progress. Defaults to this bundle's version. | • GitHub repository<br>• Installed APK release version |
 | [NuvioTV - Indicate current stream](docs/NuvioCurrentStream.md) | Labels the current stream with [Playing], with an enabled-by-default toggle in Santodan-Patches > Streams. |  |
 | [NuvioTV - Keep airing series in Upcoming](#nuviotv-keep-airing-series-in-upcoming) | Adds a disabled-by-default setting that keeps currently-airing library series in Upcoming until the scheduled finale. |  |
 | [NuvioTV - Merge tracking progress](#nuviotv-merge-tracking-progress) | Merges Nuvio Sync and connected tracking-provider progress, preserving the previous snapshot while providers refresh. |  |

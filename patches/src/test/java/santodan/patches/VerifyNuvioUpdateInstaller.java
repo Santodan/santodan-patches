@@ -46,6 +46,7 @@ public final class VerifyNuvioUpdateInstaller {
                         for (var definition : DexBackedDexFile.fromInputStream(null, in).getClasses()) if (types.contains(definition.getType())) {
                             matched++;
                             for (var actual : new MutableClass(definition).getMethods()) {
+                                if (definition.getType().equals(NuvioUpdateInstaller.INSTALLER) && actual.getName().equals("b")) NuvioUpdateFlowPatch.removeInstallHook(actual);
                                 var before = expected.get(definition.getType()).getMethods().stream().filter(m -> m.toString().equals(actual.toString())).findFirst().orElseThrow();
                                 check(NuvioPlaybackButtonsPatch.fingerprint(actual).equals(NuvioPlaybackButtonsPatch.fingerprint(before)));
                             }

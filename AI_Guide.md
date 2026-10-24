@@ -168,7 +168,11 @@ For APK updates from GitHub Releases, see `docs/NuvioApkUpdates.md`. The optiona
 **NuvioTV - GitHub APK updates** patch redirects the repository and seven
 installed-release version constants. Its default `releaseVersion` is generated
 from the bundle version; override only for a different APK tag, and reset stale
-saved options. Installer repairs suppress original DEX metadata and blocking
+saved options. The independent `nuvio-apk-updates` extension shares native
+download progress, falls back to GitHub asset size and routes foreground installs
+through Android's normal APK installer. Verify with `verifyNuvioUpdateFlow`,
+`verifyNuvioUpdateProgressRuntime` and `verifyNuvioUpdateUiRuntime`.
+Installer repairs suppress original DEX metadata and blocking
 receiver retries. Side-by-side also fixes both native FileProvider authorities.
 Run `verifyNuvioApkUpdates`, `verifyNuvioUpdateInstaller`,
 `verifyMorpheDesktopImport` and `verifyNuvioBeta8Bundle`.

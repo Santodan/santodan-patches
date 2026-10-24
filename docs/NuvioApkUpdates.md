@@ -8,13 +8,77 @@ prompts, download progress, cached downloads, errors, and the Android installati
 handoff. Android may ask for permission to install unknown apps and confirmation
 to install the update; this does not enable silent installation.
 
+## Download and installation progress (2026-10-24)
+
+The `nuvio-apk-updates` extension retains the native OkHttp transfer, cache,
+mutex and error handling. When HTTP content length is unavailable, progress
+uses the GitHub asset size. It also shares transfer callbacks with a foreground
+request waiting on a background download of the same asset URL and size. Joining
+requests receive current progress; updates are throttled to about four per
+second, with actual completion bytes delivered immediately. Unknown sizes stay
+unknown. Weak observers, per-transfer limits, registry size limits and expiry
+bound retained state. No extra download or progress polling thread is started.
+
+Foreground Install now opens Android's normal APK installer using the real
+FileProvider, APK MIME type and read-URI grant. This avoids staging the whole
+APK in an app-owned session before confirmation, and lets the system installer
+own the installation progress screen. Duplicate taps are debounced. Missing
+files or unavailable installer activities retain native error/session handling;
+background installation and permission checks stay native.
+
+Android controls this screen and OEM firmware may present it differently. Nuvio
+cannot remain running while Android replaces its package. The supplied log
+records a background download completing at 16:23:55, three confirmation-only
+sessions, a normal package-replacement stop at 16:25:09, then roughly 31 seconds
+of code optimization. Disappearance of that confirmation dialog did not mean
+the installation stopped. No fabricated in-app installation percentage is shown.
+
+Original beta.8 contracts: `Lkb/q;->b(AppUpdate,Function2,ContinuationImpl)Object`
+wraps the callback before the native mutex; `Lkb/b;->a` streaming code is
+validated and unchanged. `Lkb/c;->b(Context,File,ZZ)V` routes only foreground
+requests. The injected URI bridge directly invokes native
+`FileProvider->c(Context,String):Lb4/a` and `Lb4/a;->c(File):Uri`. Both methods
+and public asset fields `f:String` and `g:Long` are checked against original
+DEX. Original compiled `res/8K.xml` explicitly shares `files/updates/`.
+Evidence under `../.inspect-nuvio-beta8/`: `download-contracts.txt`,
+`download-callback-contracts.txt`, `provider-contracts.txt` and
+`update-extension-contracts.txt`.
+
+Run `verifyNuvioUpdateFlow`, `verifyNuvioUpdateProgressRuntime` and
+`verifyNuvioUpdateUiRuntime`, then the packaged bundle checks. They cover DEX
+roundtrip/rejection, header/asset sizes, sharing, replay, throttling, completion,
+unknown sizes, observer isolation/bounds, intent flags, background fallback,
+duplicate taps and launch failures. Actual download cancellation, installer UI
+and replacement still require device testing. No device install is performed.
+
+## Download location and cleanup
+
+Native downloads are stored under `Context.getFilesDir()/updates/<asset-name>`.
+For the default clone this is
+`/data/user/0/com.nuvio.santodan/files/updates/`. This is private app storage,
+not the public Downloads directory or Android's cache directory.
+
+The APK remains available for installation/retry. At the next updater
+initialization, native `Lkb/q;->a` removes the updates directory and clears the
+saved download record when the downloaded release is no newer than the embedded
+installed release version. Reopen Nuvio after a successful update to let that
+cleanup run. A successful new download also removes older files in this directory.
+The progress/installer patch preserves this behavior. An incorrectly overridden
+installed release version can prevent cleanup for the same reason it causes
+repeated update offers.
+
+There is currently no separate delete-download button. Normal file managers
+cannot browse private app storage, and Android's Clear cache does not delete
+this folder. Clear storage/data would also erase app settings; it is not needed
+for normal update cleanup.
+
 ## Configure each APK build
 
 Patch options:
 
 - `repository`: public GitHub repository, default `Santodan/santodan-patches`.
 - `releaseVersion`: the release version of **the APK being built**. Its default
-  is generated from the bundle version during the build, currently `0.13.0`.
+  is generated from the bundle version during the build.
   Leave it at the default when publishing the APK under the matching bundle tag;
   override it when publishing the APK under a different version. A previously
   saved patch option can override the new default, so reset an old `0.12.0`
@@ -125,7 +189,8 @@ Original: `../OriginalApps/NuvioTV-1.1.0-beta8.apk`, SHA-256
 `7aeae6f64e9128be2c7545c50061376839e20a88d47722ac220ba40be7c182f8`.
 Original manifest confirms `com.nuvio.tv`, `1.1.0-beta.8`, `1071`.
 Inspection: `../.inspect-nuvio-beta8/updater-contracts.txt`, derived from original
-DEX using dexlib2. No runtime extension is needed.
+DEX using dexlib2. Progress and foreground installer routing use the independent
+`nuvio-apk-updates` extension.
 
 `Lkb/j0;->a(Lkb/l;Lkotlin/coroutines/jvm/internal/ContinuationImpl;)Ljava/lang/Object;`
 is the instance release repository coroutine. Its unique `NuvioMedia` and
@@ -168,6 +233,36 @@ unknown-source permission, install confirmation, preserved app data and no
 repeat offer after updating. No APK is uploaded or installed by these tests.
 
 ## Local validation results
+
+### 2026-10-24 progress and system-installer flow
+
+`buildAndroid`, `generatePatchesList`, `verifyNuvioUpdateFlow`,
+`verifyNuvioUpdateProgressRuntime`, `verifyNuvioUpdateUiRuntime`,
+`verifyNuvioApkUpdates`, `verifyNuvioUpdateInstaller`, `verifyMorpheDesktopImport`
+and `verifyNuvioBeta8Bundle` passed. The Desktop imports 31 patches across eight
+apps. Standalone and combined Nuvio DEX checks retain the same 36 original
+optional-library findings. Exact hook registers/branch targets and exception
+regions survived DEX write/reload.
+
+Desktop 1.19.0 rebuilt all sixteen NuvioTV patches into
+`../Apps/NuvioTV/NuvioTV-1.1.0-beta.8-update-progress-unsigned.apk` with no failed
+patches. The final updater/installer/playback APK checks passed, including all
+17 playback hooks and unchanged cross-DEX findings. Package/version are
+`com.nuvio.santodan`, `1.1.0-beta.8` / `1071`; ZIP alignment passed. Signature
+verification confirms the expected unsigned output. The artifact has not been
+signed, installed or tested on the TV.
+
+Current bundle: `patches/build/libs/patches-0.14.0.mpp`. Logs under
+`../.inspect-nuvio-beta8/`: `update-progress-final.log`,
+`update-progress-hooks-final.log`, `update-progress-rebuild.log`,
+`update-progress-result.json` and `update-progress-apk-verification.log`.
+
+The separately signed release APK,
+`NuvioTV-1.1.0-beta.8-patches-0.14.0.apk`, also passed signature and exact
+updater/installer/playback checks. Its SHA-256 matches the APK already attached
+to v0.14.0, so the release repair retains that signed asset while replacing the
+MPP and matching metadata. Existing custom release notes are preserved.
+Signed-APK verification log: `../.inspect-nuvio-beta8/release014-signed-verification.log`.
 
 ### 2026-10-23 updater and installer repairs
 

@@ -280,7 +280,7 @@
     },
     {
       "name": "NuvioTV - GitHub APK updates",
-      "description": "Checks GitHub APK releases using native updates. Defaults to this bundle's version and uses installation without stock DEX metadata or blocking receiver retries.",
+      "description": "Checks GitHub APK releases, shares native download progress and opens Android's APK installer for foreground install progress. Defaults to this bundle's version.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [

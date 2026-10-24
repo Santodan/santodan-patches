@@ -219,8 +219,11 @@ fun main(args: Array<String>) = runBlocking {
                                     preferredHooks[reference.name] = preferredHooks.getOrDefault(reference.name, 0) + 1
                             }
                             val instructions = method.implementation?.instructions ?: continue
-                            if (owner.type == NuvioUpdateInstaller.INSTALLER && method.name == "b" &&
-                                NuvioUpdateInstaller.isZero(instructions.first(), 15)) safeInstaller++
+                            if (owner.type == NuvioUpdateInstaller.INSTALLER && method.name == "b") {
+                                val checkMethod = MutableMethod(method)
+                                if (updatesOnly || combined) NuvioUpdateFlowPatch.removeInstallHook(checkMethod)
+                                if (NuvioUpdateInstaller.isZero(checkMethod.implementation!!.instructions.first(), 15)) safeInstaller++
+                            }
                             if (owner.type == NuvioUpdateInstaller.RECEIVER && method.name == "onReceive") {
                                 val callback = MutableMethod(method)
                                 val result = NuvioUpdateInstaller.dmResult(callback)

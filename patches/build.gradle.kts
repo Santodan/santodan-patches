@@ -18,6 +18,22 @@ patches {
 // generatePatchesList task but never bundled into the APK.
 val patchListGeneratorClasspath = configurations.create("patchListGeneratorClasspath")
 
+tasks.named<org.gradle.api.tasks.compile.JavaCompile>("compileTestJava") {
+    source(file("../extensions/nuvio-apk-updates/src/main/java/software/santodan/extension/nuvioupdate/UpdateProgress.java"))
+}
+tasks.register<JavaExec>("verifyNuvioUpdateProgressRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioUpdateProgressRuntime")
+}
+tasks.register<JavaExec>("verifyNuvioUpdateUiRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioUpdateUiRuntime")
+    args(file("../extensions/nuvio-apk-updates/src/main/java/software/santodan/extension/nuvioupdate/UpdateInstall.java").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/update-ui-runtime").absolutePath)
+}
+
 tasks.register<JavaExec>("verifyMonet") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
@@ -90,6 +106,7 @@ tasks.register("verifyNuvioLatest") {
     description = "Verify the currently reviewed Nuvio contract, runtime features and packaged patch combinations."
     dependsOn("verifyNuvioMaintenance", "verifyNuvioBeta8", "verifyNuvioBeta8Launcher", "verifyNuvioBeta8Player",
         "verifyNuvioCurrentStream", "verifyNuvioPreferredAddon", "verifyNuvioPlaybackButtons", "verifyNuvioIntroDb", "verifyNuvioApkUpdates", "verifyNuvioUpdateInstaller",
+        "verifyNuvioUpdateFlow", "verifyNuvioUpdateProgressRuntime", "verifyNuvioUpdateUiRuntime",
         "verifyNuvioBeta8DateStyleRuntime", "verifyNuvioBeta8SettingsMenuRuntime", "verifyNuvioBeta8TrackingDialogs",
         "verifyNuvioCurrentStreamRuntime", "verifyNuvioPreferredAddonRuntime", "verifyNuvioPlaybackButtonsRuntime",
         "verifyNuvioIntroDbRuntime", "verifyNuvioStreamPreloadRuntime", "verifyNuvioProviderRefreshRuntime", "verifyNuvioSyncBannerRuntime",
@@ -760,6 +777,14 @@ tasks.register<JavaExec>("verifyMorpheDesktopImport") {
         providers.gradleProperty("morpheDesktopJar").getOrElse("../../morphe-desktop-1.19.0-all.jar"))
     mainClass.set("santodan.patches.VerifyMorpheDesktopImport")
     args(file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioUpdateFlow") {
+    dependsOn("testClasses", "buildAndroid")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioUpdateFlow")
+    args(nuvioOriginal.absolutePath, file("${layout.buildDirectory.get()}/verification/update-flow.dex").absolutePath,
+        file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath)
 }
 
 tasks.register<JavaExec>("verifyNuvioBeta8") {

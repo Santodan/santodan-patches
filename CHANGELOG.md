@@ -19,6 +19,14 @@
 
 * release pending patch updates ([4c9ac03](https://github.com/Santodan/santodan-patches/commit/4c9ac039d47ec86b7fcdda6ce53fba8c39499302))
 
+### NuvioTV update progress and installer fix (2026-10-24)
+
+* **nuviotv:** restore native download percentages using GitHub asset sizes when HTTP length is missing, and share background-transfer progress with foreground waiters.
+* **nuviotv:** use Android's normal APK installer for foreground installation progress, debounce repeated taps and retain native background/session fallback.
+* **nuviotv:** preserve automatic cleanup of private downloaded APKs after the matching release is installed; document the location and cleanup behavior.
+* **verification:** validate native DEX/register/branch contracts, runtime progress and installer behavior, Desktop import and standalone/combined APK output.
+* Update the existing v0.14.0 bundle and metadata assets manually, keeping the release version/tag unchanged and without running the workflow.
+
 ## Unreleased
 
 ### New patch

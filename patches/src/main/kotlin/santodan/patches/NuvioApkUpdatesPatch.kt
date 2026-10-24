@@ -7,10 +7,11 @@ import software.santodan.nuvio.NuvioNative
 @Suppress("unused")
 val nuvioApkUpdatesPatch = bytecodePatch(
     name = "NuvioTV - GitHub APK updates",
-    description = "Checks GitHub APK releases using native updates. Defaults to this bundle's version and uses installation without stock DEX metadata or blocking receiver retries.",
+    description = "Checks GitHub APK releases, shares native download progress and opens Android's APK installer for foreground install progress. Defaults to this bundle's version.",
     default = false,
 ) {
     compatibleWith(NuvioSideBySideCompatibility.create())
+    extendWith { NuvioStreamPreloadPatch.extension("nuvio-apk-updates") }
     val repository = stringOption(
         key = "repository", default = "Santodan/santodan-patches",
         title = "GitHub repository", description = "Public repository in owner/name format containing APK release assets.", required = true,
@@ -26,5 +27,12 @@ val nuvioApkUpdatesPatch = bytecodePatch(
         val repo = requireNotNull(repository.value).split('/')
         NuvioApkUpdates.apply(NuvioApkUpdates.TYPES.associateWith { mutableClassDefBy(it) }, repo[0], repo[1], requireNotNull(releaseVersion.value))
         NuvioUpdateInstaller.disableMetadata(mutableClassDefBy(NuvioUpdateInstaller.INSTALLER), mutableClassDefBy(NuvioUpdateInstaller.RECEIVER))
+        NuvioUpdateFlowPatch.install(
+            mutableClassDefBy("Lkb/q;"), mutableClassDefBy("Lkb/b;"),
+            mutableClassDefBy(NuvioUpdateInstaller.INSTALLER),
+            mutableClassDefBy(NuvioUpdateFlowPatch.INSTALL_UI),
+            mutableClassDefBy("Landroidx/core/content/FileProvider;"), mutableClassDefBy("Lb4/a;"),
+            mutableClassDefBy("Llb/a;"),
+        )
     }
 }

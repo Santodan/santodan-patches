@@ -212,8 +212,44 @@ pause signals. Main-service playback writes and service inclusion are configured
 in the Tracking progress submenu; verify standalone and combined bundles.
 Progress and next-up flows await only the lightweight profile CW cache on IO.
 Startup sync waits for Home and the native fully-drawn reporter. Quick startup
-reuses validated cached remote history and applies newer local playback; the
-manual button (or an unvalidated/missing cache) uses full USER_INITIATED refresh.
+restores lightweight CW/local playback and compact episode membership, finishes its
+visible pass, then attaches native progress/seed/readiness observers. Do not decode
+full WatchedItem history or read provider snapshots as a second phase of visible
+quick startup. Episode-detail progress uses cached merged membership plus current
+progress, materializing completed WatchProgress only for the requested show, off
+Main. It must not open native per-show flows, whose onStart launches independent
+tracker work. Membership changes must notify existing detail collectors.
+Observe later provider publications
+and coalesce a new reconciliation on Home, including updates received in Settings.
+These later updates are silent, not another visible startup sync. Home navigation
+alone must not mark data dirty; watch provider and local playback emissions instead.
+For beta.8 Trakt, playback readiness does not imply canonical history readiness:
+after initiating seed hydration, await ba.pc.a -> ba.jb.T within the provider
+deadline. Do not accept the initial optimistic-only seed list as complete history.
+The manual button (or an unvalidated/missing cache) uses USER_INITIATED refresh.
+Bound each provider's refresh/hydration/history reads to 45 seconds and retain the
+previous snapshot on failure. Home and Settings cancel actions must invalidate
+queued work as well as the active Job, suppress automatic restart, and allow retry.
+Provider failures must not abort subsequent services. Quick startup does not read
+providers; silent live reads have a 45-second bound and skip unready Trakt history. Manual
+history hydration is bounded to ten seconds within the overall provider deadline.
+Retain failed-source cached shows only where no successful source supplies fresh
+coverage, and report partial completion. Distinguish a native child cancellation
+with an active merge Job from user/lifecycle cancellation of the parent Job.
+Live observers must not collect full watched-model flows; live publication saves
+CW/compact membership, not full WatchedItem JSON. An all-unavailable remote pass
+must not republish a reduced snapshot or rewrite the cache. Five-second cold-read
+deadlines caused false unavailable reports on the box; do not restore them.
+Provider-only notifications must not replay local startup/cache work. Coalesce
+local-store dirtiness separately and skip unchanged snapshot writes. Live work
+must not mutate visible stage totals or refresh the terminal banner after clearing
+its live flag. Release merge-added provider observers during playback and reattach
+once on Home afterward; ordinary Home navigation does not start a sync.
+The native Home CW pipeline is separate from the merge worker. For beta.8 only,
+observe xa.s3.b's assigned i1 Job, pause it on player entry and restart the native
+loader once on Home without clearing cards. Cancel only this owned Job, not the
+whole ViewModel scope. Validate the exact loader fingerprint and Job assignment;
+the playback capture showed CW metadata traversal continuing after merge stopped.
 Full refresh waits for provider p() readiness before accepting empty snapshots.
 Cached sync reads per-profile `membership_v2` preferences: compressed dictionary,
 distinct episode/alias sets and references, plus full-history timestamp. Old JSON
@@ -232,6 +268,13 @@ Keep legacy history preferences lazy when there is nothing to migrate. Sync
 completion summaries include preparation time; local stages are timed in logs.
 The native updater host/banner now displays sync status; the custom Android-view
 overlay was removed. Keep native drawing/theme/animations and real-update priority.
+The sync close action remains visible during progress and uses explicit cancellation,
+not the native updater's timed auto-dismiss path. The quick-sync info callback must
+not be discarded by the native settings row's default-argument mask bit 32.
+For delivery, check Desktop's actual output path: it can write to `Apps/com.nuvio.tv/`
+while an older APK remains under `Apps/NuvioTV/`. Refresh the usual delivery copy
+and matching MPP, compare hashes and inspect packaged runtime markers. Equal APK
+sizes do not establish equal code. Do not infer an old MPP from an old device log.
 See NuvioNativeSyncBanner for guarded root/status hooks and the production banner
 runtime verifier for callback, preference/active-update, grouping and error checks.
 Do not restore episode membership or full history on the launch path: that

@@ -324,7 +324,7 @@ fun main(args: Array<String>) = runBlocking {
             }
             }
             if (combined || mergeOnly) {
-                for (hook in listOf("registerNavigation", "activityResumed", "activityPaused", "activityDestroyed", "playbackScrobblers"))
+                for (hook in listOf("registerNavigation", "activityResumed", "activityPaused", "activityDestroyed", "playbackScrobblers", "homePipelineStarted"))
                     check(mergeHooks[hook] == 1) { "Expected one merge $hook hook: $mergeHooks" }
                 check(mergeHooks["syncLocalProgress"] == 2 && mergeHooks["mergedProvider"] == 1)
                 check("setPlaybackPaused" !in mergeHooks) { "Search pause must not control merged sync" }
@@ -333,7 +333,8 @@ fun main(args: Array<String>) = runBlocking {
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioMergeWork\$HomeRequests;" in classes)
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioSyncBanner;->update(Landroid/app/Activity;Ljava/lang/String;IIZZ)V" in definitions)
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioSyncBanner;->hide()V" in definitions)
-                check(bannerHooks == mapOf("host" to 1, "begin" to 1, "end" to 1, "installed" to 1, "groupText" to 4, "formatted" to 1)) {
+                check(bannerHooks == mapOf("host" to 1, "begin" to 1, "end" to 1, "installed" to 1, "groupText" to 4, "formatted" to 1,
+                    "hideClose" to 1, "timedClose" to 1, "closeText" to 1)) {
                     "Native updater banner hooks changed: $bannerHooks"
                 }
             }

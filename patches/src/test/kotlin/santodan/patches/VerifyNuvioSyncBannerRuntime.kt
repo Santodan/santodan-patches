@@ -63,20 +63,29 @@ fun main(args: Array<String>) {
                     Function0 action=()->"original";r1.s content=new r1.s();h1.k0 composer=new h1.k0();
                     NuvioSyncBanner.host(original,action,action,action,action,action,action,content,composer,123);
                     check(fb.uj.state==original&&fb.uj.dismiss==action&&fb.uj.flags==123&&fb.uj.content==content);
-                    NuvioSyncBanner.update(new android.app.Activity(),"Fetching progress",1,3,true,false);
+                    int[] cancelled={0};
+                    NuvioSyncBanner.update(new android.app.Activity(),"Fetching progress",1,3,true,false,()->cancelled[0]++);
                     NuvioSyncBanner.host(original,action,action,action,action,action,action,content,composer,123);
                     kb.k0 sync=fb.uj.state;
                     check(sync!=original&&sync.d&&sync.g&&sync.e>0.33f&&sync.e<0.34f);
                     check(sync.b.a.equals("Sync Progress  1/3")&&sync.b.d.equals("santodan-sync-progress"));
                     check(fb.uj.dismiss!=action&&((Function0)fb.uj.dismiss).invoke()==kotlin.Unit.INSTANCE);
+                    check(cancelled[0]==1);
+                    Object oldCancel=fb.uj.dismiss;
                     check(original.b==null&&!original.g&&original.k&&original.m);
                     NuvioSyncBanner.begin(sync);
+                    check(!NuvioSyncBanner.hideClose(true));
+                    check(!NuvioSyncBanner.timedClose(true));
+                    check(NuvioSyncBanner.closeText(0,composer).equals("Cancel sync"));
                     check(NuvioSyncBanner.installed(false));
                     check(NuvioSyncBanner.groupText(composer,0,0x7f110d18,composer,false).equals("Fetching progress"));
                     check(ma.r.groups==1); // Original grouped lookup still executes; Compose groups stay balanced.
                     check(NuvioSyncBanner.formatted(0x7f110d12,new Object[]{33},composer).equals("Fetching progress"));
                     NuvioSyncBanner.end();
                     NuvioSyncBanner.begin(original);
+                    check(NuvioSyncBanner.hideClose(true)&&!NuvioSyncBanner.hideClose(false));
+                    check(NuvioSyncBanner.timedClose(true)&&!NuvioSyncBanner.timedClose(false));
+                    check(NuvioSyncBanner.closeText(0,composer).equals("native-text"));
                     check(!NuvioSyncBanner.installed(false));
                     check(NuvioSyncBanner.installed(true));
                     check(NuvioSyncBanner.groupText(composer,0,0x7f110d18,composer,false).equals("native-group"));
@@ -90,8 +99,12 @@ fun main(args: Array<String>) {
                     check(fb.uj.state==original); // Native permission dialog has priority.
                     original.h=false;
                     NuvioSyncBanner.update(new android.app.Activity(),"Provider failed",2,3,false,true);
+                    ((Function0)oldCancel).invoke();check(cancelled[0]==1);
                     NuvioSyncBanner.host(original,action,action,action,action,action,action,content,composer,123);
                     check(fb.uj.state.i.equals("Provider failed"));
+                    NuvioSyncBanner.begin(fb.uj.state);
+                    check(NuvioSyncBanner.closeText(0,composer).equals("Close"));
+                    NuvioSyncBanner.end();
                     NuvioSyncBanner.hide();
                     NuvioSyncBanner.host(original,action,action,action,action,action,action,content,composer,123);
                     check(fb.uj.state==original&&fb.uj.content==content);

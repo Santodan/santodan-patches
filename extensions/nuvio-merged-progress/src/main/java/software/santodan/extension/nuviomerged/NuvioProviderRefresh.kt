@@ -21,6 +21,13 @@ import kotlinx.coroutines.flow.merge
 
 /** Await the native refresh before sampling flows that can emit cached values immediately. */
 object NuvioProviderRefresh {
+    /** Observe small progress/seed/readiness projections, not every WatchedItem model. */
+    suspend fun observeProgress(provider: Any, progress: String, ready: String, changed: () -> Unit) =
+        observe(provider, listOf(progress, "f", ready), changed)
+    /** Playback readiness does not mean canonical watched-show history has loaded. */
+    suspend fun historyReady(loaded: () -> Boolean) {
+        while (!loaded()) kotlinx.coroutines.delay(25)
+    }
     /** A cold provider may return placeholder empty lists before its disk hydration finishes. */
     @Suppress("UNCHECKED_CAST")
     suspend fun ready(provider: Any, accessor: String) {

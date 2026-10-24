@@ -83,6 +83,9 @@ public final class VerifyNuvioBeta8 {
                 classes.put(c.getType(), new MutableClass(c));
         }
         verifyRuntimeSignatures();
+        field("Lxa/s3;", "i1", "Lkotlinx/coroutines/Job;");
+        field("Lba/pc;", "a", "Lba/jb;");
+        field("Lba/jb;", "T", "Z");
         method("Lc/j;", "getFullyDrawnReporter", 0);
         field("Lc/m;", "c", "Ljava/lang/Object;");
         field("Lc/m;", "f", "Z");
@@ -149,6 +152,8 @@ public final class VerifyNuvioBeta8 {
         field(profileType, "f", "Lkotlinx/coroutines/flow/StateFlow;");
         String watchedModel = "Lcom/nuvio/tv/domain/model/WatchedItem;";
         method("Lcom/nuvio/tv/domain/model/WatchProgress;", "isCompleted$default", 4);
+        method("Lcom/nuvio/tv/domain/model/WatchProgress;", "<init>", 26);
+        field("Lcom/nuvio/tv/domain/model/WatchProgress;", "SOURCE_REMOTE_HISTORY", "Ljava/lang/String;");
         method(watchedModel, "<init>", 11);
         for (String getter : List.of("getContentId", "getContentType", "getTitle", "getSeason",
             "getEpisode", "getWatchedAt", "getPoster", "getReleaseInfo", "getTrackingProviderId",
@@ -442,6 +447,7 @@ public final class VerifyNuvioBeta8 {
     }
 
     private static void verifyMergeHooks() {
+        verifyMergeHook("Lxa/s3;", NuvioMergedProgressPatch::hookHomePipeline, "b");
         verifyMergeHook("Lq8/l;", NuvioNativeSyncBanner::hookRoot, "invoke");
         verifyMergeHook("Lmb/a;", NuvioNativeSyncBanner::hookBanner, "b");
         verifyMergeHook("Lq8/l;", NuvioMergedProgressPatch::hookNavigation, "invoke");

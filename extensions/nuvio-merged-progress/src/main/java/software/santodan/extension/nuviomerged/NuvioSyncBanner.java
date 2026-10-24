@@ -26,13 +26,18 @@ public final class NuvioSyncBanner {
     private static boolean initialized;
     private static final class Status {
         final String message; final int step, total; final boolean error;
-        Status(String text, int at, int count, boolean failed) {
+        final boolean running; final Runnable cancel;
+        Status(String text, int at, int count, boolean failed, boolean active, Runnable stop) {
             message=text; total=Math.max(1,count); step=Math.max(0,Math.min(at,total)); error=failed;
+            running=active; cancel=stop;
         }
     }
     private NuvioSyncBanner() {}
 
     public static void update(Activity activity, String message, int step, int total, boolean running, boolean error) {
+        update(activity,message,step,total,running,error,()->{});
+    }
+    public static void update(Activity activity, String message, int step, int total, boolean running, boolean error, Runnable cancel) {
         MAIN.post(() -> {
             String key=message+"|"+step+"|"+total+"|"+running+"|"+error;
             if (!Objects.equals(key,lastState)) {
@@ -40,7 +45,7 @@ public final class NuvioSyncBanner {
                 terminalUntil=running?Long.MAX_VALUE:SystemClock.uptimeMillis()+(error?15000:6000);
             }
             visible=running || SystemClock.uptimeMillis()<terminalUntil;
-            status=new Status(message,step,total,error);
+            status=new Status(message,step,total,error,running,cancel);
             invalidate();
             int ticket=++generation;
             if (!running) MAIN.postDelayed(()->{if(ticket==generation){visible=false;invalidate();}},
@@ -98,7 +103,18 @@ public final class NuvioSyncBanner {
                     current.message,"",MARKER,"","",null);
                 Object state=stateConstructor.newInstance(false,update,false,true,(float)current.step/current.total,
                     null,true,false,current.error?current.message:null,null,false,field(original,"l"),false,false,false,null);
-                nativeHost.invoke(null,state,noOp,noOp,noOp,noOp,noOp,noOp,content,composer,0);
+                Object stop=Proxy.newProxyInstance(loader,new Class<?>[]{loader.loadClass("kotlin.jvm.functions.Function0")},
+                    (proxy,method,args)->{
+                        if(method.getName().equals("invoke")){
+                            if(status==current && current.running)current.cancel.run();
+                            else if(status==current)hide();
+                            return loader.loadClass("kotlin.Unit").getField("INSTANCE").get(null);
+                        }
+                        if(method.getName().equals("hashCode"))return System.identityHashCode(proxy);
+                        if(method.getName().equals("equals"))return proxy==args[0];
+                        return "SantodanCancelSync";
+                    });
+                nativeHost.invoke(null,state,stop,noOp,noOp,noOp,noOp,noOp,content,composer,0);
             } else nativeHost.invoke(null,original,dismiss,download,install,dismissUnknown,openUnknown,feedback,content,composer,flags);
         } catch(Exception error){
             Log.e("SantodanMergedProgress","Native sync banner failed",error);
@@ -115,6 +131,13 @@ public final class NuvioSyncBanner {
     }
     public static void end(){LABEL.remove();}
     public static boolean installed(boolean original){return LABEL.get()!=null || original;}
+    /** Only the close-button guard is changed; the native progress drawing keeps downloading=true. */
+    public static boolean hideClose(boolean original){return LABEL.get()==null && original;}
+    public static boolean timedClose(boolean original){return LABEL.get()==null && original;}
+    public static String closeText(int id,Object composer)throws Exception{
+        if(LABEL.get()!=null)return status!=null && status.running?"Cancel sync":"Close";
+        return (String)nativeString.invoke(null,id,composer);
+    }
     public static String text(int id,Object composer)throws Exception{
         if(LABEL.get()!=null && (id==0x7f110d11 || id==0x7f110d10 || id==0x7f110d18 || id==0x7f110d1c))return LABEL.get();
         return (String)nativeString.invoke(null,id,composer);

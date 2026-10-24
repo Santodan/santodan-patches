@@ -48,8 +48,171 @@ class ReadyFixture {
     fun p(): Flow<Boolean> = loaded
 }
 
+class ProgressOnlyFixture {
+    val progress = MutableStateFlow<Any?>("cached episode")
+    val seeds = MutableStateFlow<Any?>("cached seed")
+    val loaded = MutableStateFlow(false)
+    fun q(): Flow<Any?> = progress
+    fun f(): Flow<Any?> = seeds
+    fun p(): Flow<Boolean> = loaded
+    fun d(): Flow<Any?> = error("Live updates must not collect full watched models")
+}
+
+private fun verifyEpisodeProjection() {
+    val projection = NuvioMergeWork.EpisodeProjection<String>()
+    var builds = 0
+    fun completed(key: Pair<Int, Int>): String { builds++; return "completed $key" }
+    val watched = setOf(1 to 1, 1 to 2)
+    val first = projection.snapshot(watched, emptyMap(), ::completed)
+    check(first.keys == watched && builds == 2)
+    check(projection.snapshot(watched.toSet(), emptyMap(), ::completed) === first)
+    val playing = projection.snapshot(watched, mapOf((1 to 3) to "playing"), ::completed)
+    check(playing[1 to 1] == first[1 to 1] && playing[1 to 3] == "playing" && builds == 2)
+    val unmarked = projection.snapshot(setOf(1 to 2), emptyMap(), ::completed)
+    check(1 to 1 !in unmarked && builds == 3)
+    check(projection.snapshot(emptySet(), emptyMap(), ::completed).isEmpty())
+    check(first.keys == watched) // Published snapshots remain immutable across profile/history changes.
+    println("PASS: cached episode markers, live progress, unmarks and bounded materialization")
+}
+
+private suspend fun verifyHomePipelineGate() = coroutineScope {
+        val homeGate = NuvioMergeWork.HomePipelineGate()
+        val home = Any()
+        val cards = MutableStateFlow(listOf("cached card"))
+        val metadataStarted = CompletableDeferred<Unit>()
+        var metadataStopped = false
+        val homeJob = launch {
+            coroutineScope {
+                launch {
+                    try { metadataStarted.complete(Unit); awaitCancellation() }
+                    finally { metadataStopped = true }
+                }
+                awaitCancellation()
+            }
+        }
+        metadataStarted.await()
+        check(homeGate.pause(home, homeJob))
+        homeJob.join()
+        check(metadataStopped && cards.value == listOf("cached card"))
+        check(homeGate.resume(home))
+        check(!homeGate.resume(home)) { "Repeated Home navigation restarted the pipeline twice" }
+        check(!homeGate.pause(home, homeJob)) { "Already-cancelled native pipeline was claimed" }
+        check(!homeGate.resume(home))
+        val oldProfile = launch { awaitCancellation() }
+        yield()
+        check(homeGate.pause(home, oldProfile))
+        oldProfile.join()
+        check(!homeGate.resume(Any())) { "Different profile restarted a stale Home pipeline" }
+        println("PASS: native Home pipeline pause cancels metadata children, preserves cards and resumes once for its owner")
+}
+
 fun main() = runBlocking {
+    verifyEpisodeProjection()
     withTimeout(5_000) {
+        verifyHomePipelineGate()
+        val localWork = NuvioMergeWork.LocalChanges()
+        check(localWork.claim())
+        repeat(3) { check(!localWork.claim()) { "Tracker-only changes replayed local startup work" } }
+        localWork.changed(); localWork.changed()
+        check(localWork.claim())
+        check(!localWork.claim()) { "Duplicate playback notifications scheduled duplicate local work" }
+        localWork.changed() // An interrupted local pass returns its claim for retry.
+        check(localWork.claim())
+        println("PASS: local playback work is coalesced, independent of provider notifications and retryable")
+        val lightProvider = ProgressOnlyFixture()
+        val lightUpdates = kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+        val lightObserver = launch {
+            NuvioProviderRefresh.observeProgress(lightProvider, "q", "p") { lightUpdates.trySend(Unit) }
+        }
+        yield(); yield()
+        check(lightUpdates.tryReceive().isFailure)
+        lightProvider.loaded.value = true
+        lightUpdates.receive()
+        lightProvider.seeds.value = "episode 12"
+        lightUpdates.receive()
+        lightObserver.cancelAndJoin()
+        val preserved = MutableStateFlow<List<Any>>(listOf("saved progress", "saved seed"))
+        var historyWrites = 0
+        check(!NuvioMergeWork.commit({ it() }, { NuvioMergeWork.canPublishProviders(0, 3, false) }) {
+            preserved.value = emptyList(); historyWrites++
+        })
+        check(preserved.value.size == 2 && historyWrites == 0) { "All unavailable providers erased or rewrote cache" }
+        check(NuvioMergeWork.canPublishProviders(1, 2, false))
+        check(NuvioMergeWork.canPublishProviders(0, 0, false)) { "A valid empty selection could not clear removed entries" }
+        check(NuvioMergeWork.canPublishProviders(0, 3, true))
+        println("PASS: live observers avoid full watched models; cold readiness triggers updates; all unavailable providers preserve cache without writes")
+        val visited = mutableListOf<String>()
+        val successful = mutableListOf<String>()
+        for (source in listOf("Trakt", "Simkl", "MDBList")) {
+            val result = NuvioMergeWork.providerResult(source, 25) {
+                visited.add(source)
+                if (source == "Trakt") awaitCancellation()
+                source
+            }
+            result.getOrNull()?.let(successful::add)
+        }
+        check(visited == listOf("Trakt", "Simkl", "MDBList"))
+        check(successful == listOf("Simkl", "MDBList")) { "Trakt timeout prevented other services from syncing" }
+        check(NuvioMergeWork.providerResult("Trakt") { error("history unavailable") }.isFailure)
+        check(NuvioMergeWork.providerResult("Trakt") { throw CancellationException("native child fetch cancelled") }.isFailure)
+        check(withTimeoutOrNull(25) {
+            NuvioMergeWork.providerResult("Trakt") { awaitCancellation() }
+            error("Parent cancellation was swallowed")
+        } == null)
+        data class Saved(val show: String, val source: String)
+        val saved = listOf(Saved("trakt-only", "Trakt"), Saved("overlap", "Trakt"), Saved("removed", "Simkl"))
+        val retained = NuvioMergeWork.unavailableEntries(saved, setOf("overlap"), setOf("Trakt"), { it.show }, { it.source })
+        check(retained == listOf(Saved("trakt-only", "Trakt"))) {
+            "Failure erased exclusive cached progress, overrode fresh progress or prevented successful-source removals"
+        }
+        check(NuvioMergeWork.unavailableEntries(saved, emptySet(), emptySet(), { it.show }, { it.source }).isEmpty())
+        println("PASS: failed provider isolation, successful service continuation, cancellation and scoped cache retention")
+        var canonicalHistoryLoaded = false
+        val historyGate = async(start = CoroutineStart.UNDISPATCHED) {
+            NuvioProviderRefresh.historyReady { canonicalHistoryLoaded }
+            emptyMap<String, Set<Pair<Int, Int>>>()
+        }
+        check(!historyGate.isCompleted) { "Playback readiness accepted incomplete canonical history" }
+        canonicalHistoryLoaded = true
+        check(historyGate.await().isEmpty()) { "A valid loaded empty account was rejected" }
+        check(withTimeoutOrNull(30) { NuvioProviderRefresh.historyReady { false }; true } == null)
+        check(!NuvioMergeWork.retainPlayback(10, true, 20)) { "Old paused session resurrected a watched episode" }
+        check(!NuvioMergeWork.retainPlayback(20, true, 20))
+        check(NuvioMergeWork.retainPlayback(30, true, 20)) { "Newer intentional rewatch was removed" }
+        check(NuvioMergeWork.retainPlayback(10, false, 20))
+        check(NuvioMergeWork.retainPlayback(10, true, null))
+        println("PASS: canonical history readiness, valid empty accounts, stale paused-session removal and newer rewatches")
+        val waitingProvider = RefreshFixture()
+        var publishedEpisode = 8
+        val stalled = runCatching {
+            NuvioMergeWork.provider("Trakt", 30) {
+                NuvioProviderRefresh.await(waitingProvider, "v", true)
+                publishedEpisode = 12
+            }
+        }
+        check(stalled.exceptionOrNull() is IllegalStateException)
+        check(stalled.exceptionOrNull()!!.message!!.contains("Trakt"))
+        check(publishedEpisode == 8) { "Stalled provider replaced the saved snapshot" }
+        waitingProvider.completion!!.resumeWith(Result.success(Unit))
+        yield()
+        check(publishedEpisode == 8) { "Timed-out continuation published a late result" }
+        val cancelled = launch(start = CoroutineStart.UNDISPATCHED) {
+            NuvioMergeWork.provider("Trakt") {
+                NuvioProviderRefresh.await(waitingProvider, "v")
+                publishedEpisode = 12
+            }
+        }
+        cancelled.cancelAndJoin()
+        waitingProvider.completion!!.resumeWith(Result.success(Unit))
+        check(publishedEpisode == 8)
+        check(NuvioMergeWork.provider("Trakt") { 12 } == 12) { "Cancelled sync prevented retry" }
+        check(withTimeoutOrNull(20) { NuvioMergeWork.provider("Trakt") { awaitCancellation() } } == null) {
+            "Provider deadline swallowed parent cancellation"
+        }
+        val pendingManual = NuvioMergeWork.ManualRequests()
+        pendingManual.offer("p1"); pendingManual.clear()
+        check(!pendingManual.take("p1")) { "Cancelled sync restarted a queued manual request" }
+        println("PASS: provider deadline and user cancellation retain cache, ignore late completion and allow retry")
         data class CachedProgress(val id: String, val at: Long, val done: Boolean = false)
         val cachedProgress = listOf(CachedProgress("keep", 10), CachedProgress("update", 10), CachedProgress("finish", 10))
         fun quick(local: List<CachedProgress>) = NuvioMergeWork.quickProgress(cachedProgress, local, 20,

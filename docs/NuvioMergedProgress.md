@@ -1,9 +1,297 @@
 # NuvioTV merged tracking progress
 
-Latest device feedback: the user reports the native-library-isolation build is
-working almost perfectly. Preserve that behavior; further remote incremental-sync
-work is deferred. Remaining performance and service rate limits are not claimed
-to be eliminated.
+Latest device feedback (2026-10-24): the user reports that the current build now
+seems to work correctly after the cached episode-marker change. Provider-side
+watched receipts, particularly MDBList, remain to be checked on the next episode.
+Playback writes still target only the configured main tracker; included services
+are merge read sources, not a broadcast list for watched updates. This feedback
+does not establish successful writes to every provider or eliminate rate limits.
+
+## Restore episode markers without per-show tracker reads (beta.8, 2026-10-24)
+
+The 10:07-10:11 capture confirms the Home CW pause at 10:08:30.266 and merge
+cancellation at 10:08:30.318, yet application jank and GC continue during playback.
+The previous pause is therefore not a demonstrated fix for the reported frame loss.
+The capture also contains native Trakt refresh work after cancellation, subtitle
+render delays, and rebuffering; it cannot establish one exclusive playback cause.
+
+Quick sync had explicitly disabled compact membership restoration and reported
+membershipDeferred=true. Episode details delegated to one provider's native
+episodeProgress flow, or exposed only paused CW entries while playing. Native
+Trakt observeEpisodeProgress starts ensureEpisodeProgressSnapshot in its service
+scope from onStart, which outlives cancellation of the caller's collector.
+
+Quick sync now restores the compact episode membership cache, without decoding
+full WatchedItem history. Membership publication notifies existing episode-detail
+collectors. Episode details project completed WatchProgress records only for the
+requested show's cached membership, together with current progress. This projection
+runs off Main, reuses completed records while membership is unchanged, handles
+unmarks, and suppresses output after profile changes. It does not collect native
+per-show tracker flows. These read-only records never become CW seeds, persisted
+playback progress, or tracker writes. Local membership additions are persisted.
+Remote freshness still depends on a successful provider update; the cache does not
+invent watched entries that were never synced.
+
+Original DEX evidence: ../.inspect-nuvio-beta8/cached-episode-model-contract.txt.
+WatchProgress's public 26-argument constructor and SOURCE_REMOTE_HISTORY String
+field are verified against the original beta.8 APK. Host checks exercise cached
+markers, ongoing progress, removal of watched entries, immutable prior snapshots
+and reuse of completed records. Device validation is still required for episode
+markers and playback frame loss; no claim that all playback stalls are resolved.
+
+## Pause the native Home CW pipeline during playback (beta.8, 2026-10-24)
+
+The 09:50-09:52 capture shows merge cancellation at 09:51:10, roughly 47s before
+playback starts. It does not prove the merge worker ran through playback. During
+the first ~20s there are 41 MetaRepository messages for other CW shows, 13 native
+SimklCwDiag messages and repeated application GC/jank. The native Home CW job is
+separate from the merge worker and remains active while its back-stack Home exists.
+The ASS renderer's late=159 counter is not a decoded-video drop counter; this
+capture confirms rendering stalls, without independently measuring the reported
+159 dropped video frames or proving one exclusive cause.
+
+The merge patch now observes the assigned native CW pipeline Job, cancels that
+specific job on player entry, and resumes it once on return to Home. It preserves
+the existing UI snapshot, does not cancel the Home ViewModel scope or unrelated
+native library/player jobs, and leaves the disabled path untouched. A pipeline
+created during playback is cancelled immediately. A stale/different Home owner
+cannot be resumed. This targets verified overlapping work; frame loss is not
+claimed resolved without a device retest.
+
+Latest input: original com.nuvio.tv 1.1.0-beta.8/code1071, SHA256
+7aeae6f64e9128be2c7545c50061376839e20a88d47722ac220ba40be7c182f8.
+Evidence: ../.inspect-nuvio-beta8/playback-home-job-contracts.txt,
+playback-home-coroutine-contracts.txt and playback-home-pipeline-contracts.txt.
+Native static Lxa/s3;->b(Lxa/s3;)V has 14 registers and fingerprint
+c91895ea981a1f76696b7f0330b625787b3a08630e274a9e6bc53a2b2f6ddf81.
+It starts the IO cache restore, cancels previous i1, launches xa.x4 (the native
+combined progress/seed/settings/watched-items collectLatest pipeline), and assigns
+the resulting Job to i1 at instruction 28. The new callback follows that assignment,
+before instruction 29 RETURN_VOID, using v13 (the Home argument). There are no
+register-count, branch or try-region changes. Original missing/ambiguous/changed/
+already-patched inputs reject; older-version patch mappings are not extended.
+
+Host checks cover child metadata cancellation, preserved cards, one restart,
+already cancelled jobs and changed Home owners. Original-DEX hook rejection and
+standalone/combined packaged DEX reload, native library isolation and cross-DEX
+checks passed through `build-local.ps1 :patches:buildAndroid :patches:verifyNuvioProviderRefreshRuntime :patches:verifyNuvioBeta8 :patches:verifyNuvioBeta8Bundle --offline`.
+No APK rebuild/signing, installation, device test, commit or push ran. Use the
+canonical `patches/build/libs/patches-0.13.0.mpp`. Device checks: pause/resume log
+markers, no unrelated CW metadata traversal during playback, preserved CW on
+return and reduced rendering stalls.
+
+## Avoid repeated local work and stale live banners (beta.8, 2026-10-24)
+
+The 09:37-09:38 device capture has refresh=false provider reads, not an explicit
+manual/full refresh after playback. It does show extra local quick passes (4s and
+6s) after the initial 9.5s pass; the initial local publish/save alone takes 7.2s.
+Live mergeSnapshot changed the shared syncSteps to six, then its finally block
+refreshed the banner after clearing liveMerge, allowing old status to reappear.
+
+Live work now leaves the visible stage count/banner alone, including its terminal
+callback. Quick startup consistently uses three stages, including preparation.
+A coalesced local-store dirty marker avoids replaying local cache work for
+provider-only notifications. Interrupted local work returns its claim for retry.
+Unchanged quick progress/seeds skip startup-cache serialization, and unchanged
+live progress/seeds/membership/aliases skip publication and persistence entirely.
+
+The patch releases its native provider observers when entering the player and
+reattaches them once on Home after playback. Local changes can still be marked
+while playing, but merge work waits for Home. This does not stop independent
+native tracker jobs. Ordinary Home visits do not start another catch-up pass.
+Automatic Continue Watching updates still require event-driven work in the app
+process; this is not a separate Android background service or periodic sync loop.
+
+Host/runtime checks cover local work coalescing, provider-only notifications,
+interruption retry, the native banner bridge, existing startup/session gating and
+provider/cancellation handling. Device checks remain: absence of x/6 on stream
+exit, reduced cache-write time, and prompt next-episode updates after playback.
+Verification passed via `build-local.ps1 :patches:buildAndroid :patches:verifyNuvioProviderRefreshRuntime :patches:verifyNuvioSyncBannerRuntime :patches:verifyNuvioBeta8Bundle --offline`.
+The final three-stage preparation change passed another build/bundle verification;
+standalone/combined DEX reload, native library isolation and cross-DEX checks passed.
+Canonical MPP rebuilt at 09:46:16. No APK rebuild/signing, installation, device test,
+commit or push was performed.
+
+## Cache-only startup and lightweight live updates (beta.8, 2026-10-24)
+
+The box log at 09:17-09:23 shows the previous quick path spending 27-36s decoding
+membership, then entering the full snapshot reader with refresh=false. Trakt is
+not yet history-ready, while Simkl and MDBList repeatedly exceed the imposed
+five-second limit. These are cold-load/read deadlines, not evidence of disconnected
+accounts. Reconciliation and full history persistence then increase total time to
+90-120s. The menu's explicit full sync subsequently completes in 21.4s.
+
+Quick startup now finishes after saved CW/local progress changes. It does not
+decode full membership, await provider snapshots or call mergeSnapshot. It then
+attaches progress/seed/readiness observers, allowing native cold hydration and
+later data changes to request a silent update. It preserves membership-ready=false
+until complete membership is available; it never publishes an empty history as
+loaded just because the lightweight startup cache was restored.
+
+Live updates use a 45-second provider bound instead of five seconds, skip unready
+Trakt canonical history, and do not collect full watched-model flows or serialize
+full WatchedItem caches. They persist CW plus compact membership and leave full
+model readiness/cache ownership to manual full sync. An unselected native local
+watched store is no longer collected. Observers collect q/f/p, not d.
+
+If no remote provider produces a fresh snapshot and local tracking is unselected,
+the merge retains the existing CW/history without a new publication or cache
+rewrite. A valid empty selection can still remove entries. Startup does not show
+provider-unavailable stages; real manual provider failures remain isolated.
+
+Runtime checks cover readiness emissions without watched-model reads and an
+all-unavailable attempt leaving the saved flow and persistence untouched, alongside
+existing cancellation, cache, playback, and provider-isolation checks. Build,
+original beta.8 DEX validation and standalone/combined packaged verification passed
+via `build-local.ps1 :patches:buildAndroid :patches:verifyNuvioProviderRefreshRuntime :patches:verifyNuvioBeta8 :patches:verifyNuvioBeta8Bundle --offline`.
+No APK rebuild/signing, installation, device test, commit or push ran. Delivery is
+only the usual `patches/build/libs/patches-0.13.0.mpp`; box timing and live episode
+updates still require device testing.
+Final canonical rebuild completed at 09:33:19. The completion-label adjustment
+was rebuilt and runtime/packaged verification passed again in
+`.inspect-nuvio-beta8/quick-startup-separation-final.log`.
+
+## Provider failure isolation (beta.8, 2026-10-24)
+
+The 09:04-09:06 log shows native Trakt snapshot fetches ending with
+ChildCancelledException/IOException and increasing poll backoff. The merge's
+new canonical-history gate then waited until the 45-second provider deadline;
+its exception escaped the provider loop, preventing Simkl/MDBList reads and
+triggering the whole-merge fallback. The first attempt was cancelled at 21s;
+the second process ended without completion; the third hit that deadline.
+The native cancellation trace alone does not prove an HTTP 429 or its root cause.
+
+Provider reads now isolate failures, including cancellation of a native child
+while the merge Job remains active. Actual parent/user/lifecycle cancellation
+still stops the request. Quick/live reads have a five-second provider deadline
+and skip Trakt immediately when canonical history is unready. Manual reads retain
+the 45-second provider bound, but wait at most ten seconds for canonical history.
+No unready optimistic-only Trakt history is accepted as complete.
+
+Other services continue after a failure. Their fresh show snapshots take priority;
+cached progress/seeds attributed to failed sources survive for shows without
+fresh coverage. Relevant cached watched membership/items/aliases are carried with
+those retained entries. Successful empty sources can still remove their entries.
+Partial completion explicitly names unavailable services. It does not enter the
+whole-merge fallback just because one provider failed or force native retries.
+Full watched-model readiness is not asserted after a partial initial snapshot.
+
+Host checks cover Trakt timeout followed by successful Simkl/MDBList reads,
+native-child versus parent cancellation, cached exclusive entries, overlapping
+fresh entries, and successful-source removals. No native network implementation,
+library provider, application label or output-location metadata was changed.
+The canonical delivery remains `patches/build/libs/patches-0.13.0.mpp`.
+Build/runtime/original DEX verification passed via `build-local.ps1 :patches:buildAndroid :patches:verifyNuvioProviderRefreshRuntime :patches:verifyNuvioBeta8 :patches:verifyNuvioBeta8Bundle --offline`;
+after adding native-child cancellation coverage, the final build/runtime/bundle
+tasks passed again. Standalone/combined DEX reload and native-library isolation
+passed with no new cross-DEX findings. Canonical MPP rebuilt at 09:11:55.
+No APK rebuild/signing, installation, device test, commit or push was performed.
+
+## Canonical Trakt history and silent live updates (beta.8, 2026-10-24)
+
+The 08:51/08:52 log proves partial Trakt publication: initial progress is ready
+with 10 seeds, no watched history and Tower of God S1E13. Later it has 271 seeds,
+872 watched-history entries and Tower of God S2E26. Playback readiness alone is
+insufficient. After collecting the seed flow (which starts native hydration), the
+merge now waits for the canonical watched-show loaded flag within the existing
+45-second provider deadline. A successfully loaded empty account remains valid.
+
+Original beta.8 DEX evidence: `.inspect-nuvio-beta8/trakt-ready-contracts.txt`,
+`Lba/pc;->a:Lba/jb;`, `Lba/jb;->T:Z`. Native static f(), fingerprint
+a09333ae5d18eeebbec1a32ba12d457bcbbbdf98a177c95d06c7252f020d99a4,
+installs the watched maps u/v/w (instructions 666-668), seed flow q (669-670),
+timestamp R (673), then loaded flag T (675). No new native bytecode hook is added.
+Latest-only DEX verification validates the provider field and loaded flag.
+
+Old playback entries covered by the winning provider's watched membership and a
+newer/equal canonical seed timestamp are removed. Newer intentional rewatches and
+episodes without that membership or timestamp remain valid. Provider selection
+and the user's highest/recent strategy remain unchanged.
+
+Startup/manual sync retains its visible progress. Subsequent provider/local-store
+changes reconcile silently without explicit provider refresh or another startup
+request. Entering Home alone no longer marks data dirty. Observers stay attached
+across internal navigation so playback changes are not missed; activity pause
+still disposes native provider observers. Foreground catch-up uses silent updates.
+Live updates do not overwrite the manual sync summary or reset startup completion.
+
+Host checks cover delayed/empty canonical readiness, cancellation, stale paused
+sessions, newer rewatches and the existing once-per-session Home gate. Device
+retesting is required for Tower of God after startup and playback-to-Home updates.
+The supported delivery is the canonical `patches/build/libs/patches-0.13.0.mpp`.
+Verification passed: `build-local.ps1 :patches:buildAndroid :patches:verifyNuvioProviderRefreshRuntime :patches:verifyNuvioBeta8 :patches:verifyNuvioBeta8Bundle --offline`.
+Standalone/combined packaged application, native library isolation and DEX reload
+passed with no new cross-DEX findings. Canonical bundle rebuilt at 08:57:23.
+No APK rebuild/signing, installation, device test, commit or push ran for this change.
+
+## Live quick reconciliation and cancellation (beta.8, 2026-10-24)
+
+Delivery correction: Desktop's 08:42 patch run loaded the current MPP (SHA256
+2ffb3b5dc3fdb2cdce9c1ce75cf9faaf7aa3849a781744a58673c72c28928716)
+and wrote the updated APK to `Apps/com.nuvio.tv/`. The usual
+`Apps/NuvioTV/NuvioTV-1.1.0-beta.8-patches-0.13.0.apk` was stale. That copy is
+now replaced with Desktop's actual output; `Apps/NuvioTV/patches-0.13.0.mpp`
+matches the build bundle exactly. Both contain quick reconciliation, Cancel sync
+and quick_info; the old cache-only completion string is absent. Signature and
+alignment passed. File size alone did not distinguish the APK implementations.
+
+The new device log shows quick sync retaining a stale Undead Unluck seed, while
+manual full sync later reconciles the tracker snapshots in 2.1s. An earlier full
+sync remains at Fetching Trakt from 08:13:45 until the process is restarted around
+08:16:26. Native Trakt logs cancelled snapshot fetches and increasing backoff;
+the capture does not establish the exact network/add-on failure behind them.
+
+Quick sync now restores saved progress/local playback first, then runs the same
+coherent progress/seed/history selection against the native tracker snapshots.
+It skips the explicit provider refresh call, so it does not force a bulk remote
+refresh or bypass native schedules/backoff. Provider-flow changes schedule a
+coalesced reconciliation on Home; updates during a merge are reconciled after it
+finishes. Trakt's refresh method signals background work, so observing its later
+publication matters even after a manual sync. This is snapshot reconciliation,
+not a new remote delta API. Native library providers remain untouched.
+
+Each provider's refresh, hydration and history reads share a 45-second deadline.
+Failure retains the previously published snapshot and releases the merge UI.
+Cancel sync is available in the settings section/dialog and the Home progress
+banner's close control. It cancels the merge, invalidates work before its Job is
+assigned, clears queued manual requests and suppresses automatic reconciliation
+for the cancelled profile until the user starts another sync. It does not stop
+independent native tracker polling. Closing the settings dialog alone does not
+cancel. A completed/cancelled dialog offers Sync now for retry.
+
+The Quick startup sync info action opens an explanation. Its supplied callback
+was previously also masked out by the native row's default-argument bit 32.
+
+Latest original: ../OriginalApps/NuvioTV-1.1.0-beta8.apk, com.nuvio.tv,
+1.1.0-beta.8/code1071, SHA256
+7aeae6f64e9128be2c7545c50061376839e20a88d47722ac220ba40be7c182f8.
+Original DEX evidence under ../.inspect-nuvio-beta8:
+sync-cancel-banner-contracts.txt and sync-info-row-contracts.txt. The existing
+Lmb/a;->b(... )V fingerprint is
+50512aec1d322f8645869c4d99221fdccfb518d08abfdd302b73198a0d49ef9b,
+74 registers. Native d:Z (isDownloading) is cached in v34; instruction 728's
+IF_NEZ v34 guards only the close control. The sync-only hook allows it while
+preserving the native progress drawing and ordinary updater behavior. Instruction
+731's IF_EQZ v66 selects the ordinary close control for sync, avoiding the native
+timed auto-dismiss control and its callback. Existing
+provider/readiness/continuation contracts are reused unchanged.
+
+Device checks still required: Undead Unluck updates without pressing Sync now;
+late Trakt updates reconcile on Home; cancel via remote focus in Home and settings;
+retry after cancellation; info dialog focus; service rate limiting/backoff.
+
+Validation passed with Java 21/platform 36 via
+`powershell -NoProfile -ExecutionPolicy Bypass -File .\build-local.ps1 :patches:buildAndroid :patches:verifyNuvioProviderRefreshRuntime :patches:verifyNuvioSyncBannerRuntime :patches:verifyNuvioBeta8 :patches:verifyNuvioRemainingSyncRuntime :patches:verifyNuvioBeta8Bundle --offline`.
+Checks cover deadlines, cancellation, late completions, retry, native banner
+callbacks/close guards, unchanged native updater precedence, real DEX mutation
+and reload, standalone/combined application and native library isolation. There
+are no new cross-DEX findings beyond the original 36 optional-library findings.
+CLI 1.19.0 rebuilt and signed all 16 selected patches from the original beta.8 APK.
+`build-local.ps1 :patches:verifyNuvioPlaybackApk -PnuvioPlaybackApk=E:/Morphe/Apps/NuvioTV/NuvioTV-1.1.0-beta.8-quick-reconcile-cancel-signed.apk -PnuvioRequireStability=true --offline`
+also passed. Android build-tools 36 `apksigner verify --verbose --print-certs`
+and `zipalign -c -P 16 4` passed. No installation/device test, commit or push ran.
+Deliveries: `E:/Morphe/Apps/NuvioTV/NuvioTV-1.1.0-beta.8-quick-reconcile-cancel-signed.apk`
+and `E:/Morphe/Apps/NuvioTV/patches-0.13.0-quick-reconcile-cancel.mpp`.
 
 ## Native library isolation correction (beta.8, 2026-10-23)
 

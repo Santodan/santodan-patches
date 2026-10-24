@@ -81,6 +81,8 @@ def patches_table(patches):
     for p in sorted(patches, key=lambda x: x["name"]):
         a = anchor(p["name"])
         documentation = {
+            "Monet - Unlock premium": "docs/Monet.md",
+            "Monet - Unlock premium (Experimental, any version)": "docs/Monet.md",
             "NuvioTV - Customize playback buttons": "docs/NuvioPlaybackButtons.md",
             "NuvioTV - Fix startup track reselection": "docs/NuvioPlayerStability.md",
             "NuvioTV - Indicate current stream": "docs/NuvioCurrentStream.md",

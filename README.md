@@ -14,7 +14,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.13.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.13.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;29 patches total
+> **[v0.13.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.13.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;31 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -47,6 +47,24 @@ MEO 5.7.0 patches provide a separately installable clone and compatibility handl
 |----------|----------------|-----------|
 | [MEO - Side-by-side installation](#meo-side-by-side-installation) | Installs a separately named MEO clone using a configurable package name and app name. | • Package name<br>• App name |
 | [MEO - Spoof supported device](#meo-spoof-supported-device) | Reports a Sagemcom DIW3930 to MEO provisioning and skips the server's non-blocking device-verification warning. |  |
+
+</details>
+
+<details>
+<summary>📦 Monet&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<br>
+
+The original premium unlock is from [Doom's Patches](https://github.com/rushiranpise/morphe-patches), updated here for Monet Launcher **1.0.97**. A separate experimental variant has no version restriction. Select **only one**; both are disabled by default. The experimental variant requires a matching native layout, and other versions remain unverified. Both variants passed original-DEX verification and APK rebuilding on 1.0.97; device testing remains outstanding. See [implementation and verification details](docs/Monet.md).
+
+**🎯 Supported versions:**
+
+| 1.0.97 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Monet - Unlock premium](docs/Monet.md) | Original premium unlock from Doom's Patches, updated here for Monet 1.0.97. Unlock local premium features. Select only one Monet premium patch. |  |
+| [Monet - Unlock premium (Experimental, any version)](docs/Monet.md) | Original premium unlock from Doom's Patches, updated here for Monet 1.0.97. Experimental variant with no version restriction; requires a matching native layout. Select only one Monet premium patch. |  |
 
 </details>
 

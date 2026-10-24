@@ -110,6 +110,60 @@
       "options": []
     },
     {
+      "name": "Monet - Unlock premium",
+      "description": "Original premium unlock from Doom's Patches, updated here for Monet 1.0.97. Unlock local premium features. Select only one Monet premium patch.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.klevico.monet",
+          "name": "Monet",
+          "description": null,
+          "apkFileType": "APK",
+          "formFactor": "TV",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.0.97",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 26,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Monet - Unlock premium (Experimental, any version)",
+      "description": "Original premium unlock from Doom's Patches, updated here for Monet 1.0.97. Experimental variant with no version restriction; requires a matching native layout. Select only one Monet premium patch.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.klevico.monet",
+          "name": "Monet",
+          "description": null,
+          "apkFileType": "APK",
+          "formFactor": "TV",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": 26,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "NuvioTV - Android TV launcher channels",
       "description": "Choose individual catalogs and tracking lists, Library, and Upcoming to publish as Android TV launcher channels.",
       "default": false,

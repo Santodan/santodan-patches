@@ -16,6 +16,11 @@ installer-source spoof.
 
 ## Start here: creating or modifying a patch
 
+For Monet Launcher `com.klevico.monet` 1.0.97, see [Monet.md](docs/Monet.md).
+The exact-version and unrestricted experimental premium patches are alternatives;
+select only one. Both use the shared native evaluator for startup and refreshes.
+Run `verifyMonet` and `verifyMonetBundle`; other versions remain unverified.
+
 The bundle targets Morphe Patcher **2.0.0** / Desktop **1.19.0**. Read
 `docs/MorpheCompatibility.md` for compatibility constructors, form factors,
 on-demand resource extraction and exact Desktop import verification. Do not

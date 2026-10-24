@@ -5,7 +5,7 @@ group = "software.santodan.patches"
 patches {
     about {
         name = "Santodan Patches"
-        description = "Independent Morphe patches for Car Scanner, MEO, NuvioTV, Reddit, Pillo, and Peafowl"
+        description = "Independent Morphe patches for Car Scanner, MEO, Monet, NuvioTV, Reddit, Pillo, and Peafowl"
         source = "https://github.com/Santodan/santodan-patches"
         author = "Santodan"
         contact = "https://github.com/Santodan"
@@ -17,6 +17,24 @@ patches {
 // Separate configuration so gson is available at runtime for the
 // generatePatchesList task but never bundled into the APK.
 val patchListGeneratorClasspath = configurations.create("patchListGeneratorClasspath")
+
+tasks.register<JavaExec>("verifyMonet") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonet")
+    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
+        layout.buildDirectory.file("verification/monet/evaluator.dex").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyMonetBundle") {
+    dependsOn("testClasses", "buildAndroid")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonetBundleKt")
+    maxHeapSize = "3g"
+    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
+        layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile.absolutePath,
+        layout.buildDirectory.dir("verification/monet/bundle").get().asFile.absolutePath)
+}
 
 val patchVersionSource = layout.buildDirectory.dir("generated/sources/patchVersion")
 val generatePatchVersion by tasks.registering {

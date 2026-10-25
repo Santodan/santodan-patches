@@ -16,6 +16,25 @@ installer-source spoof.
 
 ## Start here: creating or modifying a patch
 
+For individual Nuvio catalogs in Monet 1.0.97 custom media rows, see
+[MonetCatalogChannels.md](docs/MonetCatalogChannels.md). The optional **Monet -
+Individual Nuvio catalog rows** patch belongs to Monet; Nuvio keeps publishing its
+existing separate Android TV channels. Catalogs are now choices inside the real
+Nuvio app's Content picker, use its installed icon, and refresh independently of
+Recommendations through a foreground provider subscription and native revision
+flow. Preserve saved synthetic IDs while resolving their real package for icons.
+Validate the actual signed delivery APK, not just the bundle/unsigned fixture:
+the previous `Monet-1.0.97-patches-0.14.0.apk` remained stale and the installed
+emulator matched it byte-for-byte. The verified replacement is
+`Apps/Monet/Monet-1.0.97-patches-0.14.0-catalog-content-v2.apk` (workspace-relative),
+also copied to the usual versioned output. Use `-PmonetCatalogCombined=true` to
+verify the catalog/card-limit/premium delivery and `Catalog content v2` runtime
+markers to distinguish it from the old integration. No installation was performed.
+The user subsequently confirmed on 2026-10-26 that the updated APK appears to work
+correctly. Keep this user-reported device result distinct from local APK checks.
+The local Desktop JAR is now 1.19.1; pass its path to verifyMorpheDesktopImport. Run `verifyMonetCatalog`,
+`verifyMonetCatalogRuntime`, `verifyMonetCatalogBundle` and `verifyMorpheDesktopImport`.
+
 For Monet Launcher `com.klevico.monet` 1.0.97, see [Monet.md](docs/Monet.md).
 The exact-version and unrestricted experimental premium patches are alternatives;
 select only one. Both use the shared native evaluator for startup and refreshes.

@@ -1,5 +1,10 @@
 # Monet premium
 
+For separate Nuvio catalog rows, see [MonetCatalogChannels.md](MonetCatalogChannels.md).
+The user-confirmed integration puts catalogs inside **NuVioTV > Content**, uses
+NuVio's installed icon and refreshes independently of Recommendations. That
+independent optional patch can be combined with either premium alternative.
+
 The bundle provides two alternatives. Select **only one**:
 
 - **Monet - Unlock premium** targets `com.klevico.monet` **1.0.97**.

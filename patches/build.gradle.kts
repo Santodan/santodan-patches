@@ -856,3 +856,39 @@ tasks.register<JavaExec>("verifyNuvioBeta8SettingsMenuRuntime") {
         file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioSourceContinuation.java").absolutePath,
         file("${layout.buildDirectory.get()}/verification/beta8-menu-runtime").absolutePath)
 }
+
+tasks.register<JavaExec>("verifyMonetCatalogRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonetCatalogRuntime")
+    args(file("../extensions/monet-catalog-channels/src/main/java/software/santodan/extension/monetchannels/MonetCatalogChannels.java").absolutePath,
+        layout.buildDirectory.dir("verification/monet/catalog-runtime").get().asFile.absolutePath,
+        file("src/test/fixtures/monet-catalog/Fixture.java").absolutePath)
+}
+
+tasks.register<JavaExec>("verifyMonetCatalog") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonetCatalog")
+    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
+        layout.buildDirectory.file("verification/monet/catalog-hooks.dex").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyMonetCatalogBundle") {
+    dependsOn("testClasses", "buildAndroid")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonetCatalogBundleKt")
+    maxHeapSize = "3g"
+    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
+        layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile.absolutePath,
+        layout.buildDirectory.dir("verification/monet/catalog-bundle").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyMonetCatalogApk") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonetCatalogApk")
+    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
+        file(providers.gradleProperty("monetCatalogApk").getOrElse("../../Apps/Monet/monet-1.0.97-catalog-rows-unsigned.apk")).absolutePath,
+        providers.gradleProperty("monetCatalogCombined").getOrElse("false"))
+}

@@ -110,6 +110,33 @@
       "options": []
     },
     {
+      "name": "Monet - Individual Nuvio catalog rows",
+      "description": "Select individual NuvioTV catalogs in the app's content picker, with Nuvio icons and refresh independent of Recommendations.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.klevico.monet",
+          "name": "Monet",
+          "description": null,
+          "apkFileType": "APK",
+          "formFactor": "TV",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "1.0.97",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 26,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Monet - Unlock premium",
       "description": "Original premium unlock from Doom's Patches, updated here for Monet 1.0.97. Unlock local premium features. Select only one Monet premium patch.",
       "default": false,

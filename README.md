@@ -14,7 +14,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.14.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.14.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;33 patches total
+> **[v0.15.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.15.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;33 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>

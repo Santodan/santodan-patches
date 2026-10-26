@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.util.zip.ZipFile
 
 group = "software.santodan.patches"
 
@@ -631,7 +632,7 @@ tasks {
     register<JavaExec>("generatePatchesList") {
         description = "Build patch with patch list"
 
-        dependsOn(build)
+        dependsOn(build, "buildAndroid")
 
         classpath = sourceSets["main"].runtimeClasspath + patchListGeneratorClasspath
         mainClass.set("util.PatchListGeneratorKt")
@@ -639,7 +640,35 @@ tasks {
 
     // Used by gradle-semantic-release-plugin.
     publish {
-        dependsOn("generatePatchesList")
+        dependsOn("generatePatchesList", "verifyAndroidBundle")
+    }
+}
+
+// buildAndroid adds DEX to the JVM archive in place. A later jar/build task can
+// replace that archive, so validate after both metadata generation and dexing.
+tasks.register("verifyAndroidBundle") {
+    group = "verification"
+    description = "Reject release bundles without root-level Android DEX entries."
+    dependsOn("generatePatchesList")
+    doLast {
+        val bundle = tasks.named<org.gradle.jvm.tasks.Jar>("jar").get().archiveFile.get().asFile
+        ZipFile(bundle).use { zip ->
+            val dexEntries = zip.entries().asSequence()
+                .filter { !it.isDirectory && it.name.matches(Regex("classes([2-9][0-9]*|1[0-9]+)?\\.dex")) }
+                .toList()
+            check(dexEntries.any { it.name == "classes.dex" }) {
+                "Patch bundle is missing root classes.dex: $bundle"
+            }
+            dexEntries.forEach { entry ->
+                val header = zip.getInputStream(entry).use { it.readNBytes(8) }
+                check(entry.size >= 112 && header.size == 8 &&
+                    header.copyOfRange(0, 4).contentEquals(byteArrayOf(100, 101, 120, 10)) &&
+                    header[7] == 0.toByte()) {
+                    "Invalid DEX entry ${entry.name} in $bundle"
+                }
+            }
+            logger.lifecycle("Verified {} Android DEX entries in {}", dexEntries.size, bundle)
+        }
     }
 }
 

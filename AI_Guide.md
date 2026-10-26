@@ -134,6 +134,13 @@ Rescan inputs for each task. Apps without existing patches need their own inspec
 
 ### Local commands and verification
 
+For release packaging and issue #1 (missing DEX), finish with
+`:patches:verifyAndroidBundle`. It requires metadata generation and Android
+compilation, then validates root DEX entries in the actual release archive.
+Regular JVM builds can replace the in-place Android archive; Desktop import
+alone does not detect this because it loads JVM classes. Release preparation
+and `publish` require the Android archive check before upload.
+
 Run from the repository in PowerShell. Check that Java 21 is selected with
 `java -version`; Gradle's runtime JDK differs from the injected code's Java 11 target.
 The project uses Android platform 36 for host verification stubs. SDK lookup uses

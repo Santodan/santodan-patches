@@ -892,3 +892,38 @@ tasks.register<JavaExec>("verifyMonetCatalogApk") {
         file(providers.gradleProperty("monetCatalogApk").getOrElse("../../Apps/Monet/monet-1.0.97-catalog-rows-unsigned.apk")).absolutePath,
         providers.gradleProperty("monetCatalogCombined").getOrElse("false"))
 }
+
+tasks.register<JavaExec>("verifyMonetDisplayedCardsRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonetDisplayedCardsRuntime")
+    args(file("src/test/fixtures/monet-cards").absolutePath,
+        file("../extensions/monet-displayed-cards/src/main/java").absolutePath,
+        layout.buildDirectory.dir("verification/monet/displayed-cards-runtime").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyMonetDisplayedCards") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonetDisplayedCards")
+    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
+        layout.buildDirectory.file("verification/monet/displayed-cards-hooks.dex").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyMonetDisplayedCardsBundle") {
+    dependsOn("testClasses", "buildAndroid")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonetDisplayedCardsBundleKt")
+    maxHeapSize = "3g"
+    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
+        layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile.absolutePath,
+        layout.buildDirectory.dir("verification/monet/displayed-cards-bundle").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyMonetDisplayedCardsApk") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonetDisplayedCardsApk")
+    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
+        file("../../Apps/Monet/monet-1.0.97-displayed-cards-unsigned.apk").absolutePath)
+}

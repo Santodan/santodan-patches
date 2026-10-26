@@ -10,13 +10,16 @@ public final class VerifyMonetCatalogApk {
     public static void main(String[] args) throws Exception {
         var originals=VerifyMonet.read(args[0]);
         var contracts=MonetCatalogChannelsPatch.validate(originals);
+        boolean combined=args.length>2&&Boolean.parseBoolean(args[2]);
+        var cardContracts=combined?MonetDisplayedCardsPatch.validate(originals):Collections.<String,Method>emptyMap();
         Map<String,ClassDef> types=new HashMap<>();originals.forEach(c->types.put(c.getType(),c));
-        Set<String> seen=new HashSet<>();int hooks=0,extension=0;
+        Set<String> seen=new HashSet<>();int hooks=0,extension=0,cardHooks=0,premiumHooks=0;
         for(ClassDef c:VerifyMonet.read(args[1])) {
             VerifyMonetCatalog.require(seen.add(c.getType()),"Duplicate APK class "+c.getType());
             ClassDef before=types.get(c.getType());
             if(before==null) {
-                VerifyMonetCatalog.require(c.getType().startsWith("Lsoftware/santodan/extension/monetchannels/"),"Unexpected APK class "+c.getType());extension++;continue;
+                VerifyMonetCatalog.require(c.getType().startsWith("Lsoftware/santodan/extension/monetchannels/")
+                    || combined&&c.getType().startsWith("Lsoftware/santodan/extension/monetcards/"),"Unexpected APK class "+c.getType());extension++;continue;
             }
             Map<String,Method> methods=new HashMap<>();before.getMethods().forEach(m->methods.put(m.toString(),m));
             int count=0;
@@ -24,13 +27,17 @@ public final class VerifyMonetCatalogApk {
                 count++;Method old=methods.get(m.toString());VerifyMonetCatalog.require(old!=null,"Unexpected native method "+m);
                 if(MonetCatalogChannelsPatch.TARGETS.contains(m.toString())) {
                     VerifyMonetCatalog.mutation(contracts.get(m.toString()),m);hooks++;
-
+                } else if(combined&&MonetDisplayedCardsPatch.TARGETS.contains(m.toString())) {
+                    VerifyMonetDisplayedCards.mutation(cardContracts.get(m.toString()),m);cardHooks++;
+                } else if(combined&&m.toString().equals("La/sa5;->a()Z")) {
+                    VerifyMonet.verifyBehavior(old,m);premiumHooks++;
                 } else if(old.getImplementation()!=null) VerifyMonetCatalog.require(
                     NuvioPlaybackButtonsPatch.fingerprint(new MutableMethod(old)).equals(NuvioPlaybackButtonsPatch.fingerprint(new MutableMethod(m))),"Unrelated APK method changed "+m);
             }
             VerifyMonetCatalog.require(count==methods.size(),"Native methods lost");
         }
         VerifyMonetCatalog.require(hooks==MonetCatalogChannelsPatch.TARGETS.size()&&extension>0&&seen.containsAll(types.keySet()),"APK hooks/class set incomplete");
+        VerifyMonetCatalog.require(!combined||(cardHooks==MonetDisplayedCardsPatch.TARGETS.size()&&premiumHooks==1),"Combined APK features incomplete");
         int unchanged=0;
         try(var original=new ZipFile(args[0]);var apk=new ZipFile(args[1])) {
             for(var entry:Collections.list(original.entries())) {

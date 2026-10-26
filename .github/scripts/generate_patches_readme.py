@@ -82,6 +82,7 @@ def patches_table(patches):
         a = anchor(p["name"])
         documentation = {
             "Monet - Individual Nuvio catalog rows": "docs/MonetCatalogChannels.md",
+            "Monet - Unlimited displayed cards": "docs/MonetDisplayedCards.md",
             "Monet - Unlock premium": "docs/Monet.md",
             "Monet - Unlock premium (Experimental, any version)": "docs/Monet.md",
             "NuvioTV - Customize playback buttons": "docs/NuvioPlaybackButtons.md",

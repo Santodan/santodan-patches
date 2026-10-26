@@ -16,6 +16,13 @@ installer-source spoof.
 
 ## Start here: creating or modifying a patch
 
+For Monet 1.0.97 **Displayed Cards** above 20, see
+[MonetDisplayedCards.md](docs/MonetDisplayedCards.md). The optional **Monet - Unlimited
+displayed cards** patch adds ten-card steps and Max to the native themed picker,
+and removes the shared preference/schema cap. Run `verifyMonetDisplayedCards`,
+`verifyMonetDisplayedCardsRuntime`, `verifyMonetDisplayedCardsBundle` and
+`verifyMorpheDesktopImport`; `verifyMonetDisplayedCardsApk` checks the Desktop rebuild.
+
 For individual Nuvio catalogs in Monet 1.0.97 custom media rows, see
 [MonetCatalogChannels.md](docs/MonetCatalogChannels.md). The optional **Monet -
 Individual Nuvio catalog rows** patch belongs to Monet; Nuvio keeps publishing its

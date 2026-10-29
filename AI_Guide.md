@@ -42,10 +42,19 @@ correctly. Keep this user-reported device result distinct from local APK checks.
 The local Desktop JAR is now 1.19.1; pass its path to verifyMorpheDesktopImport. Run `verifyMonetCatalog`,
 `verifyMonetCatalogRuntime`, `verifyMonetCatalogBundle` and `verifyMorpheDesktopImport`.
 
-For Monet Launcher `com.klevico.monet` 1.0.97, see [Monet.md](docs/Monet.md).
+For Monet Launcher `com.klevico.monet` **1.1.0** (code 134), see [Monet.md](docs/Monet.md).
 The exact-version and unrestricted experimental premium patches are alternatives;
 select only one. Both use the shared native evaluator for startup and refreshes.
-Run `verifyMonet` and `verifyMonetBundle`; other versions remain unverified.
+The 1.1.0 evaluator is `La/dl5;->a()Z`; R8 removed `final`, breaking the previous
+experimental matcher despite unchanged semantics. The shared matcher now proves
+all 16 boolean cases and billing/lifecycle ownership, tolerating final/register/
+branch layout changes. It still fails closed; unrestricted versions are not a
+future-compatibility guarantee. Existing 1.0.97 support is retained, not extended.
+The user reported on 2026-10-29 that the updated premium patch appears to work on
+their device; the selected alternative and individual lifecycle checks were not
+specified. Keep this user-reported result distinct from local DEX/rebuild checks.
+Run `verifyMonet`, `verifyMonetBundle`, `verifyAndroidBundle` and
+`verifyMorpheDesktopImport`. Catalog/card-limit patches remain 1.0.97-only.
 
 The bundle targets Morphe Patcher **2.0.0** / Desktop **1.19.0**. Read
 `docs/MorpheCompatibility.md` for compatibility constructors, form factors,

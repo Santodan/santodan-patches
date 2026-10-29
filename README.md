@@ -54,7 +54,7 @@ MEO 5.7.0 patches provide a separately installable clone and compatibility handl
 <summary>📦 Monet&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>
 
-The original premium unlock is from [Doom's Patches](https://github.com/rushiranpise/morphe-patches), updated here for Monet Launcher **1.0.97**. A separate experimental variant has no version restriction. Select **only one**; both are disabled by default. The experimental variant requires a matching native layout, and other versions remain unverified. Both variants passed original-DEX verification and APK rebuilding on 1.0.97; device testing remains outstanding. See [implementation and verification details](docs/Monet.md).
+The original premium unlock is from [Doom's Patches](https://github.com/rushiranpise/morphe-patches), updated here for Monet Launcher **1.1.0**, retaining the existing 1.0.97 target. A separate experimental variant has no version restriction and validates billing ownership and all 16 evaluator input states rather than exact compiler flags/registers. Future compatibility is not guaranteed; unsupported layouts fail safely. Select **only one**; both are disabled by default. Both variants passed original-DEX, packaged-bundle and APK rebuild checks on 1.1.0. The user reported that the updated premium patch works on their device; the selected alternative and individual lifecycle checks were not specified. See [implementation and verification details](docs/Monet.md).
 
 The optional **Monet - Individual Nuvio catalog rows** patch adds published catalogs inside **NuVioTV > Content**, with NuVio's installed icon and refresh independent of Recommendations. It targets **1.0.97** and preserves existing catalog selections. Build, runtime, DEX, combined-patch and signed-APK checks passed; the user confirmed the updated APK works on their Android TV setup. See [setup and verification details](docs/MonetCatalogChannels.md).
 
@@ -69,8 +69,8 @@ The optional **Monet - Unlimited displayed cards** patch removes the 20-card dis
 |----------|----------------|-----------|
 | [Monet - Individual Nuvio catalog rows](docs/MonetCatalogChannels.md) | Select individual NuvioTV catalogs in the app's content picker, with Nuvio icons and refresh independent of Recommendations. |  |
 | [Monet - Unlimited displayed cards](docs/MonetDisplayedCards.md) | Remove the 20-card limit from Displayed Cards. Add -10, +10 and Max to the original themed picker, preserving its layout and single-card steps. |  |
-| [Monet - Unlock premium](docs/Monet.md) | Original premium unlock from Doom's Patches, updated here for Monet 1.0.97. Unlock local premium features. Select only one Monet premium patch. |  |
-| [Monet - Unlock premium (Experimental, any version)](docs/Monet.md) | Original premium unlock from Doom's Patches, updated here for Monet 1.0.97. Experimental variant with no version restriction; requires a matching native layout. Select only one Monet premium patch. |  |
+| [Monet - Unlock premium](docs/Monet.md) | Original premium unlock from Doom's Patches, updated here for Monet 1.1.0. Unlock local premium features. Select only one Monet premium patch. |  |
+| [Monet - Unlock premium (Experimental, any version)](docs/Monet.md) | Original premium unlock from Doom's Patches, verified on Monet 1.1.0. No version restriction; validates billing ownership and evaluator semantics, not obfuscated names or final flags. Future layouts may still be unsupported. Select only one Monet premium patch. |  |
 
 </details>
 

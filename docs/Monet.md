@@ -5,7 +5,7 @@ The user-confirmed integration puts catalogs inside **NuVioTV > Content**, uses
 NuVio's installed icon and refreshes independently of Recommendations. That
 independent optional patch can be combined with either premium alternative.
 
-For the **1.0.97** Displayed Cards limit and additional controls, see
+For the **1.1.0 / 1.0.97** Displayed Cards limit and additional controls, see
 [MonetDisplayedCards.md](MonetDisplayedCards.md). That patch also works independently
 or with either premium alternative.
 
@@ -85,7 +85,8 @@ semantically changed candidates fail before mutation.
 Changed preference keys, constructor contracts, reordered field roles, inlining,
 new entitlement logic or server enforcement can still require fresh inspection.
 Do not solve these by accepting arbitrary boolean methods or broadly changing
-billing storage. Catalog rows and displayed-card patches remain **1.0.97-only**.
+billing storage. Catalog rows remain **1.0.97-only**; the separate displayed-card
+patch now also supports **1.1.0** with reviewed native UI/runtime contracts.
 
 ## Historical 1.0.97 input and contract
 

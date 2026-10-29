@@ -16,12 +16,16 @@ installer-source spoof.
 
 ## Start here: creating or modifying a patch
 
-For Monet 1.0.97 **Displayed Cards** above 20, see
+For Monet **1.1.0** **Displayed Cards** above 20 (existing 1.0.97 support retained), see
 [MonetDisplayedCards.md](docs/MonetDisplayedCards.md). The optional **Monet - Unlimited
 displayed cards** patch adds ten-card steps and Max to the native themed picker,
-and removes the shared preference/schema cap. Run `verifyMonetDisplayedCards`,
-`verifyMonetDisplayedCardsRuntime`, `verifyMonetDisplayedCardsBundle` and
-`verifyMorpheDesktopImport`; `verifyMonetDisplayedCardsApk` checks the Desktop rebuild.
+and removes the shared preference/schema cap. Separate `MonetDisplayedCards110`
+contracts cover the specialized native Apply renderer and direct numeric summaries.
+Max's label survives text restarts; the patch selects reviewed runtime bindings.
+Run `verifyMonetDisplayedCards110`, `verifyMonetDisplayedCards110Runtime`,
+`verifyMonetDisplayedCards110Bundle` and `verifyMorpheDesktopImport`;
+`verifyMonetDisplayedCards110Apk` checks the actual standalone/combined rebuild.
+Catalog rows remain 1.0.97-only.
 
 For individual Nuvio catalogs in Monet 1.0.97 custom media rows, see
 [MonetCatalogChannels.md](docs/MonetCatalogChannels.md). The optional **Monet -
@@ -54,7 +58,8 @@ The user reported on 2026-10-29 that the updated premium patch appears to work o
 their device; the selected alternative and individual lifecycle checks were not
 specified. Keep this user-reported result distinct from local DEX/rebuild checks.
 Run `verifyMonet`, `verifyMonetBundle`, `verifyAndroidBundle` and
-`verifyMorpheDesktopImport`. Catalog/card-limit patches remain 1.0.97-only.
+`verifyMorpheDesktopImport`. The card-limit patch also supports 1.1.0; catalog rows
+remain 1.0.97-only.
 
 The bundle targets Morphe Patcher **2.0.0** / Desktop **1.19.0**. Read
 `docs/MorpheCompatibility.md` for compatibility constructors, form factors,

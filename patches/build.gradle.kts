@@ -930,37 +930,56 @@ tasks.register<JavaExec>("verifyMonetCatalogApk") {
         providers.gradleProperty("monetCatalogCombined").getOrElse("false"))
 }
 
-tasks.register<JavaExec>("verifyMonetDisplayedCardsRuntime") {
+// Unversioned entry points follow the latest workspace target; historical verifier
+// sources/fixtures are retained without extending their old-version contracts.
+tasks.register("verifyMonetDisplayedCardsRuntime") {
+    dependsOn("verifyMonetDisplayedCards110Runtime")
+}
+
+tasks.register<JavaExec>("verifyMonetDisplayedCards110Runtime") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyMonetDisplayedCardsRuntime")
-    args(file("src/test/fixtures/monet-cards").absolutePath,
+    args(file("src/test/fixtures/monet-cards-110").absolutePath,
         file("../extensions/monet-displayed-cards/src/main/java").absolutePath,
-        layout.buildDirectory.dir("verification/monet/displayed-cards-runtime").get().asFile.absolutePath)
+        layout.buildDirectory.dir("verification/monet/displayed-cards-110-runtime").get().asFile.absolutePath)
 }
 
-tasks.register<JavaExec>("verifyMonetDisplayedCards") {
+tasks.register<JavaExec>("verifyMonetDisplayedCards110") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("santodan.patches.VerifyMonetDisplayedCards")
-    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
-        layout.buildDirectory.file("verification/monet/displayed-cards-hooks.dex").get().asFile.absolutePath)
+    mainClass.set("santodan.patches.VerifyMonetDisplayedCards110")
+    args(file("../../OriginalApps/monet-1.1.0.apk").absolutePath,
+        layout.buildDirectory.file("verification/monet/displayed-cards-110-hooks.dex").get().asFile.absolutePath)
 }
 
-tasks.register<JavaExec>("verifyMonetDisplayedCardsBundle") {
+tasks.register<JavaExec>("verifyMonetDisplayedCards110Bundle") {
     dependsOn("testClasses", "buildAndroid")
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("santodan.patches.VerifyMonetDisplayedCardsBundleKt")
+    mainClass.set("santodan.patches.VerifyMonetDisplayedCards110BundleKt")
     maxHeapSize = "3g"
-    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
+    args(file("../../OriginalApps/monet-1.1.0.apk").absolutePath,
         layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile.absolutePath,
-        layout.buildDirectory.dir("verification/monet/displayed-cards-bundle").get().asFile.absolutePath)
+        layout.buildDirectory.dir("verification/monet/displayed-cards-110-bundle").get().asFile.absolutePath)
 }
 
-tasks.register<JavaExec>("verifyMonetDisplayedCardsApk") {
+tasks.register<JavaExec>("verifyMonetDisplayedCards110Apk") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
-    mainClass.set("santodan.patches.VerifyMonetDisplayedCardsApk")
-    args(file("../../OriginalApps/monet-1.0.97.apk").absolutePath,
-        file("../../Apps/Monet/monet-1.0.97-displayed-cards-unsigned.apk").absolutePath)
+    mainClass.set("santodan.patches.VerifyMonetDisplayedCards110Apk")
+    args(file("../../OriginalApps/monet-1.1.0.apk").absolutePath,
+        file(providers.gradleProperty("monetCards110Apk").getOrElse("../../Apps/Monet/monet-1.1.0-displayed-cards-unsigned.apk")).absolutePath,
+        providers.gradleProperty("monetCards110Premium").getOrElse("false"))
+}
+
+tasks.register("verifyMonetDisplayedCards") {
+    dependsOn("verifyMonetDisplayedCards110")
+}
+
+tasks.register("verifyMonetDisplayedCardsBundle") {
+    dependsOn("verifyMonetDisplayedCards110Bundle")
+}
+
+tasks.register("verifyMonetDisplayedCardsApk") {
+    dependsOn("verifyMonetDisplayedCards110Apk")
 }

@@ -25,21 +25,32 @@ Max's label survives text restarts; the patch selects reviewed runtime bindings.
 Run `verifyMonetDisplayedCards110`, `verifyMonetDisplayedCards110Runtime`,
 `verifyMonetDisplayedCards110Bundle` and `verifyMorpheDesktopImport`;
 `verifyMonetDisplayedCards110Apk` checks the actual standalone/combined rebuild.
-Catalog rows remain 1.0.97-only.
+Catalog rows also support 1.1.0, including combined card/premium selections.
 
-For individual Nuvio catalogs in Monet 1.0.97 custom media rows, see
+For individual Nuvio catalogs in Monet 1.1.0 custom media rows (existing 1.0.97 support retained), see
 [MonetCatalogChannels.md](docs/MonetCatalogChannels.md). The optional **Monet -
 Individual Nuvio catalog rows** patch belongs to Monet; Nuvio keeps publishing its
 existing separate Android TV channels. Catalogs are now choices inside the real
 Nuvio app's Content picker, use its installed icon, and refresh independently of
 Recommendations through a foreground provider subscription and native revision
 flow. Preserve saved synthetic IDs while resolving their real package for icons.
-Validate the actual signed delivery APK, not just the bundle/unsigned fixture:
+The 1.1.0 port preserves native channel/filter choices and saved IDs; ten native
+hooks, host runtime, all six bundle combinations and actual unsigned APK audits
+passed. Use `verifyMonetCatalog110Apk` with `monetCatalog110Cards`,
+`monetCatalog110Premium` and `monetCatalog110Apk` for combined delivery checks.
+It is not installed/device-tested; diagnostics use `Catalog content 1.1.0`.
+The reported 1.1.0 Content-picker crash was a null secondary section label:
+native `f24.B1` calls `String.length()` without a null guard. Return an empty
+string for synthetic catalog section labels; retain the adjacent-label runtime
+regression. The current rebuilt combined output is
+`Apps/Monet/monet-1.1.0-catalog-cards-premium-picker-fix-unsigned.apk`;
+earlier unsigned catalog APKs predate this fix. Device confirmation is pending.
+Historical 1.0.97 delivery lesson: validate the actual signed APK, not just the bundle/unsigned fixture:
 the previous `Monet-1.0.97-patches-0.14.0.apk` remained stale and the installed
 emulator matched it byte-for-byte. The verified replacement is
 `Apps/Monet/Monet-1.0.97-patches-0.14.0-catalog-content-v2.apk` (workspace-relative),
 also copied to the usual versioned output. Use `-PmonetCatalogCombined=true` to
-verify the catalog/card-limit/premium delivery and `Catalog content v2` runtime
+verify the historical catalog/card-limit/premium delivery and `Catalog content v2` runtime
 markers to distinguish it from the old integration. No installation was performed.
 The user subsequently confirmed on 2026-10-26 that the updated APK appears to work
 correctly. Keep this user-reported device result distinct from local APK checks.
@@ -58,8 +69,7 @@ The user reported on 2026-10-29 that the updated premium patch appears to work o
 their device; the selected alternative and individual lifecycle checks were not
 specified. Keep this user-reported result distinct from local DEX/rebuild checks.
 Run `verifyMonet`, `verifyMonetBundle`, `verifyAndroidBundle` and
-`verifyMorpheDesktopImport`. The card-limit patch also supports 1.1.0; catalog rows
-remain 1.0.97-only.
+`verifyMorpheDesktopImport`. Both card-limit and catalog-row patches also support 1.1.0.
 
 The bundle targets Morphe Patcher **2.0.0** / Desktop **1.19.0**. Read
 `docs/MorpheCompatibility.md` for compatibility constructors, form factors,

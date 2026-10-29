@@ -1,6 +1,6 @@
 # Monet premium
 
-For separate Nuvio catalog rows on **1.0.97**, see [MonetCatalogChannels.md](MonetCatalogChannels.md).
+For separate Nuvio catalog rows on **1.1.0** (existing 1.0.97 support retained), see [MonetCatalogChannels.md](MonetCatalogChannels.md).
 The user-confirmed integration puts catalogs inside **NuVioTV > Content**, uses
 NuVio's installed icon and refreshes independently of Recommendations. That
 independent optional patch can be combined with either premium alternative.
@@ -85,8 +85,8 @@ semantically changed candidates fail before mutation.
 Changed preference keys, constructor contracts, reordered field roles, inlining,
 new entitlement logic or server enforcement can still require fresh inspection.
 Do not solve these by accepting arbitrary boolean methods or broadly changing
-billing storage. Catalog rows remain **1.0.97-only**; the separate displayed-card
-patch now also supports **1.1.0** with reviewed native UI/runtime contracts.
+billing storage. Catalog rows and the separate displayed-card patch also support
+**1.1.0** with reviewed native UI/runtime contracts and combined-patch verification.
 
 ## Historical 1.0.97 input and contract
 

@@ -3,8 +3,8 @@
 Select **Monet - Unlimited displayed cards** for original Monet
 `com.klevico.monet` **1.1.0** (version code 134, Android 8.0+), retaining existing
 **1.0.97** support. It works independently or with either premium alternative.
-Select only one premium alternative. **Individual Nuvio catalog rows remains
-1.0.97-only** and is not included in the 1.1.0 combinations.
+Select only one premium alternative. **Individual Nuvio catalog rows** also
+supports 1.1.0; combined catalog/cards/premium checks cover the shared menu method.
 
 ## Use
 

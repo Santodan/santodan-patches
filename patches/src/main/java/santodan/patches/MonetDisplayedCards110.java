@@ -52,6 +52,9 @@ final class MonetDisplayedCards110 {
     static IllegalStateException unsupported(String message) {
         return new IllegalStateException("Unsupported Monet 1.1.0 displayed cards bytecode: " + message);
     }
+    static String fingerprint(Method method) {
+        return NuvioPlaybackButtonsPatch.fingerprint(MonetCatalogChannels110.withoutHeader(method));
+    }
     static Map<String,Method> validate(List<? extends ClassDef> classes) {
         Map<String,Method> found = new HashMap<>();
         Set<String> types = new HashSet<>(), symbols = new HashSet<>();
@@ -65,7 +68,7 @@ final class MonetDisplayedCards110 {
                     : m.getDefiningClass().equals("La/jw1;") || m.getDefiningClass().equals("La/xb5;")
                         || m.getName().equals("f") ? 17 : 25;
                 if (found.put(m.toString(), m) != null || m.getAccessFlags() != flags || m.getImplementation() == null
-                    || !CONTRACTS.get(m.toString()).equals(NuvioPlaybackButtonsPatch.fingerprint(new MutableMethod(m))))
+                    || !CONTRACTS.get(m.toString()).equals(fingerprint(m)))
                     throw unsupported("Changed or already patched contract " + m);
             }
             for (Field f : c.getFields()) if ((f.getAccessFlags() & 9) == 9) symbols.add(f.toString());
@@ -88,7 +91,7 @@ final class MonetDisplayedCards110 {
     }
     static void apply(MutableMethod method) {
         String signature = method.toString();
-        if (!TARGETS.contains(signature) || !CONTRACTS.get(signature).equals(NuvioPlaybackButtonsPatch.fingerprint(method)))
+        if (!TARGETS.contains(signature) || !CONTRACTS.get(signature).equals(fingerprint(method)))
             throw unsupported("Changed or already patched method " + method);
         var code = method.getImplementation();
         if (signature.equals(CLAMP)) {
@@ -108,7 +111,7 @@ final class MonetDisplayedCards110 {
                 new ImmutableMethodReference(UI, "text", List.of("Ljava/lang/String;", "Ljava/lang/Object;"), "Ljava/lang/String;")));
             code.addInstruction(78, new BuilderInstruction11x(Opcode.MOVE_RESULT_OBJECT, 0));
         } else if (SUMMARIES.containsKey(signature)) {
-            int index = SUMMARIES.get(signature);
+            int index = SUMMARIES.get(signature) + MonetCatalogChannels110.headerShift(method);
             Instruction original = MonetPremiumPatch.instructions(method).get(index);
             ImmutableMethodReference reference = new ImmutableMethodReference(MODEL, "summary", List.of("I"), "Ljava/lang/String;");
             if (original instanceof RegisterRangeInstruction) {

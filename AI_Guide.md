@@ -410,16 +410,37 @@ official installation. Device testing is still required for server-side behavior
 
 ## Pillo 0.6.27
 
-All six Pillo patches now support `xyz.rtrvr.pillo` **0.6.27**, code **472**.
+All six Pillo patches support `xyz.rtrvr.pillo` **0.6.27**, version code **472**.
 The optional **Pillo - Premium and ad-free** replaces the external **Unlock
-Premium** patch's obsolete provider/Job fingerprints. Select only the replacement
-on 0.6.27; native coroutine state emission and preference persistence remain intact.
-Read [Pillo627.md](docs/Pillo627.md). Version-specific native contracts and `627`
-runtime classes retain historical app support separately. The user supplied Play
-ARM64 APKS has the same base DEX as the inspected APKPure build; preserve its splits.
-Run `verifyPillo627Bundle`, `verifyPillo627Runtime`, `generatePatchesList`,
-`verifyAndroidBundle` and Desktop 1.19.1 import. The original Weight in Progress
-feature is already a separate commit; this ports its native contracts to 0.6.27.
+Premium** patch whose old provider path/Job fingerprint fails on 0.6.27. Deselect
+that external patch when using this replacement. It changes only the two native
+setter boolean inputs, after validating their coroutine captures and persistence.
+Read [Pillo627.md](docs/Pillo627.md) for current contracts, schema and runtime checks.
+`Pillo627*` Java contracts and `*627` runtime classes isolate the new R8/Compose ABI
+from historical implementations. The database identity changed; 0.6.27 local archives
+are tagged 0.6.27. Restore also accepts the user-requested 0.6.20/schema-51 archives,
+then upgrades only their staged database with 0.6.27's native Room migrations 51-52-53
+and schema validation before confirmation/live replacement. Never just relabel an old
+archive: native migration converts reminder interval values from hours to minutes. The early
+restore hook skips secondary processes; the post-create hook preserves the native
+crash-report process return. Run `verifyPillo627Bundle` and `verifyPillo627Runtime`,
+then `generatePatchesList`, `verifyAndroidBundle`, and `verifyMorpheDesktopImport`
+with the workspace Desktop 1.19.1 JAR. The bundle verifier exercises each individual
+selection (including the Progress dependency), all six together, full DEX reload
+and an unsigned rebuild of the original base APK. Keep the original XAPK splits.
+The user reports successful installation on emulator and phone using their Play Store
+ARM64 `pillo-0.6.27.apks`; its base DEX matches the inspected APKPure build byte-for-byte.
+The staged migration of their actual backup passed native Room/SQLite on the emulator;
+wrong-identity rejection and rollback after a native migration failure were verified.
+A later restore failure at the staged-file guard was caused by comparing absolute
+and canonical paths; resolve the parent first and retain leaf-link rejection.
+The device fixture now preserves aliased paths and checks full original-archive
+extraction plus migration through an alias, as well as leaf-symlink rejection.
+The agent did not perform the full live restore. After the path-guard fix, the user
+reported on 2026-10-30 that everything seemed to be working; preserve this as a
+user-reported device result, not agent-run UI verification. See Pillo627.md for the compatible converted backup
+and exact migration restrictions. No new app signing/installation was performed for
+this restore fix.
 
 ## Pillo 0.6.19 and 0.6.20
 

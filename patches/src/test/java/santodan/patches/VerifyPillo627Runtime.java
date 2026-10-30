@@ -47,6 +47,16 @@ public final class VerifyPillo627Runtime {
             File wrong = root.resolve("wrong-version").toFile();
             try { LocalArchive.extract(archive, wrong, "0.6.20"); throw new AssertionError("Accepted incompatible archive"); }
             catch (IOException expected) { check(!wrong.exists(), "Rejected archive left staged files"); }
+            File legacy = root.resolve("legacy.zip").toFile();
+            LocalArchive.write(legacy, roots, "0.6.20");
+            File legacyStage = root.resolve("legacy-stage").toFile();
+            check(LocalArchive.extract(legacy, legacyStage, "0.6.27", "0.6.20").getString("appVersion").equals("0.6.20"), "Approved migration source rejected");
+            check(Files.readString(legacyStage.toPath().resolve("data/database")).equals("database bytes"), "Migration extraction changed source bytes");
+            File unsupported = root.resolve("unsupported.zip").toFile();
+            LocalArchive.write(unsupported, roots, "0.6.19");
+            File unsupportedStage = root.resolve("unsupported-stage").toFile();
+            try { LocalArchive.extract(unsupported, unsupportedStage, "0.6.27", "0.6.20"); throw new AssertionError("Accepted unsupported source version"); }
+            catch (IOException expected) { check(!unsupportedStage.exists(), "Unsupported source left staged files"); }
             System.out.println("PASS: 0.6.27 archive round-trip, version isolation, rejected staging cleanup");
 
             Path stubs = root.resolve("stubs"); Files.createDirectories(stubs);

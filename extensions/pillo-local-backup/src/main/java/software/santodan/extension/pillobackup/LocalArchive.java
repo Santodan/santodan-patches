@@ -84,6 +84,12 @@ public final class LocalArchive {
         return extract(archive, stage, "0.6.20");
     }
     public static JSONObject extract(File archive, File stage, String appVersion) throws Exception {
+        return extractVersions(archive, stage, Collections.singleton(appVersion));
+    }
+    public static JSONObject extract(File archive, File stage, String appVersion, String sourceVersion) throws Exception {
+        return extractVersions(archive, stage, new HashSet<>(Arrays.asList(appVersion, sourceVersion)));
+    }
+    private static JSONObject extractVersions(File archive, File stage, Set<String> appVersions) throws Exception {
         if (stage.exists()) throw new IOException("Restore staging directory already exists.");
         if (!stage.mkdirs()) throw new IOException("Cannot create restore staging directory.");
         try (ZipFile zip = new ZipFile(archive)) {
@@ -101,7 +107,7 @@ public final class LocalArchive {
             try (InputStream input = zip.getInputStream(metadata)) { transfer(input, bytes, 8 * 1024 * 1024); }
             JSONObject manifest = new JSONObject(new String(bytes.toByteArray(), StandardCharsets.UTF_8));
             if (!manifest.getString("format").equals("santodan-pillo-local-backup") || manifest.getInt("version") != 1
-                || !manifest.getString("package").equals("xyz.rtrvr.pillo") || !manifest.getString("appVersion").equals(appVersion))
+                || !manifest.getString("package").equals("xyz.rtrvr.pillo") || !appVersions.contains(manifest.getString("appVersion")))
                 throw new IOException("Backup format or Pillo version is incompatible.");
             Set<String> roots = new HashSet<>();
             JSONArray rootList = manifest.getJSONArray("roots");

@@ -78,14 +78,95 @@ ABI. Exact reflection contracts are in `Pillo627Contracts.java` and
   Observe selection with `ComparisonsKt.t`; never pass the empty-ID sentinel to
   the chart. Use `ViewTrackerReadingListContent$lambda$4$0$1$0` for native items.
 
-## Verification
+## Restore older local backups into 0.6.27
 
-Run `verifyPillo627Bundle` and `verifyPillo627Runtime` against the original Play
-base, then `generatePatchesList`, `verifyAndroidBundle` and Desktop import with
-`-PmorpheDesktopJar=../../morphe-desktop-1.19.1-all.jar`. The bundle checks individual
-selections and all six together, original contracts, rejection cases, cross-DEX
-reload and bundled signatures. Runtime checks exercise observer disposal, profile
-selection, renderer cleanup, summaries and asynchronous weight imports.
+The initial port rejected all older local archives. The user explicitly requested
+restoring their 0.6.20 backup, so the 0.6.27 restore path now accepts version-1
+archives tagged **0.6.20** as well as **0.6.27**. Existing older-app APIs and hooks
+retain their behavior; this is migration into the latest app, not downgrade support.
 
-Bundle: `patches/build/libs/patches-0.15.0.mpp`. No release version was bumped.
-Historical support remains unchanged. No new signing or installation was performed.
+Verify the archive's files/checksums first. A 0.6.20 database must have SQLite version
+51 and Room identity `acdc24b1947a76c496bdc3ac20b3d60e`. Current backups require
+version 53 and the current identity. Reject other versions, damage or inconsistent
+metadata. Merely changing a version label or Room identity is unsafe.
+
+`PilloRestoreMigration627` creates an independent Room builder naming only the
+staged database and registers native `AppDatabase.Companion.getMIGRATION_51_52()`
+and `getMIGRATION_52_53()`. It uses no live singleton, diagnostic callbacks or
+destructive fallback. Opening through `RoomDatabase.getOpenHelper()` and
+`lb.f.getWritableDatabase()` runs native migration and generated schema validation
+transactionally. Migration 51-52 adds Symptom/SymptomLog tables and indexes;
+52-53 converts three reminder/intake interval columns from hours to minutes.
+Checkpoint/truncate WAL and close before copying a single database file. Recheck
+integrity, version and identity before confirmation/live replacement. Failed imports
+discard staging, log the error with `PilloLocalBackup627`, and keep current data.
+Retain pre-restore backup, journal/rollback, restart and native alarm audit behavior.
+
+The supplied `Apps/Pillo/Pillo-local-20261030-124624.pillo-backup.zip` is intact
+and contains schema 51. Native migration and Room validation succeeded on a copy
+in the emulator's `/data/local/tmp/pillo-restore-check/` sandbox, using the Play
+base DEX and the built extension through `PilloRestoreDeviceCheck`/`app_process`.
+No installation or access to live Pillo storage was required. Row-level checks
+verified all original application data except the native interval conversions;
+Room identity/SQLite device-locale metadata changed, and two native tables were
+added. Every other archived file remains byte-identical, and checksums validate.
+Wrong-identity input was rejected without writes; an injected native migration
+failure rolled back schema/data changes; current schema was accepted without
+rerunning the upgrade.
+
+Original archive unchanged. A separate compatible archive is available at
+`Apps/Pillo/Pillo-local-20261030-124624-for-0.6.27.pillo-backup.zip`, usable with
+the previously installed 0.6.27 patch. The updated bundle accepts the original
+0.6.20 archive directly.
+
+## Android storage aliases during restore
+
+The subsequent device log confirmed the updated runtime was loaded but failed at
+`PilloRestoreMigration627.prepare` with "Staged backup database is missing or
+unsafe." The original guard compared absolute and canonical file paths directly;
+this rejected files reached through aliased app-storage parents. Earlier staged
+migration tests canonicalized the supplied path and therefore missed this case.
+
+The migration helper now canonicalizes the parent first, requires the database to
+remain the expected direct child of that canonical parent, and uses the resulting
+canonical file for SQLite/Room. Missing files and leaf symlinks remain rejected.
+The device fixture preserves the supplied path rather than canonicalizing it
+before invoking production code. Its optional fifth argument extracts the complete
+archive using the actual LocalArchive implementation before migration.
+
+The user's original archive passed full extraction/checksums and native 51-53
+migration on Android through an explicitly aliased parent directory. A separate
+fixture verified rejection of a database-leaf symlink. This exercises staging;
+the UI confirmation, capture of current data and live restore/restart remain
+separate device checks. The archive does not need conversion for this fix.
+
+## Verification and delivery
+
+From `E:/Morphe/santodan-patches`, Java 21 / Android SDK 36:
+
+```powershell
+.\build-local.ps1 :patches:buildAndroid
+.\build-local.ps1 :patches:verifyPillo627Bundle :patches:verifyPillo627Runtime :patches:verifyPilloLocalArchive
+.\build-local.ps1 :patches:generatePatchesList :patches:verifyAndroidBundle :patches:verifyMorpheDesktopImport '-PmorpheDesktopJar=../../morphe-desktop-1.19.1-all.jar'
+```
+
+Bundle verification checks native contracts, missing/ambiguous/modified/already
+patched input rejection, each individual selection and all six together. It reloads
+all DEX, rejects duplicate classes, resolves injected signatures, and rebuilds an
+unsigned base at `patches/build/verification/pillo-627/combined/pillo-0.6.27-base-unsigned.apk`.
+Host tests cover archive restrictions/checksums/rollback, observer lifecycle,
+profiles, render cleanup, totals, reordered history arguments, async import,
+duplicates, partial retry and write rejection. Device migration fixtures use real
+Android SQLite and the native Room migrations/validator on staged copies.
+
+Bundle: `patches/build/libs/patches-0.15.0.mpp`; release version unchanged. Android
+archive and Desktop 1.19.1 import validate the actual packaged file. The user reports
+successful installation on emulator and phone using their Play ARM64 input.
+For this restore fix, no new app signing or installation was performed, and the
+full restore UI/live swap was not run. Remaining checks include restore/restart,
+alarm audit, selected profiles and normal app behavior after restoring on a device.
+
+
+On 2026-10-30, after rebuilding with the path-guard fix, the user reported that
+everything seemed to be working. Keep that user-reported device result distinct
+from the isolated emulator migration checks and host/bundle verification above.

@@ -284,7 +284,8 @@ public final class PilloLocalBackup627 {
                             if (input == null) throw new IOException("Cannot read backup file.");
                             LocalArchive.transfer(input, output, LocalArchive.MAX_BYTES + 64 * 1024 * 1024);
                         }
-                        JSONObject manifest = LocalArchive.extract(archive, stage, "0.6.27");
+                        JSONObject manifest = LocalArchive.extract(archive, stage, "0.6.27", "0.6.20");
+                        PilloRestoreMigration627.prepare(activity, new File(stage, "data/database"), manifest.getString("appVersion"));
                         validateDatabase(new File(stage, "data/database"));
                         targets(activity, manifest); // Require mounted storage before offering restore.
                         activity.runOnUiThread(() -> {
@@ -302,13 +303,22 @@ public final class PilloLocalBackup627 {
                         if (request == 7201) LocalArchive.delete(archive);
                         complete(activity, "Backup exported to the selected file.");
                     }
-                } catch (Exception error) { complete(activity, "Local backup failed: " + reason(error)); }
+                } catch (Exception error) {
+                    android.util.Log.e("PilloLocalBackup627", "Local backup operation failed", error);
+                    if (request == 7202) {
+                        try { LocalArchive.delete(new File(work(activity), "incoming")); }
+                        catch (Exception cleanup) { error.addSuppressed(cleanup); }
+                    }
+                    complete(activity, "Local backup failed: " + reason(error));
+                }
             }, "PilloLocalFile").start();
         }
         private void showConfirmation() {
             Activity current = getActivity(); if (current == null || current.isFinishing() || confirmation != null) return;
             confirmation = new AlertDialog.Builder(current).setTitle("Replace all Pillo data?")
-                .setMessage("This restores the backup's profiles, medicines, reminders, history, settings and app-managed files. Current data will be replaced, and Pillo will restart. A local copy of your current data will be kept for recovery.")
+                .setMessage((preview != null && "0.6.20".equals(preview.optString("appVersion"))
+                    ? "This backup has been upgraded for Pillo 0.6.27. " : "")
+                    + "This restores the backup's profiles, medicines, reminders, history, settings and app-managed files. Current data will be replaced, and Pillo will restart. A local copy of your current data will be kept for recovery.")
                 .setNegativeButton("Cancel", (dialog, which) -> cancelPreview(current))
                 .setOnCancelListener(dialog -> cancelPreview(current))
                 .setPositiveButton("Restore and restart", (dialog, which) -> {

@@ -126,6 +126,19 @@ final class Pillo627 {
         lifecycle(onboarding, BACKUP, "attachOnboarding", "Landroid/app/Activity;", true);
     }
     static void validateBackup(List<? extends ClassDef> classes) {
+        require(classes, "Landroidx/room/Room;->databaseBuilder(Landroid/content/Context;Ljava/lang/Class;Ljava/lang/String;)Landroidx/room/RoomDatabase$Builder;");
+        require(classes, "Landroidx/room/RoomDatabase$Builder;->addMigrations([Landroidx/room/migration/Migration;)Landroidx/room/RoomDatabase$Builder;");
+        require(classes, "Landroidx/room/RoomDatabase$Builder;->build()Landroidx/room/RoomDatabase;");
+        require(classes, "Landroidx/room/RoomDatabase;->getOpenHelper()Llb/f;");
+        require(classes, "Landroidx/room/RoomDatabase;->close()V");
+        require(classes, "Llb/f;->getWritableDatabase()Llb/a;");
+        require(classes, "Llb/a;->query(Ljava/lang/String;)Landroid/database/Cursor;");
+        requireField(classes, ROOT + "data/persistence/database/AppDatabase;->Companion:" + ROOT + "data/persistence/database/AppDatabase$Companion;", true);
+        for (String step : List.of("51_52", "52_53")) {
+            String migration = ROOT + "data/persistence/database/migrations/Migration" + step.replace("_", "To") + ";";
+            require(classes, ROOT + "data/persistence/database/AppDatabase$Companion;->getMIGRATION_" + step + "()" + migration);
+            require(classes, migration + "->migrate(Llb/a;)V");
+        }
         require(classes, MENU + "->rememberChooseRestoreDataOption(Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;Lg3/q;I)" + CONTROLLER);
         require(classes, CONTROLLER + "->open(Ljava/lang/Object;)V");
         require(classes, CONTROLLER + "->close()V");

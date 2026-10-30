@@ -410,6 +410,24 @@ official installation. Device testing is still required for server-side behavior
 
 ## Pillo 0.6.19 and 0.6.20
 
+**Pillo - Weight in Progress** targets 0.6.20 and depends on **Weight change
+summaries**. It appends the native weight chart and date-grouped record list
+below existing Progress content/calendar in the same LazyColumn. It reuses the
+native Hilt reading ViewModel, profile selector and editor, and cancels native
+initialization observers through a Compose DisposableEffect. See
+`docs/PilloProgressWeight.md` for original DEX contracts and remaining device
+checks. Run `:patches:verifyPilloProgressWeightBundle` for standalone/dependency
+and all-Pillo combination checks, plus `:patches:verifyPilloWeightSummaryBundle`.
+The chart must receive the resolved native selected profile ID, observed through
+`collectAsStateWithLifecycle` with an explicit activity owner (default mask 6);
+unlike the list initializer, it does not treat an empty ID as a first-profile
+fallback. Defer chart composition while selection is pending. Passing the list
+fallback sentinel caused empty charts/summary labels.
+The profile-ID fix was rebuilt/signed from the original XAPK and update-installed
+on `emulator-5554` with data preserved: plotted history, populated summaries,
+tab re-entry and cold restart passed. Tested output:
+`Apps/Pillo/Pillo-0.6.20-progress-profile-fix.apk` (workspace-relative).
+
 **Pillo - Local backup and restore** supports 0.6.20, independently of the other
 Pillo patches. Its Settings callback hook offers Local file / Google backup before
 the existing auth gate. A ThreadLocal bypass re-enters the untouched native callback

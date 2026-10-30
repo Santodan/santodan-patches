@@ -3,6 +3,8 @@
 Supported app: **Pillo 0.6.20** (`xyz.rtrvr.pillo`). Select
 **Pillo - Weight change summaries** when patching the original app.
 It can be combined with the notification, weight-import and local-backup patches.
+**[Weight in Progress](PilloProgressWeight.md)** includes this patch automatically
+and adds the same graph, summaries and record list below the Progress calendar/cards.
 
 - **All** is the initial weight-chart filter. The existing record-count choices
   remain available in the native filter sheet.

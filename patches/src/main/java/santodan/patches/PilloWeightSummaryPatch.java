@@ -18,8 +18,13 @@ public final class PilloWeightSummaryPatch {
     static final String CARD = "Lxyz/rtrvr/pillo/ui/tracker/common/components/weight/WeightLineChartKt$WeightLineChart$2$1;";
     static final String FILTER = "Lxyz/rtrvr/pillo/ui/report/tracker/components/filter/";
     private PilloWeightSummaryPatch() {}
+    private static final BytecodePatch PATCH = createPatch();
 
     public static BytecodePatch getPilloWeightSummaryPatch() {
+        return PATCH;
+    }
+
+    private static BytecodePatch createPatch() {
         return PatchKt.bytecodePatch(NAME,
             "Adds signed Total weight change, an All default filter, a selectable Last since date, and Last 30 days / Last 15 days / Change summaries using full profile history.",
             false, builder -> {

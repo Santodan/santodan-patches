@@ -14,7 +14,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.15.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.15.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;33 patches total
+> **[v0.15.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.15.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;34 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -186,7 +186,7 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 </details>
 
 <details>
-<summary>📦 Pillo&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
+<summary>📦 Pillo&nbsp;&nbsp;•&nbsp;&nbsp;5 patches</summary>
 <br>
 
 Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Banner/Light mode, it keeps fullscreen alarms while the device is locked and uses banner notifications while the device is unlocked.
@@ -199,6 +199,8 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 
 <img src="images/PilloWeightSummary.png" width="400" alt="Pillo weight chart with signed total, selectable comparison date, and 30-day and 15-day changes">
 
+**Weight in Progress** supports Pillo 0.6.20. Adds the native Weight graph and dated record list below the existing Progress calendar/cards in the same scrolling page. Includes **Weight change summaries** automatically, retaining its filters and comparisons while keeping the original Weight screen available. Uses the resolved native profile for both chart and records; the populated graph and summaries were verified on an emulator, including tab re-entry and cold restart. See [Weight in Progress details](docs/PilloProgressWeight.md).
+
 **🎯 Supported versions:**
 
 | 0.6.20 | 0.6.19 |
@@ -210,6 +212,7 @@ Pillo's hybrid notification patch supports both 0.6.19 and 0.6.20. In Pillo's Ba
 | [Pillo - Import weight history from JSON](#pillo-import-weight-history-from-json) | Adds a native Import weights JSON button above Skip in Weight > Add record. Imports SWT backup weights with their dates into the selected profile, with kg/lb selection and duplicate skipping. |  |
 | [Pillo - Local backup and restore](#pillo-local-backup-and-restore) | Adds local-file export and restore of Pillo's database, settings and app-managed files, without Google sign-in. Restore replaces current data, keeps a recovery backup and restarts Pillo. |  |
 | [Pillo - Weight change summaries](#pillo-weight-change-summaries) | Adds signed Total weight change, an All default filter, a selectable Last since date, and Last 30 days / Last 15 days / Change summaries using full profile history. |  |
+| [Pillo - Weight in Progress](#pillo-weight-in-progress) | Shows the native weight graph, weight-change summaries and dated record list below the existing Progress calendar. Includes Weight change summaries. |  |
 
 </details>
 
@@ -286,6 +289,6 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 | Reddit | `com.reddit.frontpage` | `2026.37.0` | Content filters (Experimental); Show flairs in home feed (Experimental); Start as guest |
 | Peafowl Theme Maker for EMUI | `h7.hamzio.emuithemeotg` | `GMS_27.5.1` | Unlock Theme Ownership (Experimental) |
 | Pillo | `xyz.rtrvr.pillo` | `0.6.19`, `0.6.20` | Hybrid Lock-Screen Notifications |
-| Pillo | `xyz.rtrvr.pillo` | `0.6.20` | Import weight history from JSON; Local backup and restore; Weight change summaries |
+| Pillo | `xyz.rtrvr.pillo` | `0.6.20` | Import weight history from JSON; Local backup and restore; Weight change summaries; Weight in Progress |
 
 See [AI_Guide.md](AI_Guide.md) for implementation details and device-testing notes.

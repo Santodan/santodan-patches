@@ -455,6 +455,15 @@ tasks {
         args(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioTrackingDialogs.java").absolutePath,
             file("${layout.buildDirectory.get()}/verification").absolutePath)
     }
+    register<JavaExec>("verifyPilloProgressWeightBundle") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath + files(androidTestJar)
+        mainClass.set("santodan.patches.VerifyPilloProgressWeightBundleKt")
+        maxHeapSize = "4g"
+        args(file("../../.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/pillo-progress-weight").absolutePath)
+    }
     register<JavaExec>("verifyPilloWeightSummaryBundle") {
         dependsOn("testClasses", "buildAndroid")
         classpath = sourceSets["test"].runtimeClasspath

@@ -14,7 +14,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.15.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.15.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;34 patches total
+> **[v0.15.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.15.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;35 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -186,7 +186,7 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 </details>
 
 <details>
-<summary>📦 Pillo&nbsp;&nbsp;•&nbsp;&nbsp;5 patches</summary>
+<summary>📦 Pillo&nbsp;&nbsp;•&nbsp;&nbsp;6 patches</summary>
 <br>
 
 Pillo's hybrid notification patch supports 0.6.27, with existing 0.6.19/0.6.20 support retained. In Pillo's Banner/Light mode, it keeps fullscreen alarms while the device is locked and uses banner notifications while the device is unlocked.
@@ -201,6 +201,9 @@ Pillo's hybrid notification patch supports 0.6.27, with existing 0.6.19/0.6.20 s
 
 **Weight in Progress** supports Pillo 0.6.27 and 0.6.20. Adds the native Weight graph and dated record list below the existing Progress calendar/cards in the same scrolling page. Includes **Weight change summaries** automatically, retaining its filters and comparisons while keeping the original Weight screen available. Uses the resolved native profile for both chart and records; the populated graph and summaries were verified on an emulator, including tab re-entry and cold restart. See [Weight in Progress details](docs/PilloProgressWeight.md).
 
+
+**Premium and ad-free** supports only Pillo 0.6.27. Select **Pillo - Premium and ad-free** instead of the external **Unlock Premium** patch, whose fingerprint no longer matches this app version. See [0.6.27 compatibility and restore notes](docs/Pillo627.md).
+
 **🎯 Supported versions:**
 
 | 0.6.27 | 0.6.20 | 0.6.19 |
@@ -211,6 +214,7 @@ Pillo's hybrid notification patch supports 0.6.27, with existing 0.6.19/0.6.20 s
 | [Pillo - Hybrid Lock-Screen Notifications](docs/Pillo627.md) | Use fullscreen alarms while the phone is locked and banner notifications while it is unlocked. Select Pillo's Banner/Light notification mode. |  |
 | [Pillo - Import weight history from JSON](docs/PilloWeightImport.md) | Adds a native Import weights JSON button above Skip in Weight > Add record. Imports SWT backup weights with their dates into the selected profile, with kg/lb selection and duplicate skipping. |  |
 | [Pillo - Local backup and restore](docs/PilloLocalBackup.md) | Adds local-file export and restore of Pillo's database, settings and app-managed files, without Google sign-in. Restore replaces current data, keeps a recovery backup and restarts Pillo. |  |
+| [Pillo - Premium and ad-free](docs/Pillo627.md) | Enables premium and ad-free state through Pillo's native subscription setters. For 0.6.27; select instead of an external Unlock Premium patch. |  |
 | [Pillo - Weight change summaries](docs/PilloWeightSummary.md) | Adds signed Total weight change, an All default filter, a selectable Last since date, and Last 30 days / Last 15 days / Change summaries using full profile history. |  |
 | [Pillo - Weight in Progress](docs/PilloProgressWeight.md) | Shows the native weight graph, weight-change summaries and dated record list below the existing Progress calendar. Includes Weight change summaries. |  |
 
@@ -290,5 +294,6 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 | Peafowl Theme Maker for EMUI | `h7.hamzio.emuithemeotg` | `GMS_27.5.1` | Unlock Theme Ownership (Experimental) |
 | Pillo | `xyz.rtrvr.pillo` | `0.6.27`, `0.6.20`, `0.6.19` | Hybrid Lock-Screen Notifications |
 | Pillo | `xyz.rtrvr.pillo` | `0.6.27`, `0.6.20` | Import weight history from JSON; Local backup and restore; Weight change summaries; Weight in Progress |
+| Pillo | `xyz.rtrvr.pillo` | `0.6.27` | Premium and ad-free |
 
 See [AI_Guide.md](AI_Guide.md) for implementation details and device-testing notes.

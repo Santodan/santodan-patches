@@ -24,6 +24,17 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
+private fun premiumInstructionShape(i: Instruction): List<Any?> = buildList {
+    add(i.opcode); add(i.codeUnits)
+    if (i is ReferenceInstruction) add(i.reference.toString())
+    if (i is OneRegisterInstruction) add(i.registerA)
+    if (i is TwoRegisterInstruction) add(i.registerB)
+    if (i is FiveRegisterInstruction) addAll(listOf(i.registerCount, i.registerC, i.registerD, i.registerE, i.registerF, i.registerG))
+    if (i is RegisterRangeInstruction) addAll(listOf(i.startRegister, i.registerCount))
+    if (i is WideLiteralInstruction) add(i.wideLiteral)
+    if (i is OffsetInstruction) add(i.codeOffset)
+}
+
 /** Applies every 0.6.27 selection to original DEX and audits the serialized result. */
 fun main(args: Array<String>) = runBlocking {
     val apk = File(args[0])
@@ -36,6 +47,21 @@ fun main(args: Array<String>) = runBlocking {
     Pillo627Import.validate(originals)
     Pillo627Contracts.summary(originals)
     Pillo627Contracts.progress(originals)
+    val premium = PilloPremiumPatch.validate(originals)
+    check(runCatching { PilloPremiumPatch.validate(originals.filterNot { it.type == PilloPremiumPatch.OWNER }) }.isFailure)
+    check(runCatching { PilloPremiumPatch.validate(originals + originals.single { it.type == PilloPremiumPatch.OWNER }) }.isFailure)
+    for (setter in premium) {
+        val target = MutableMethod(setter)
+        val before = PilloHybridNotificationPatch.instructions(target)
+        PilloPremiumPatch.apply(target)
+        val after = PilloHybridNotificationPatch.instructions(target)
+        check(after.size == before.size + 1 && after.drop(1).zip(before).all { (a, b) -> a === b })
+        check(target.implementation!!.registerCount == setter.implementation!!.registerCount)
+        check((after.first() as OneRegisterInstruction).registerA == 4 && (after.first() as NarrowLiteralInstruction).narrowLiteral == 1)
+        check(runCatching { PilloPremiumPatch.apply(target) }.isFailure)
+        val changed = MutableMethod(setter).apply { implementation!!.removeInstruction(3) }
+        check(runCatching { PilloPremiumPatch.apply(changed) }.isFailure)
+    }
     val alarm = Pillo627Alarm.findUnique(originals)
     val mutable = MutableMethod(alarm.method)
     Pillo627Alarm.apply(mutable, alarm)
@@ -61,7 +87,7 @@ fun main(args: Array<String>) = runBlocking {
     check(runCatching { Pillo627.redirect(ambiguous, "Lz0/l;", "c", Pillo627.PROGRESS, "progress") }.isFailure)
     println("PASS: original 0.6.27 native contracts, unique alarm match, missing/ambiguous/already-patched rejection")
     val names = listOf(PilloHybridNotificationPatch.NAME, PilloLocalBackupPatch.NAME,
-        PilloWeightImportPatch.NAME, PilloWeightSummaryPatch.NAME, PilloProgressWeightPatch.NAME)
+        PilloWeightImportPatch.NAME, PilloWeightSummaryPatch.NAME, PilloProgressWeightPatch.NAME, PilloPremiumPatch.NAME)
     val bundle = loadPatchesFromJar(setOf(File(args[1])))
     for (selection in names.map { setOf(it) } + listOf(names.toSet())) {
         val selected = bundle.filter { it.name in selection }.toSet()
@@ -102,7 +128,27 @@ fun main(args: Array<String>) = runBlocking {
             if (PilloWeightSummaryPatch.NAME in selection || PilloProgressWeightPatch.NAME in selection)
                 check(hooks.count { it.definingClass == Pillo627.SUMMARY } == 6)
             if (PilloProgressWeightPatch.NAME in selection) check(hooks.count { it.definingClass == Pillo627.PROGRESS } == 1)
-
+            if (PilloPremiumPatch.NAME in selection) {
+                val provider = definitions.single { it.type == PilloPremiumPatch.OWNER }
+                for (name in PilloPremiumPatch.SETTERS) {
+                    val method = provider.methods.single { it.name == name }
+                    val ins = PilloHybridNotificationPatch.instructions(method)
+                    val original = premium.single { it.name == name }
+                    check(ins.size == PilloHybridNotificationPatch.instructions(original).size + 1)
+                    check(method.implementation!!.registerCount == original.implementation!!.registerCount)
+                    check(ins.first().opcode == Opcode.CONST_4 && (ins.first() as OneRegisterInstruction).registerA == 4
+                        && (ins.first() as NarrowLiteralInstruction).narrowLiteral == 1)
+                    check(ins.drop(1).map(::premiumInstructionShape) == PilloHybridNotificationPatch.instructions(original).map(::premiumInstructionShape))
+                    check(method.implementation!!.tryBlocks.isEmpty() && original.implementation!!.tryBlocks.isEmpty())
+                    check(runCatching { PilloPremiumPatch.validateSetter(method) }.isFailure)
+                }
+                val nativeProvider = originals.single { it.type == provider.type }
+                for (method in provider.methods.filter { it.name !in PilloPremiumPatch.SETTERS }) {
+                    val before = nativeProvider.methods.single { it.name == method.name && it.parameterTypes == method.parameterTypes && it.returnType == method.returnType }
+                    check(PilloHybridNotificationPatch.instructions(method).map(::premiumInstructionShape) == PilloHybridNotificationPatch.instructions(before).map(::premiumInstructionShape))
+                }
+                println("PASS: serialized premium/ad-free setters force the captured boolean; native launch and coroutine paths retained")
+            }
             if (selection.size == names.size) {
                 // Rebuild exclusively from this version's original base; configuration splits stay separate.
                 val rebuilt = File(output, "pillo-0.6.27-base-unsigned.apk")

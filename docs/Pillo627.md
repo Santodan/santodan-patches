@@ -1,8 +1,8 @@
 # Pillo 0.6.27
 
-All five Pillo patches support `xyz.rtrvr.pillo` **0.6.27**, version code **472**:
+All six Pillo patches support `xyz.rtrvr.pillo` **0.6.27**, version code **472**:
 hybrid notifications, local backup/restore, JSON weight import, weight summaries,
-and weight in Progress. Progress includes summaries.
+weight in Progress, and premium/ad-free state. Progress includes summaries.
 Historical app-version support remains separate.
 
 Original input: `E:/Morphe/OriginalApps/pillo-0.6.27.apks`, exported by the user
@@ -13,6 +13,22 @@ Inspection is in `E:/Morphe/.inspect-pillo-627-play/`. Preserve
 when repackaging. The original APKPure XAPK supplies only ARMv7 libraries and
 cannot install on the ARM64-only emulator configuration. No older patched APK
 supplies resources or executable code for this port.
+
+## Premium fingerprint failure
+
+The external **Unlock Premium** patch (`app.template.patches.pillo.premium`)
+expects `xyz.rtrvr.pillo.subscription.SubscriptionStateProvider` and return type
+`kotlinx.coroutines.Job`. In 0.6.27, the provider moved under
+`xyz.rtrvr.pillo.data.subscription` and Job became `jw.q1`, breaking its fingerprint.
+Select **Pillo - Premium and ad-free** instead and deselect the external patch.
+The replacement validates both private/final instance setters
+`setIsPremiumState(Z)Ljw/q1;` and `setIsAdfreeState(Z)Ljw/q1;`, their coroutine
+captures, emission and preference writes before mutation. Each original setter
+has five registers and eight instructions; p0=v3 and p1=v4. Insert `const/4 v4, 1`
+before the constructor at original index 3 captures the boolean. Preserve native
+launch/persistence and purchase/authentication handlers. Verification confirms
+that only the two setter-entry instructions change within the provider; this
+does not prove server-side entitlement or device behavior for individual features.
 
 ## Native hook contracts
 
@@ -67,7 +83,7 @@ ABI. Exact reflection contracts are in `Pillo627Contracts.java` and
 Run `verifyPillo627Bundle` and `verifyPillo627Runtime` against the original Play
 base, then `generatePatchesList`, `verifyAndroidBundle` and Desktop import with
 `-PmorpheDesktopJar=../../morphe-desktop-1.19.1-all.jar`. The bundle checks individual
-selections and all five together, original contracts, rejection cases, cross-DEX
+selections and all six together, original contracts, rejection cases, cross-DEX
 reload and bundled signatures. Runtime checks exercise observer disposal, profile
 selection, renderer cleanup, summaries and asynchronous weight imports.
 

@@ -9,3 +9,6 @@ Pillo's hybrid notification patch supports 0.6.27, with existing 0.6.19/0.6.20 s
 <img src="images/PilloWeightSummary.png" width="400" alt="Pillo weight chart with signed total, selectable comparison date, and 30-day and 15-day changes">
 
 **Weight in Progress** supports Pillo 0.6.27 and 0.6.20. Adds the native Weight graph and dated record list below the existing Progress calendar/cards in the same scrolling page. Includes **Weight change summaries** automatically, retaining its filters and comparisons while keeping the original Weight screen available. Uses the resolved native profile for both chart and records; the populated graph and summaries were verified on an emulator, including tab re-entry and cold restart. See [Weight in Progress details](docs/PilloProgressWeight.md).
+
+
+**Premium and ad-free** supports only Pillo 0.6.27. Select **Pillo - Premium and ad-free** instead of the external **Unlock Premium** patch, whose fingerprint no longer matches this app version. See [0.6.27 compatibility and restore notes](docs/Pillo627.md).

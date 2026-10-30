@@ -410,7 +410,10 @@ official installation. Device testing is still required for server-side behavior
 
 ## Pillo 0.6.27
 
-All five existing Pillo patches now support `xyz.rtrvr.pillo` **0.6.27**, code **472**.
+All six Pillo patches now support `xyz.rtrvr.pillo` **0.6.27**, code **472**.
+The optional **Pillo - Premium and ad-free** replaces the external **Unlock
+Premium** patch's obsolete provider/Job fingerprints. Select only the replacement
+on 0.6.27; native coroutine state emission and preference persistence remain intact.
 Read [Pillo627.md](docs/Pillo627.md). Version-specific native contracts and `627`
 runtime classes retain historical app support separately. The user supplied Play
 ARM64 APKS has the same base DEX as the inspected APKPure build; preserve its splits.

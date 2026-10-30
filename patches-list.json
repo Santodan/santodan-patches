@@ -875,6 +875,33 @@
       "options": []
     },
     {
+      "name": "Pillo - Premium and ad-free",
+      "description": "Enables premium and ad-free state through Pillo's native subscription setters. For 0.6.27; select instead of an external Unlock Premium patch.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "xyz.rtrvr.pillo",
+          "name": "Pillo",
+          "description": null,
+          "apkFileType": "APK",
+          "formFactor": "MOBILE",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "0.6.27",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "Pillo - Weight change summaries",
       "description": "Adds signed Total weight change, an All default filter, a selectable Last since date, and Last 30 days / Last 15 days / Change summaries using full profile history.",
       "default": false,

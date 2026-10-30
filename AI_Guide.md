@@ -688,6 +688,14 @@ while normal settings rendering stays silent. Runtime checks cover these rules.
 
 ## Car Scanner managed premium-status patch
 
+For the 2.2.21 settings-reset regression, `CarScanner221.patchDecoder` must
+preserve **both** native normal seed selections: variant 1 settings at
+`0x23fcc` and variant 2 profiles at `0x25d68`. Fixing profiles alone leaves
+settings unreadable after restart. See `docs/CarScanner221.md` for the native
+read/write contract and emulator reproduction; retain the byte-round-trip test.
+The agent verified settings persistence across force-stop and normal exit on
+`emulator-5554`; the user subsequently confirmed correct operation on 2026-10-30.
+
 The latest local input is `com.ovz.carscanner` **2.2.21**, versionCode 42002021.
 `CarScanner221` handles its XABA v3 assembly store, premium getter and ECU
 certificate predicate in both IL and compiled arm64 AOT code. It also disables

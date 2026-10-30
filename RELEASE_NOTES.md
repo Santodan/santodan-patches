@@ -1,3 +1,7 @@
+## Pending changes since v0.15.0
+
+- Fix Car Scanner **2.2.21** settings resetting after exit/restart by preserving the native settings decoder's normal seed. Emulator restart tests and host/bundle verification passed; the user subsequently confirmed everything appears to work correctly. Existing 2.1.50 support is unchanged.
+
 ## Pending changes since v0.11.1
 
 - Support Car Scanner **2.2.21** premium status with native profile-decoder, ECU certificate-check and delayed-exit fixes. Existing 2.1.50 behavior is preserved. Host/bundle verification passed; the user reported successful emulator navigation and subsequent real-device ECU operation.

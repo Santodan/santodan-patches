@@ -455,6 +455,22 @@ tasks {
         args(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioTrackingDialogs.java").absolutePath,
             file("${layout.buildDirectory.get()}/verification").absolutePath)
     }
+    register<JavaExec>("verifyPillo627Runtime") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath.filter { it.name != "android.jar" } + files(androidTestJar)
+        mainClass.set("santodan.patches.VerifyPillo627Runtime")
+        doFirst { file("${layout.buildDirectory.get()}/verification").mkdirs() }
+        args(file("${layout.buildDirectory.get()}/verification").absolutePath)
+    }
+    register<JavaExec>("verifyPillo627Bundle") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath + files(androidTestJar)
+        mainClass.set("santodan.patches.VerifyPillo627BundleKt")
+        maxHeapSize = "4g"
+        args(file("../../.inspect-pillo-627-play/base.apk").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/pillo-627").absolutePath)
+    }
     register<JavaExec>("verifyPilloProgressWeightBundle") {
         dependsOn("testClasses", "buildAndroid")
         classpath = sourceSets["test"].runtimeClasspath + files(androidTestJar)

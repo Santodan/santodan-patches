@@ -119,7 +119,7 @@ Paths below are relative to `E:\Morphe\santodan-patches` unless stated otherwise
 | `../Apps/` | Patched app outputs; do not use as original patch inputs |
 
 At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.8`,
-Pillo `0.6.20`, Reddit `2026.37.0`, MEO Android TV `5.7.0`, and Peafowl
+Pillo `0.6.27`, Reddit `2026.37.0`, MEO Android TV `5.7.0`, and Peafowl
 `GMS_27.5.1`. These are discovery hints, not a permanent version allowlist.
 Rescan inputs for each task. Apps without existing patches need their own inspection.
 
@@ -407,6 +407,16 @@ Verification must include applying both patches to the real APKM, DEX and cross-
 verification, APK signature verification, and inspection of all resulting manifest
 authorities. No resulting authority or app-owned permission may equal one from the
 official installation. Device testing is still required for server-side behavior.
+
+## Pillo 0.6.27
+
+All five existing Pillo patches now support `xyz.rtrvr.pillo` **0.6.27**, code **472**.
+Read [Pillo627.md](docs/Pillo627.md). Version-specific native contracts and `627`
+runtime classes retain historical app support separately. The user supplied Play
+ARM64 APKS has the same base DEX as the inspected APKPure build; preserve its splits.
+Run `verifyPillo627Bundle`, `verifyPillo627Runtime`, `generatePatchesList`,
+`verifyAndroidBundle` and Desktop 1.19.1 import. The original Weight in Progress
+feature is already a separate commit; this ports its native contracts to 0.6.27.
 
 ## Pillo 0.6.19 and 0.6.20
 

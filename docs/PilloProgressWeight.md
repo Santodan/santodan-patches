@@ -1,5 +1,9 @@
 # Weight in Progress
 
+**Pillo 0.6.27 (code 472) is supported.** See [the 0.6.27 port notes](Pillo627.md)
+for current contracts, verification, and version-specific backup restrictions.
+Existing 0.6.20 support is retained; contracts below describe that historical implementation.
+
 Target: **Pillo 0.6.20** (`xyz.rtrvr.pillo`, version code 447).
 Select **Pillo - Weight in Progress**. It includes **Pillo - Weight change
 summaries** as a dependency; the existing Weight screen remains available.

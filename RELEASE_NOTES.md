@@ -1,5 +1,8 @@
 ## Pending changes since v0.15.0
 
+- Support Pillo **0.6.27** across hybrid notifications, weight import, summaries, local backup and Weight in Progress, retaining existing older app support. Use the ARM64 splits from the Play Store APKS on compatible devices.
+- Keep the native Weight graph, summaries and dated record list in Progress on 0.6.27; the original feature was already committed separately for 0.6.20.
+
 - Fix Car Scanner **2.2.21** settings resetting after exit/restart by preserving the native settings decoder's normal seed. Emulator restart tests and host/bundle verification passed; the user subsequently confirmed everything appears to work correctly. Existing 2.1.50 support is unchanged.
 
 ## Pending changes since v0.11.1

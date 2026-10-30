@@ -781,6 +781,13 @@
           "signatures": null,
           "targets": [
             {
+              "version": "0.6.27",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
               "version": "0.6.20",
               "versionCodes": null,
               "isExperimental": false,
@@ -815,6 +822,13 @@
           "signatures": null,
           "targets": [
             {
+              "version": "0.6.27",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
               "version": "0.6.20",
               "versionCodes": null,
               "isExperimental": false,
@@ -842,6 +856,13 @@
           "signatures": null,
           "targets": [
             {
+              "version": "0.6.27",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
+            {
               "version": "0.6.20",
               "versionCodes": null,
               "isExperimental": false,
@@ -868,6 +889,13 @@
           "appIconColor": null,
           "signatures": null,
           "targets": [
+            {
+              "version": "0.6.27",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
             {
               "version": "0.6.20",
               "versionCodes": null,
@@ -897,6 +925,13 @@
           "appIconColor": null,
           "signatures": null,
           "targets": [
+            {
+              "version": "0.6.27",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": null,
+              "description": null
+            },
             {
               "version": "0.6.20",
               "versionCodes": null,

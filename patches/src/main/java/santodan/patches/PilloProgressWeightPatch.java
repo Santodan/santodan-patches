@@ -30,9 +30,14 @@ public final class PilloProgressWeightPatch {
             "Shows the native weight graph, weight-change summaries and dated record list below the existing Progress calendar. Includes Weight change summaries.",
             false, builder -> {
                 builder.compatibleWith(new Compatibility("xyz.rtrvr.pillo", "Pillo", null, ApkFileType.APK,
-                    null, null, List.of(new AppTarget("0.6.20", null, false, null, null)), FormFactor.MOBILE, false));
+                    null, null, List.of(new AppTarget("0.6.27", null, false, null, null), new AppTarget("0.6.20", null, false, null, null)), FormFactor.MOBILE, false));
                 builder.dependsOn(PilloWeightSummaryPatch.getPilloWeightSummaryPatch());
                 builder.execute(context -> {
+                    if ("xyz.rtrvr.pillo".equals(context.getPackageMetadata().getPackageName())
+                        && "0.6.27".equals(context.getPackageMetadata().getVersionName())) {
+                        Pillo627.progressWeight(context);
+                        return Unit.INSTANCE;
+                    }
                     if (!"xyz.rtrvr.pillo".equals(context.getPackageMetadata().getPackageName())
                         || !"0.6.20".equals(context.getPackageMetadata().getVersionName()))
                         throw new IllegalStateException("Expected Pillo 0.6.20");

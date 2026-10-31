@@ -1,3 +1,9 @@
+## [0.16.1](https://github.com/Santodan/santodan-patches/compare/v0.16.0...v0.16.1) (2026-10-31)
+
+### 🐛 Bug Fixes
+
+* **pillo:** keep 0.6.27 weight summary labels inside their cells [skip ci] ([c4a8efa](https://github.com/Santodan/santodan-patches/commit/c4a8efa0f1c62ac3c5f9c54ae084d50ffc8e78d2))
+
 ## [0.16.0](https://github.com/Santodan/santodan-patches/compare/v0.15.0...v0.16.0) (2026-10-30)
 
 ### 🐛 Bug Fixes

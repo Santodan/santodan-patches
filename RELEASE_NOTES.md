@@ -4,6 +4,7 @@
 - Keep the native Weight graph, summaries and dated record list in Progress on 0.6.27; the original feature was already committed separately for 0.6.20.
 - Add **Pillo - Premium and ad-free** for 0.6.27 as a replacement for the external **Unlock Premium** patch's obsolete fingerprint.
 - Fix 0.6.27 local restore of original 0.6.20 backups using native, staged Room migrations, integrity/schema validation, WAL checkpointing and rollback. Accept valid aliased app-storage parents while rejecting unsafe database-file links. The user reports everything appears to work after the fix; host, original-input/bundle and isolated Android migration checks passed.
+- Fix the 0.6.27 weight summary row so the **Since**, **Min** and **Max** labels and values stay inside their own cells. The date cell now uses the native `clickableNoRipple` modifier instead of the removed `ClickableNoRippleKt` wrapper that crashed and pushed text into the next cell, and the row uses two-line labels so all three values share a baseline. Bundle verification passed; device/UI confirmation is still pending.
 
 - Fix Car Scanner **2.2.21** settings resetting after exit/restart by preserving the native settings decoder's normal seed. Emulator restart tests and host/bundle verification passed; the user subsequently confirmed everything appears to work correctly. Existing 2.1.50 support is unchanged.
 

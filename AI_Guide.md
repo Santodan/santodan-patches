@@ -442,6 +442,18 @@ user-reported device result, not agent-run UI verification. See Pillo627.md for 
 and exact migration restrictions. No new app signing/installation was performed for
 this restore fix.
 
+The summary row keeps every label inside its own cell. `DividedRow` gives each
+full-width child a one-third share, so the date cell passes that same modifier to
+`ValueDisplay` with the native `clickableNoRipple` applied
+(`ModifierExtensionKt` on the `s3.p.a` `Modifier.Companion` singleton) instead of
+wrapping it. The 0.6.27 app no longer has
+`ui/report/tracker/components/box/ClickableNoRippleKt`, and a wrapper would be
+measured at the full row width. Native labels have `softWrap=false`, so the
+**Since**/**Min**/**Max** labels need explicit line breaks to grow the row and
+align the three values. `Pillo627Contracts` requires `clickableNoRipple` and
+`Ls3/p;->a:Ls3/p;`; `verifyPillo627Bundle` passed after the rebuild, and the
+packaged DEX contains neither the removed wrapper nor a missing class reference.
+
 ## Pillo 0.6.19 and 0.6.20
 
 **Pillo - Weight in Progress** targets 0.6.20 and depends on **Weight change

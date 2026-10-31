@@ -903,7 +903,7 @@
     },
     {
       "name": "Pillo - Weight change summaries",
-      "description": "Adds signed Total weight change, an All default filter, a selectable Last since date, and Last 30 days / Last 15 days / Change summaries using full profile history.",
+      "description": "Adds signed Total weight change, an All default filter, a selectable comparison date, and Last 30 days / Last 15 days / Change summaries using full profile history.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [

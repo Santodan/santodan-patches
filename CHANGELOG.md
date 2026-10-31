@@ -1,3 +1,9 @@
+## [0.16.2](https://github.com/Santodan/santodan-patches/compare/v0.16.1...v0.16.2) (2026-10-31)
+
+### 🚀 Updated App Support
+
+* **nuviotv:** support 1.1.0-beta.9 [skip ci] ([a25c03f](https://github.com/Santodan/santodan-patches/commit/a25c03fcaf84a876336e0a3c1c9019a2f19caa22))
+
 ## [0.16.1](https://github.com/Santodan/santodan-patches/compare/v0.16.0...v0.16.1) (2026-10-31)
 
 ### 🐛 Bug Fixes

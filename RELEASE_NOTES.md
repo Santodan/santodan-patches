@@ -1,6 +1,8 @@
-## Pending changes since v0.15.0
+## Pending changes since v0.16.1
 
 - **nuviotv:** Update all sixteen patches for **1.1.0-beta.9** (1072), including the renamed tracking, player, settings, card, launcher and updater contracts. Preserve native playback and existing saved patch settings.
+
+## Previously recorded changes since v0.15.0
 
 - Support Pillo **0.6.27** across hybrid notifications, weight import, summaries, local backup and Weight in Progress, retaining existing older app support. Use the ARM64 splits from the Play Store APKS on compatible devices.
 - Keep the native Weight graph, summaries and dated record list in Progress on 0.6.27; the original feature was already committed separately for 0.6.20.

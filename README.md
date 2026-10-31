@@ -146,7 +146,7 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 
 **🎯 Supported versions:**
 
-| 1.1.0-beta.8 |
+| 1.1.0-beta.9 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |

@@ -81,6 +81,8 @@ This is the working guide for coding agents, including local models in LM Studio
 The app-specific sections below describe existing implementations; they are not
 instructions to expand their historical version support.
 
+For the latest NuvioTV **1.1.0-beta.9** (1072) port, read [NuvioBeta9.md](docs/NuvioBeta9.md). The active shared contract and `verifyNuvioLatest` target beta.9; historical beta.8 fixtures remain unchanged.
+
 ### Scope and evidence
 
 - Respond in English unless the user explicitly requests another language.
@@ -118,7 +120,7 @@ Paths below are relative to `E:\Morphe\santodan-patches` unless stated otherwise
 | `../.morphe-template-reference/`, `../.morphe-patches-reference/` | Local API/example references; check against installed dependency versions |
 | `../Apps/` | Patched app outputs; do not use as original patch inputs |
 
-At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.8`,
+At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.9`,
 Pillo `0.6.27`, Reddit `2026.37.0`, MEO Android TV `5.7.0`, and Peafowl
 `GMS_27.5.1`. These are discovery hints, not a permanent version allowlist.
 Rescan inputs for each task. Apps without existing patches need their own inspection.

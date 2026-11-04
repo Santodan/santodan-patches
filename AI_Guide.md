@@ -16,6 +16,12 @@ installer-source spoof.
 
 ## Start here: creating or modifying a patch
 
+Latest Monet target: **1.1.1** (code 135). Read [Monet111.md](docs/Monet111.md)
+for the premium/card/catalog migration, exact original evidence, latest verifier
+commands and startup-app investigation. The unversioned card/catalog tasks now
+run the `111` checks. Historical `110` contracts and fixtures remain unchanged.
+The following 1.1.0 notes describe the preceding port.
+
 For Monet **1.1.0** **Displayed Cards** above 20 (existing 1.0.97 support retained), see
 [MonetDisplayedCards.md](docs/MonetDisplayedCards.md). The optional **Monet - Unlimited
 displayed cards** patch adds ten-card steps and Max to the native themed picker,

@@ -1,5 +1,10 @@
 # Monet unlimited displayed cards
 
+Latest supported input: **Monet 1.1.1** (135), retaining existing 1.1.0/1.0.97
+support. See [the 1.1.1 contracts, verification and startup investigation](Monet111.md).
+Unversioned verification tasks select 1.1.1. The version-specific sections below
+record historical evidence.
+
 Select **Monet - Unlimited displayed cards** for original Monet
 `com.klevico.monet` **1.1.0** (version code 134, Android 8.0+), retaining existing
 **1.0.97** support. It works independently or with either premium alternative.

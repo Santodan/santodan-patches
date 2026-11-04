@@ -1,5 +1,10 @@
 # Monet premium
 
+Latest supported input: **Monet 1.1.1** (135), retaining existing 1.1.0/1.0.97
+support. See [the 1.1.1 contracts, verification and startup investigation](Monet111.md).
+Unversioned verification tasks select 1.1.1. The version-specific sections below
+record historical evidence.
+
 For separate Nuvio catalog rows on **1.1.0** (existing 1.0.97 support retained), see [MonetCatalogChannels.md](MonetCatalogChannels.md).
 The user-confirmed integration puts catalogs inside **NuVioTV > Content**, uses
 NuVio's installed icon and refreshes independently of Recommendations. That

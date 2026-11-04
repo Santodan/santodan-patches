@@ -137,6 +137,13 @@
               "isExperimental": false,
               "minSdk": 26,
               "description": null
+            },
+            {
+              "version": "1.1.1",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 26,
+              "description": null
             }
           ]
         }
@@ -171,6 +178,13 @@
               "isExperimental": false,
               "minSdk": 26,
               "description": null
+            },
+            {
+              "version": "1.1.1",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 26,
+              "description": null
             }
           ]
         }
@@ -179,7 +193,7 @@
     },
     {
       "name": "Monet - Unlock premium",
-      "description": "Original premium unlock from Doom's Patches, updated here for Monet 1.1.0. Unlock local premium features. Select only one Monet premium patch.",
+      "description": "Original premium unlock from Doom's Patches, updated here for Monet 1.1.1. Unlock local premium features. Select only one Monet premium patch.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -205,6 +219,13 @@
               "isExperimental": false,
               "minSdk": 26,
               "description": null
+            },
+            {
+              "version": "1.1.1",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 26,
+              "description": null
             }
           ]
         }
@@ -213,7 +234,7 @@
     },
     {
       "name": "Monet - Unlock premium (Experimental, any version)",
-      "description": "Original premium unlock from Doom's Patches, verified on Monet 1.1.0. No version restriction; validates billing ownership and evaluator semantics, not obfuscated names or final flags. Future layouts may still be unsupported. Select only one Monet premium patch.",
+      "description": "Original premium unlock from Doom's Patches, verified on Monet 1.1.1. No version restriction; validates billing ownership and evaluator semantics, not obfuscated names or final flags. Future layouts may still be unsupported. Select only one Monet premium patch.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [

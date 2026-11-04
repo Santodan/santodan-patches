@@ -27,8 +27,33 @@ captures, emission and preference writes before mutation. Each original setter
 has five registers and eight instructions; p0=v3 and p1=v4. Insert `const/4 v4, 1`
 before the constructor at original index 3 captures the boolean. Preserve native
 launch/persistence and purchase/authentication handlers. Verification confirms
-that only the two setter-entry instructions change within the provider; this
+that only the two setter-entry instructions and the profile callback entry change within the provider; this
 does not prove server-side entitlement or device behavior for individual features.
+
+### Notification setting reset after subscription refresh
+
+The initial premium replacement forced the setters but missed the independent
+raw billing result passed to `_init_$lambda$0(SubscriptionStateProvider,ZZ):Unit`.
+When its premium argument is false, this callback launches
+`resetDailyInterruptSetting()` and disables watch notifications. The reset
+coroutine copies the current setting with mask 958 (`0x3be`): bit 64 is clear,
+so `isEnabledDirectLogging` is explicitly replaced with false. This explains a
+path that can turn off **mark as taken** after it was enabled, including when
+using hybrid notifications. The routing patch does not write this setting.
+
+The premium patch now validates the unique private/static nine-instruction,
+three-register callback, both branch destinations and native side effects before
+any mutation. Insert `const/4 v1, 1` at entry so its premium argument agrees with
+the patched setter. Preserve the native premium branch (`enableMultiDependents`),
+the ad-free argument, all subscription/authentication handlers and user toggles.
+This does not force direct logging on: enable it again once if a prior build
+already reset it; an intentional disable remains respected.
+
+The bundle verifier reproduces the reset from original DEX, follows the actual
+patched branch instructions for all four incoming premium/ad-free combinations,
+and checks repeated refreshes preserve either direct-logging choice. Serialized
+standalone/combined outputs must contain exactly the three entry insertions and
+leave every other provider method unchanged. Device confirmation is pending.
 
 ## Native hook contracts
 

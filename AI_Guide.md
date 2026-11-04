@@ -412,11 +412,21 @@ official installation. Device testing is still required for server-side behavior
 
 ## Pillo 0.6.27
 
+The premium patch must also normalize the premium argument in the independent
+`SubscriptionStateProvider._init_$lambda$0` profile listener. The raw billing
+result otherwise runs `resetDailyInterruptSetting` and clears direct logging
+(**mark as taken**) despite the forced setters. Validate both branches before
+inserting `const/4 v1, 1`; preserve manual choices. Original/serialized DEX checks
+in `verifyPillo627Bundle` cover repeated billing results and mutation scope.
+See the notification-reset evidence in `docs/Pillo627.md`; device confirmation
+of this fix is pending.
+
 All six Pillo patches support `xyz.rtrvr.pillo` **0.6.27**, version code **472**.
 The optional **Pillo - Premium and ad-free** replaces the external **Unlock
 Premium** patch whose old provider path/Job fingerprint fails on 0.6.27. Deselect
-that external patch when using this replacement. It changes only the two native
-setter boolean inputs, after validating their coroutine captures and persistence.
+that external patch when using this replacement. It changes the two native
+setter boolean inputs and the independent profile callback's premium argument,
+after validating their native contracts, coroutine captures and persistence.
 Read [Pillo627.md](docs/Pillo627.md) for current contracts, schema and runtime checks.
 `Pillo627*` Java contracts and `*627` runtime classes isolate the new R8/Compose ABI
 from historical implementations. The database identity changed; 0.6.27 local archives

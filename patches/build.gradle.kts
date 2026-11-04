@@ -406,7 +406,7 @@ tasks {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyNuvioBeta6LauncherKt")
-        args(file("../../.inspect-nuvio-beta6").absolutePath)
+        args(file("../../Skills/inspection-evidence/.inspect-nuvio-beta6").absolutePath)
     }
     register<JavaExec>("verifyNuvioDateLabelStyleRuntime") {
         dependsOn("testClasses")
@@ -468,7 +468,7 @@ tasks {
         classpath = sourceSets["test"].runtimeClasspath + files(androidTestJar)
         mainClass.set("santodan.patches.VerifyPillo627BundleKt")
         maxHeapSize = "4g"
-        args(file("../../.inspect-pillo-627-play/base.apk").absolutePath,
+        args(file("../../Skills/inspection-evidence/.inspect-pillo-627-play/base.apk").absolutePath,
             file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
             file("${layout.buildDirectory.get()}/verification/pillo-627").absolutePath)
     }
@@ -477,7 +477,7 @@ tasks {
         classpath = sourceSets["test"].runtimeClasspath + files(androidTestJar)
         mainClass.set("santodan.patches.VerifyPilloProgressWeightBundleKt")
         maxHeapSize = "4g"
-        args(file("../../.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
+        args(file("../../Skills/inspection-evidence/.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
             file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
             file("${layout.buildDirectory.get()}/verification/pillo-progress-weight").absolutePath)
     }
@@ -486,7 +486,7 @@ tasks {
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyPilloWeightSummaryBundleKt")
         maxHeapSize = "4g"
-        args(file("../../.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
+        args(file("../../Skills/inspection-evidence/.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
             file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
             file("${layout.buildDirectory.get()}/verification/pillo-summary-bundle").absolutePath,
             file("../../Apps/Pillo/Pillo-0.6.20-patches-1.46.0.apk").absolutePath)
@@ -501,7 +501,7 @@ tasks {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyPilloLocalBackup")
-        args(file("../../.inspect-pillo-620").absolutePath,
+        args(file("../../Skills/inspection-evidence/.inspect-pillo-620").absolutePath,
             file("${layout.buildDirectory.get()}/verification/pillo-local-backup.dex").absolutePath)
     }
     register<JavaExec>("verifyPilloLocalBackupBundle") {
@@ -509,7 +509,7 @@ tasks {
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyPilloLocalBackupBundleKt")
         maxHeapSize = "4g"
-        args(file("../../.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
+        args(file("../../Skills/inspection-evidence/.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
             file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
             file("${layout.buildDirectory.get()}/verification/pillo-local-bundle").absolutePath)
     }
@@ -519,7 +519,7 @@ tasks {
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyPilloWeightImportBundleKt")
         maxHeapSize = "4g"
-        args(file("../../.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
+        args(file("../../Skills/inspection-evidence/.inspect-pillo-620/xyz.rtrvr.pillo.apk").absolutePath,
             file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
             file("${layout.buildDirectory.get()}/verification/pillo-import-bundle").absolutePath)
     }
@@ -528,7 +528,7 @@ tasks {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyPilloWeightImport")
-        args(file("../../.inspect-pillo-620").absolutePath,
+        args(file("../../Skills/inspection-evidence/.inspect-pillo-620").absolutePath,
             file("${layout.buildDirectory.get()}/verification/pillo-weight-import.dex").absolutePath)
     }
 
@@ -637,14 +637,14 @@ tasks {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyRedditContentFilter")
-        args(fileTree("../../.inspect-reddit") { include("classes*.dex") }.files.sorted().map { it.absolutePath })
+        args(fileTree("../../Skills/inspection-evidence/.inspect-reddit") { include("classes*.dex") }.files.sorted().map { it.absolutePath })
     }
 
     register<JavaExec>("verifyRedditGuestMode") {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyRedditGuestMode")
-        args(fileTree("../../.inspect-reddit") { include("classes*.dex") }.files.sorted().map { it.absolutePath })
+        args(fileTree("../../Skills/inspection-evidence/.inspect-reddit") { include("classes*.dex") }.files.sorted().map { it.absolutePath })
     }
 
     register<JavaExec>("verifyRedditPostBatch") {
@@ -659,7 +659,7 @@ tasks {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyPilloPatch")
-        val input = file("../../.inspect-pillo-620/classes15.dex")
+        val input = file("../../Skills/inspection-evidence/.inspect-pillo-620/classes15.dex")
         args(input.absolutePath, file("${layout.buildDirectory.get()}/verification/pillo-classes15.dex").absolutePath)
     }
 
@@ -711,7 +711,7 @@ tasks.register<JavaExec>("verifyNuvioBeta6") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta6")
     maxHeapSize = "2g"
-    args("1.1.0-beta.6", file("../../.inspect-nuvio-beta6").absolutePath,
+    args("1.1.0-beta.6", file("../../Skills/inspection-evidence/.inspect-nuvio-beta6").absolutePath,
         file("${layout.buildDirectory.get()}/verification/nuvio-beta6.dex").absolutePath)
 }
 
@@ -738,7 +738,7 @@ tasks.register<JavaExec>("verifyNuvioBeta6Launcher") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta6LauncherKt")
-    args(file("../../.inspect-nuvio-beta6").absolutePath)
+    args(file("../../Skills/inspection-evidence/.inspect-nuvio-beta6").absolutePath)
 }
 
 tasks.register<JavaExec>("verifyNuvioBeta6Player") {
@@ -754,7 +754,7 @@ tasks.register<JavaExec>("verifyNuvioBeta7") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta7")
     maxHeapSize = "2g"
-    args("1.1.0-beta.7", file("../../.inspect-nuvio-beta7").absolutePath,
+    args("1.1.0-beta.7", file("../../Skills/inspection-evidence/.inspect-nuvio-beta7").absolutePath,
         file("${layout.buildDirectory.get()}/verification/nuvio-beta7.dex").absolutePath)
 }
 
@@ -774,7 +774,7 @@ tasks.register<JavaExec>("verifyNuvioBeta7Launcher") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta7LauncherKt")
-    args(file("../../.inspect-nuvio-beta7").absolutePath)
+    args(file("../../Skills/inspection-evidence/.inspect-nuvio-beta7").absolutePath)
 }
 
 tasks.register<JavaExec>("verifyNuvioBeta7Player") {
@@ -864,7 +864,7 @@ tasks.register<JavaExec>("verifyNuvioBeta8") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta8")
     maxHeapSize = "2g"
-    args(nuvioTargetVersion, file("../../.inspect-nuvio-beta8").absolutePath,
+    args(nuvioTargetVersion, file("../../Skills/inspection-evidence/.inspect-nuvio-beta8").absolutePath,
         file("${layout.buildDirectory.get()}/verification/nuvio-beta8.dex").absolutePath)
 }
 
@@ -884,7 +884,7 @@ tasks.register<JavaExec>("verifyNuvioBeta8Launcher") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta8LauncherKt")
-    args(file("../../.inspect-nuvio-beta8").absolutePath)
+    args(file("../../Skills/inspection-evidence/.inspect-nuvio-beta8").absolutePath)
 }
 
 tasks.register<JavaExec>("verifyNuvioBeta8Player") {
@@ -925,7 +925,7 @@ tasks.register<JavaExec>("verifyNuvioBeta9") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta9")
     maxHeapSize = "2g"
-    args(nuvioTargetVersion, file("../../.inspect-nuvio-beta9").absolutePath,
+    args(nuvioTargetVersion, file("../../Skills/inspection-evidence/.inspect-nuvio-beta9").absolutePath,
         file("${layout.buildDirectory.get()}/verification/nuvio-beta9.dex").absolutePath)
 }
 
@@ -946,7 +946,7 @@ tasks.register<JavaExec>("verifyNuvioBeta9Launcher") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta9LauncherKt")
-    args(file("../../.inspect-nuvio-beta9").absolutePath)
+    args(file("../../Skills/inspection-evidence/.inspect-nuvio-beta9").absolutePath)
 }
 
 tasks.register<JavaExec>("verifyNuvioBeta9Player") {
@@ -987,7 +987,7 @@ tasks.register<JavaExec>("verifyNuvioBeta10") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta10")
     maxHeapSize = "2g"
-    args(nuvioTargetVersion, file("../../.inspect-nuvio-beta10").absolutePath,
+    args(nuvioTargetVersion, file("../../Skills/inspection-evidence/.inspect-nuvio-beta10").absolutePath,
         file("${layout.buildDirectory.get()}/verification/nuvio-beta10.dex").absolutePath)
 }
 
@@ -1008,7 +1008,7 @@ tasks.register<JavaExec>("verifyNuvioBeta10Launcher") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioBeta10LauncherKt")
-    args(file("../../.inspect-nuvio-beta10").absolutePath)
+    args(file("../../Skills/inspection-evidence/.inspect-nuvio-beta10").absolutePath)
 }
 
 tasks.register<JavaExec>("verifyNuvioBeta10Player") {

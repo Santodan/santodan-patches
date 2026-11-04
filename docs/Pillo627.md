@@ -8,7 +8,7 @@ Historical app-version support remains separate.
 Original input: `E:/Morphe/OriginalApps/pillo-0.6.27.apks`, exported by the user
 from Google Play. Its base manifest confirms the package/version above, and its
 nine root DEX files are byte-identical to the initially inspected APKPure build.
-Inspection is in `E:/Morphe/.inspect-pillo-627-play/`. Preserve
+Inspection is in `E:/Morphe/Skills/inspection-evidence/.inspect-pillo-627-play/`. Preserve
 `split_config.arm64_v8a.apk`, `split_config.en.apk`, and `split_config.xxhdpi.apk`
 when repackaging. The original APKPure XAPK supplies only ARMv7 libraries and
 cannot install on the ARM64-only emulator configuration. No older patched APK

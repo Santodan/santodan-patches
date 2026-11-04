@@ -20,7 +20,7 @@ remains in place. Startup behavior is unchanged by these patches.
 
 ## Reviewed native changes
 
-Inspection artifacts are in `../.inspect-monet-1.1.1/`: `manifest.txt`,
+Inspection artifacts are in `../Skills/inspection-evidence/.inspect-monet-1.1.1/`: `manifest.txt`,
 `mapped-contracts.txt`, `hashes.tsv`, `native.txt`, `old-native.txt`,
 `alignment.txt`, `card-open.txt`, `state.txt`, `filter.txt` and `lifecycle.txt`.
 Candidate discovery used opcode shapes and reference correspondence; acceptance

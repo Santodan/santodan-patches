@@ -152,7 +152,7 @@ fields are independently checked. The ten changed methods are:
   delegates rendering/focus to the same native picker. Native `q03` and `xr2.L`
   actions persist content mode and stable package/source selection.
 
-Evidence is under `../.inspect-monet-1.0.97/`, including the original
+Evidence is under `../Skills/inspection-evidence/.inspect-monet-1.0.97/`, including the original
 `channel-*-contracts.txt`, `catalog-selection-dex.txt`,
 `catalog-model-constructor.txt`, `catalog-native-combine.txt` and lifecycle dumps.
 

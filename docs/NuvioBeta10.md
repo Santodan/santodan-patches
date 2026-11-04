@@ -5,7 +5,7 @@ Original: `../OriginalApps/NuvioTV-1.1.0-beta10.apk`.
 SHA-256: `720f35a827c236d1a7716b0a7c89cf63950601ae8025badfdc84c79325aab018`.
 Identity was read from the APK manifest with SDK aapt; all five original DEX files
 were inspected. Inspection inventories, method comparisons and logs are under
-`../.inspect-nuvio-beta10/`.
+`../Skills/inspection-evidence/.inspect-nuvio-beta10/`.
 
 All sixteen public patches use `contracts/nuvio/native.properties` and exact
 beta.10 compatibility. Dedicated `VerifyNuvioBeta10*` fixtures cover this target;
@@ -74,7 +74,7 @@ reference resolution, exact native updater repairs and installer/provider audits
 powershell -ExecutionPolicy Bypass -File .\build-local.ps1 :patches:verifyNuvioPlaybackApk :patches:verifyNuvioApkUpdates :patches:verifyNuvioUpdateInstaller '-PnuvioPlaybackApk=E:/Morphe/Apps/NuvioTV/NuvioTV-1.1.0-beta.10-patches-unsigned.apk' '-PnuvioUpdatesApk=E:/Morphe/Apps/NuvioTV/NuvioTV-1.1.0-beta.10-patches-unsigned.apk' '-PnuvioRequireStability=true' --offline
 ```
 
-Successful logs are `../.inspect-nuvio-beta10/final-validation.log` and
+Successful logs are `../Skills/inspection-evidence/.inspect-nuvio-beta10/final-validation.log` and
 `extra-runtime-validation.log`. Additional provider badge/composition/delta,
 remaining-count and launcher-publisher checks passed in `final-verification.log`;
 that earlier run also records the subsequently corrected preferred-source fixture
@@ -91,7 +91,7 @@ original. Signature verification confirms the output is unsigned.
 - Bundle: `patches/build/libs/patches-0.16.1.mpp`.
 - APK: `../Apps/NuvioTV/NuvioTV-1.1.0-beta.10-patches-unsigned.apk`.
 - APK SHA-256: `9f0df20775fe40a1049460b7ce4e161075051214386ccd48540ec291188896d2`.
-- Evidence: `../.inspect-nuvio-beta10/rebuild-final.log`, `rebuild-result.json`
+- Evidence: `../Skills/inspection-evidence/.inspect-nuvio-beta10/rebuild-final.log`, `rebuild-result.json`
   and `apk-audit.json`.
 
 The APK was rebuilt and audited. It was not signed, installed or tested on a
@@ -116,7 +116,7 @@ named output preserves the earlier APK:
 
 - APK: `../Apps/NuvioTV/NuvioTV-1.1.0-beta.10-patches-0.16.2-unsigned.apk`.
 - SHA-256: `d8698dc96c9fdbe79061986f96c438c4e213554fa99ee86a823171352730dda0`.
-- Evidence: `../.inspect-nuvio-beta10/post-pull-rebuild.log`,
+- Evidence: `../Skills/inspection-evidence/.inspect-nuvio-beta10/post-pull-rebuild.log`,
   `post-pull-rebuild-result.json` and `post-pull-apk-audit.json`.
 
 The clone identity, owned permissions, provider authorities, launcher labels and
@@ -128,6 +128,6 @@ suite, `verifyAndroidBundle` and Desktop 1.19.1 import passed again. The actual
 0.16.2 APK also passed `verifyNuvioPlaybackApk`, `verifyNuvioApkUpdates` and
 `verifyNuvioUpdateInstaller`, using the versioned APK above for `nuvioPlaybackApk`
 and `nuvioUpdatesApk`, with `nuvioRequireStability=true`. See
-`../.inspect-nuvio-beta10/post-pull-verification.log` and
+`../Skills/inspection-evidence/.inspect-nuvio-beta10/post-pull-verification.log` and
 `post-pull-apk-verification.log`. Generated metadata differs from upstream only
 in the sixteen beta.10 compatibility targets. `git diff --check` passed.

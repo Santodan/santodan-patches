@@ -16,6 +16,11 @@ installer-source spoof.
 
 ## Start here: creating or modifying a patch
 
+Shared local skills are in `E:\Morphe\Skills\morphe-*\SKILL.md`. Load the relevant
+inspection, implementation, runtime, or verification workflow from there. Retained
+app evidence is in `E:\Morphe\Skills\inspection-evidence`; use those paths directly.
+OpenCode and Kilo discover the Skills directory through their user configuration.
+
 Latest Monet target: **1.1.1** (code 135). Read [Monet111.md](docs/Monet111.md)
 for the premium/card/catalog migration, exact original evidence, latest verifier
 commands and startup-app investigation. The unversioned card/catalog tasks now
@@ -122,8 +127,9 @@ Paths below are relative to `E:\Morphe\santodan-patches` unless stated otherwise
 | `settings.gradle.kts`, `gradle/libs.versions.toml` | Current Morphe plugin and library versions |
 | `docs/` | Feature behavior and device checks |
 | `../OriginalApps/` | Original APK/APKM/XAPK inputs; some inputs also live in the workspace root |
-| `../.inspect-*` | Extracted/decompiled inspection artifacts; confirm each matches the selected original |
-| `../.morphe-template-reference/`, `../.morphe-patches-reference/` | Local API/example references; check against installed dependency versions |
+| `../Skills/inspection-evidence/.inspect-*` | Extracted/decompiled inspection artifacts; confirm each matches the selected original |
+| `../References/morphe-template/`, `../References/morphe-patches/`, `../References/rushiranpise/` | Local API/example references; check against installed dependency versions |
+| `../backups/workspaces/` | Historical backup/staging workspaces; use the main repository for active work |
 | `../Apps/` | Patched app outputs; do not use as original patch inputs |
 
 At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.10`,

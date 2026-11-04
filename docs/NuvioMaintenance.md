@@ -124,7 +124,7 @@ Artifacts:
 - `patches/build/libs/patches-0.12.0.mpp`.
 - `../Apps/NuvioTV/NuvioTV-1.1.0-beta.8-menu-fix-unsigned.apk`.
 - `patches/build/reports/nuvio-update.md`.
-- Local verification logs under `../.inspect-nuvio-beta8/refactor/`:
+- Local verification logs under `../Skills/inspection-evidence/.inspect-nuvio-beta8/refactor/`:
   `all-verification.log`, `final-bundle.log`, `apk-verification.log`,
   `rebuild.log` and `rebuild-result.json`.
 
@@ -139,7 +139,7 @@ and final APK verification passed again after the fix. The CLI rebuilt all
 fourteen patches without failures; alignment and all 108 native library
 comparisons passed. Device confirmation of the corrected menu remains pending.
 
-The final logs are `../.inspect-nuvio-beta8/menu-fix-latest.log`,
+The final logs are `../Skills/inspection-evidence/.inspect-nuvio-beta8/menu-fix-latest.log`,
 `menu-fix-apk-verification.log`, `menu-fix-rebuild.log` and `menu-fix-result.json`.
 
 ## Beta.9 migration

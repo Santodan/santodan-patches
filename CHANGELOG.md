@@ -1,3 +1,9 @@
+## [0.16.4](https://github.com/Santodan/santodan-patches/compare/v0.16.3...v0.16.4) (2026-11-04)
+
+### 🚀 Updated App Support
+
+* **monet:** support Monet 1.1.1 ([da8228f](https://github.com/Santodan/santodan-patches/commit/da8228ff00fab6cfb648d517be0835a23086221f))
+
 ## [0.16.3](https://github.com/Santodan/santodan-patches/compare/v0.16.2...v0.16.3) (2026-11-04)
 
 ### 🐛 Bug Fixes

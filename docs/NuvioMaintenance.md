@@ -4,7 +4,7 @@ The reviewed app contract lives in
 [`contracts/nuvio/native.properties`](../contracts/nuvio/native.properties).
 It supplies the package/version, original APK/hash, native class names, shared
 field/method names, composed DEX references and exact body fingerprints.
-There is one active contract, currently beta.9. This does not add historical
+There is one active contract, currently beta.10. This does not add historical
 version adapters or automatically enable unverified app versions.
 
 ## What is generated
@@ -84,7 +84,7 @@ After confirming the new manifest/package/version and reviewing candidate DEX:
 5. Test native playback, remote focus, settings/profile persistence and launcher
    publication on the device. Host and DEX verification cannot establish device UI behavior.
 
-`verifyNuvioLatest` currently selects the dedicated beta.9 fixtures. When replacing the
+`verifyNuvioLatest` currently selects the dedicated beta.10 fixtures. When replacing the
 reviewed target, point it to that target's fixtures; preserve historical fixtures
 without extending them. Run Gradle invocations sequentially to avoid competing
 resource builds on Windows. Do not manually bump the patch-bundle release version.
@@ -145,3 +145,17 @@ The final logs are `../.inspect-nuvio-beta8/menu-fix-latest.log`,
 ## Beta.9 migration
 
 See [NuvioBeta9.md](NuvioBeta9.md). R8 split several utility classes: poster images and styling, tracking-source selection and its Compose wrapper, and rounded/inline icons need distinct owners. Review exact methods and semantic fields, rather than accepting the highest class similarity score. Navigation destinations, card captures and plugin requests also changed field names. Controls/pause-overlay timers must be traced through their jobs and callers; matching an existing method name or a similarly shaped timer is insufficient.
+
+## Beta.10 migration
+
+See [NuvioBeta10.md](NuvioBeta10.md). Stream search now uses the native static
+default dispatcher, with the reviewed mask `208`; its full signature and body
+fingerprint must be validated. Hilt provider names can remain valid while
+returning different services: verify the native consumer casts, including stream
+provider `g3` and tracking coordinator `T3`. Player-state fields, timer methods,
+the native sync banner and date controls also changed. Resolve icon factory
+owners and method names together from their complete native references.
+
+The latest suite includes dedicated beta.10 movie-date and remaining-count
+runtime fixtures. Preserve the historical fixtures when migrating the active
+contract.

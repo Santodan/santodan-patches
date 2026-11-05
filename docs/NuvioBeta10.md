@@ -11,6 +11,59 @@ All sixteen public patches use `contracts/nuvio/native.properties` and exact
 beta.10 compatibility. Dedicated `VerifyNuvioBeta10*` fixtures cover this target;
 historical version fixtures are preserved. No release version is bumped.
 
+## Quick startup reconciliation (2026-11-05)
+
+Quick startup shows saved Continue Watching immediately, then awaits one native
+automatic refresh per included provider after Home is presented. It publishes
+fresh progress, next-up seeds and watched membership without reading or saving
+all watched-item models. Catalog refresh continues independently. The old quick
+path skipped the awaited refresh and could retain stale episode data until a
+manual full sync. It also decoded bulk saved membership before contacting
+trackers; a device capture measured 20 seconds for 1,734 shows. The current
+pre-refresh phase skips that obsolete membership decode.
+
+Background startup reconciliation allows **120 seconds per provider**; explicit
+sync retains its 45-second deadline. Native automatic/user-initiated intents,
+rate limits, refresh coalescing, cancellation and profile/navigation guards
+remain in effect. Saved CW stays usable during refresh and is retained on
+failure. Startup status messages include the active provider operation and the
+actual failure instead of leaving a red banner without details or overwriting
+failure with the earlier quick-cache success message.
+
+Original beta.10 DEX shows `Lu9/m7;->v` delegates to `Lu9/l6;->k`, which dispatches
+`Leb/x0;->c` through `Lq9/j0;->a`. The native gate serializes refreshes with a Mutex
+and coalesces completion by profile generation/sequence. Paired device captures
+show startup exhausting 45 seconds inside remote refresh, while a later full
+sync completes that operation in 3.121 seconds. Queueing, hydration and network
+time cannot be separated from those logs; the longer bound accommodates cold
+startup work without claiming a specific underlying MDBList fault is fixed.
+
+The user subsequently reported successful startup sync. The 10:31 device log
+confirms Home fully drawn in **8.4 seconds**, MDBList refresh in about 25.2
+seconds, provider reads in 31.7 seconds, and publication of **271 next-up seeds**
+with watched membership for **1,734 shows**. Final status is `Startup sync
+complete` in **37.8 seconds**. Catalog refresh also completes. Marriage Toxin is
+already preloaded as episode 9 before reconciliation, so this capture proves
+successful refresh/publication but does not itself show an episode-5-to-9
+transition.
+
+Host checks cover cached episode 5 remaining visible while refresh is pending,
+episode 9 publication only after completion, cold refresh exceeding the normal
+deadline, bounded failure, cancellation and retained snapshots. `buildAndroid`,
+`verifyNuvioProviderRefreshRuntime`, `verifyNuvioPlaybackOverlayRuntime`, all
+`verifyNuvioBeta10Bundle` selections, `verifyAndroidBundle` and Desktop 2.0.0 import
+passed for the final code. The complete `verifyNuvioLatest` suite also passed
+before the reporting/deadline follow-ups. Verification logs are
+`quick-reconcile-cold-refresh.log` and `quick-reconcile-cold-refresh-import.log`
+in the beta.10 evidence directory; earlier `quick-reconcile-*` logs retain the
+intermediate investigation, including the obsolete Desktop 1.19.1 path failure.
+
+Bundle: `patches/build/libs/patches-0.16.4.mpp` (release version unchanged).
+SHA-256: `0b6c03809b7f7fc3cceda93d9bbf44c2c86b7c4a60c97a53bcd3f049bc3acf4c`.
+Local verification applied packaged selections and checked assembled DEX. The
+agent did not rebuild an installable APK, sign or install it; the successful TV
+run is the user's test. No separate fast-startup patch was added.
+
 ## Native contracts
 
 | Contract | Beta.10 binding |

@@ -102,6 +102,14 @@ The user confirmed the beta.10 cache fix on the TV on 2026-11-05 after enabling
 the next-episode switch in the test profile. Check `enabled=true` and a completed
 delayed preload before interpreting a device's source-fetch indicator.
 
+Merged quick startup now shows saved CW first, then awaits native automatic
+provider refresh after Home presentation. Skip old bulk membership decoding
+before refresh; allow 120 seconds per startup provider (45 for explicit sync),
+preserve native rate limits/cancellation, and show stage-specific failures.
+The user-confirmed beta.10 run showed Home in 8.4 seconds and successful fresh
+snapshot publication in 37.8 seconds. See `docs/NuvioBeta10.md`; retain the cold
+refresh and stale-seed regressions in `verifyNuvioProviderRefreshRuntime`.
+
 ### Scope and evidence
 
 - Respond in English unless the user explicitly requests another language.

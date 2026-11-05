@@ -1,4 +1,8 @@
-## Pending changes since v0.16.2
+## Pending changes since v0.16.4
+
+- **nuviotv:** Fix beta.10 next-episode preloads warming a different source-cache entry: retain the native playback binge group, warm the local-plugin continuation mode when applicable, and invalidate cooldowns when the source group changes. Runtime and standalone/combined bundle checks passed; the user confirmed successful TV behavior after enabling next-episode preloading in the test profile.
+
+## Released in v0.16.3
 
 - **pillo:** Fix the 0.6.27 premium patch's subscription callback resetting notification settings, including **mark as taken**, after a billing refresh. Preserve the user's enabled or disabled choice.
 - **nuviotv:** Update all sixteen patches for **1.1.0-beta.10** (1073), including the new native stream-search dispatcher, Hilt providers, player fields, sync banner, date controls, icons and installer action.

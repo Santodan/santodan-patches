@@ -31,12 +31,19 @@ historical version fixtures are preserved. No release version is bumped.
 | Scoped Hilt providers | profile `B`, stream repository `g3`, tracking coordinator `T3`; verified against native `get()` consumers and casts |
 
 The native default search dispatcher now owns the stream-search entry point.
-Preloading passes the native default mask `208` (16 + 64 + 128), preserving
-false force-refresh and the two new false search flags, with a null group.
+Next-episode preloading passes the player's `gc.r3` priority binge group and
+uses native mask `16`. Force-refresh stays false; both plugin flags are enabled
+together for the additional local-plugin
+autoplay cache entry when appropriate. Continue Watching and detail searches
+retain a null group. See [source cache reuse](NuvioNextEpisodePreload.md).
 Its exact static descriptor, register layout and instruction fingerprint are
 validated before mutation; the incompatible suspend search remains unused.
 Native session caching, profile isolation and scoped local-scraper permission
 remain in effect.
+The group/mode cache correction passed focused runtime and standalone/combined
+bundle verification on 2026-11-05. The user subsequently confirmed successful TV
+behavior with the next-episode setting enabled in the test profile. See the
+source-cache document for the evidence and the disabled-setting diagnostic.
 
 R8 splits the icon utilities again. Playback buttons resolve factory owner and
 method together from the same full native references validated at patch time.

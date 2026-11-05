@@ -93,6 +93,14 @@ The app-specific sections below describe existing implementations; they are not
 instructions to expand their historical version support.
 
 For the latest NuvioTV **1.1.0-beta.10** (1073) port, read [NuvioBeta10.md](docs/NuvioBeta10.md). The active shared contract and `verifyNuvioLatest` target beta.10; historical fixtures remain unchanged.
+Next-episode preloads must use the native `bb.gc.r3` binge group; a null group
+warms a different cache entry. Warm the separate plugin-continuation autoplay mode
+only for groups recognized by the native parser. See
+[NuvioNextEpisodePreload.md](docs/NuvioNextEpisodePreload.md) and the group-aware
+runtime fixture; do not remove search mode or group from the native cache key.
+The user confirmed the beta.10 cache fix on the TV on 2026-11-05 after enabling
+the next-episode switch in the test profile. Check `enabled=true` and a completed
+delayed preload before interpreting a device's source-fetch indicator.
 
 ### Scope and evidence
 

@@ -201,6 +201,33 @@ private fun staleSnapshotsAndExpiry() {
 }
 
 private fun continuationsAndTriggers() {
+    val overlay = engine()
+    val journal = NuvioPlaybackJournal(overlay, LocalDisk())
+    var publications = 0
+    for (method in listOf("C", "D", "A", "B")) {
+        var notifications = 0
+        com.nuvio.tv.data.local.NativeLocalWriteFixture.run(method, { notifications++; Unit }, null)
+        check(notifications == 1)
+        val failed = runCatching {
+            com.nuvio.tv.data.local.NativeLocalWriteFixture.run(method, { error("Failed write published") },
+                IllegalStateException("native disk failure"))
+        }
+        check(failed.exceptionOrNull()?.message == "native disk failure")
+    }
+    for (index in 0..3) {
+        val episode = Playback("tt39122769", index + 6, 20_000L + index, 94)
+        com.nuvio.tv.data.local.NativeLocalWriteFixture.run("C", {
+            journal.apply("p1", listOf(row(overlay, episode))) { publications++ }
+            Unit
+        }, null)
+        val entries = journal.entries("p1")
+        check(overlay.details(emptyMap(), "tt39122769", entries, emptyMap()).size == index + 1)
+        check(overlay.seeds(emptyList(), entries, overlay.history(emptyMap(), entries, emptyMap()), emptyMap())
+            .single().ep == episode.ep) { "Suspended native write did not update CW immediately" }
+    }
+    check(publications == 4)
+    println("PASS: beta.10 suspended store re-entry preserves original state and publishes four episode completions to details/CW without sync")
+
     var receipts = 0
     var completion: Result<Any?>? = null
     val context = CoroutineName("native-local-write")

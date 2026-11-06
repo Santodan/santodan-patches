@@ -64,6 +64,42 @@ Local verification applied packaged selections and checked assembled DEX. The
 agent did not rebuild an installable APK, sign or install it; the successful TV
 run is the user's test. No separate fast-startup patch was added.
 
+## Immediate playback updates after suspended writes (2026-11-06)
+
+The user reported that completing Marriage Toxin episode 9 left its detail
+watched marker and Continue Watching stale until restart. The log confirms
+93.26% playback, successful tracker stop dispatch, and a later startup refresh
+advancing next-up to episode 10. Tracker acknowledgement alone does not establish
+that the local overlay received the native persistence event.
+
+Original beta.10 local progress methods `bc.C/D/A/B` resume through
+`data.local.vb/wb/tb/ub`, respectively. The runtime still recognized the older
+`pb/qb/nb/ob` names. Native `invokeSuspend` re-enters the public store wrapper
+with null/zero placeholder arguments. If that continuation is wrapped again,
+the cloned body starts a new write instead of resuming its original state, so
+the successful-save overlay callback can be lost.
+
+`NuvioLocalWriteContinuation.observe` now preserves those exact native resume
+states. The original-DEX verifier checks its bindings against each method's
+INSTANCE_OF instruction. The runtime fixture exercises native wrapper re-entry,
+failure propagation, exactly-once notification, and four completed episodes
+appearing in detail/history/next-up projections without sync or restart. Existing
+native persistence, completion thresholds and remote writes remain unchanged.
+No new native hook, older-version mapping or startup synchronization was added.
+
+Evidence: `local-write-resume-evidence.md`, `local-write-resume-validation.log`
+and `local-write-resume-bundle.log` in the beta.10 inspection directory. The host
+and DEX regression is distinct from device confirmation; another TV playback
+test is needed. No signing or installation was performed.
+
+Validation passed: `buildAndroid`, `verifyNuvioBeta10`,
+`verifyNuvioPlaybackOverlayRuntime`, `verifyNuvioProviderRefreshRuntime`, all
+`verifyNuvioBeta10Bundle` selections, `verifyAndroidBundle` and Desktop 2.0.0
+import. An isolated before/after harness reproduces failed resume handling for
+all four old bindings and passes with the corrected bindings; its output is
+`local-write-resume-repro/result.log`. The updated bundle keeps the existing
+`patches/build/libs/patches-0.16.4.mpp` filename and release version.
+
 ## Native contracts
 
 | Contract | Beta.10 binding |

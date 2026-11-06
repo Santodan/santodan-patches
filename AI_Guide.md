@@ -110,6 +110,13 @@ The user-confirmed beta.10 run showed Home in 8.4 seconds and successful fresh
 snapshot publication in 37.8 seconds. See `docs/NuvioBeta10.md`; retain the cold
 refresh and stale-seed regressions in `verifyNuvioProviderRefreshRuntime`.
 
+Beta.10 local playback persistence resumes `bc.C/D/A/B` through
+`data.local.vb/wb/tb/ub`. Preserve those native states when wrappers re-enter
+with placeholder arguments; older names restart the suspended body and can
+prevent details/CW updates. `verifyNuvioBeta10` checks the runtime bindings
+against original DEX; `verifyNuvioPlaybackOverlayRuntime` exercises native
+re-entry and immediate completion publication. See `docs/NuvioBeta10.md`.
+
 ### Scope and evidence
 
 - Respond in English unless the user explicitly requests another language.

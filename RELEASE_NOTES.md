@@ -1,5 +1,6 @@
 ## Pending changes since v0.16.4
 
+- **pillo:** Fix the 0.6.27 weight import footer passing a null required button prefix, which can close the normal weight logging menu. Use the native text-only button and theme colors; preserve normal Back/Save controls.
 - **nuviotv:** Fix beta.10 next-episode preloads warming a different source-cache entry: retain the native playback binge group, warm the local-plugin continuation mode when applicable, and invalidate cooldowns when the source group changes. Runtime and standalone/combined bundle checks passed; the user confirmed successful TV behavior after enabling next-episode preloading in the test profile.
 
 ## Released in v0.16.3

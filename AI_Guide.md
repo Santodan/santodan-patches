@@ -440,6 +440,14 @@ official installation. Device testing is still required for server-side behavior
 
 ## Pillo 0.6.27
 
+The weight import footer must use the text-only `ButtonM-jB83MbM` overload.
+The prefix overload rejects null even with mask 57, closing the logging menu.
+Only modifier/fullWidth have defaults: pass actual theme colors from the native
+package-private `ButtonProps$2`/`$3` providers with accessible INSTANCE fields.
+Run `verifyPillo627Runtime` for full footer rendering/callback regression checks
+and `verifyPillo627Bundle` for original DEX and packaged contracts. See
+`docs/Pillo627.md`; device confirmation of the menu fix is pending.
+
 The premium patch must also normalize the premium argument in the independent
 `SubscriptionStateProvider._init_$lambda$0` profile listener. The raw billing
 result otherwise runs `resetDailyInterruptSetting` and clears direct logging

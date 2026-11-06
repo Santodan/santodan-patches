@@ -204,6 +204,16 @@ private fun continuationsAndTriggers() {
     val overlay = engine()
     val journal = NuvioPlaybackJournal(overlay, LocalDisk())
     var publications = 0
+    val partial = Playback("tt39122769", 9, 19_000, 374_491, threshold = 1_000_000)
+    com.nuvio.tv.data.local.NativeLocalWriteFixture.run("C", {
+        journal.apply("resume-profile", listOf(row(overlay, partial)))
+        Unit
+    }, null)
+    val resumeEntries = journal.entries("resume-profile")
+    check(overlay.progress(emptyList(), resumeEntries, emptyMap()).single().position == 374_491L)
+    check(overlay.details(emptyMap(), "tt39122769", resumeEntries, emptyMap())[1 to 9] === partial)
+    check(overlay.history(emptyMap(), resumeEntries, emptyMap()).isEmpty())
+    println("PASS: suspended native partial save retains the 374491ms resume position in merged progress/details without marking watched")
     for (method in listOf("C", "D", "A", "B")) {
         var notifications = 0
         com.nuvio.tv.data.local.NativeLocalWriteFixture.run(method, { notifications++; Unit }, null)

@@ -116,6 +116,9 @@ with placeholder arguments; older names restart the suspended body and can
 prevent details/CW updates. `verifyNuvioBeta10` checks the runtime bindings
 against original DEX; `verifyNuvioPlaybackOverlayRuntime` exercises native
 re-entry and immediate completion publication. See `docs/NuvioBeta10.md`.
+The same suspended-C regression retains a 374,491ms partial position in merged
+progress/details without marking it watched; keep this check when changing
+local playback handling. Actual TV resume/seek confirmation is still pending.
 
 ### Scope and evidence
 

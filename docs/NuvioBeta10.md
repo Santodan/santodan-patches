@@ -100,6 +100,16 @@ all four old bindings and passes with the corrected bindings; its output is
 `local-write-resume-repro/result.log`. The updated bundle keeps the existing
 `patches/build/libs/patches-0.16.4.mpp` filename and release version.
 
+A second user capture from the same pre-fix playback session shows episode 9
+at 374,491ms near 20:50:12, successful stop reporting at 26.25%, and a subsequent
+launch reporting position 210ms rather than resuming. Partial positions share
+the corrected local-save bridge, so this is consistent with the same resume
+state mismatch; the log alone does not prove which saved position reached the
+player. The added suspended-C regression preserves a 374,491ms partial record
+in both merged resumable progress and episode details without marking it
+watched. `local-write-resume-position.log` records that runtime check. Device
+resume/seek confirmation with the corrected bundle remains required.
+
 ## Native contracts
 
 | Contract | Beta.10 binding |

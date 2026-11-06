@@ -1,5 +1,6 @@
 ## Pending changes since v0.16.4
 
+- **nuviotv:** Add resume-position regression coverage through the corrected suspended-save bridge: a 6:14 partial position remains available in merged progress/details without marking the episode watched. The user's pre-fix restart-at-zero capture is documented; actual player resume confirmation remains pending.
 - **nuviotv:** Correct beta.10 suspended local-save handling so successful playback writes reach the merged details and Continue Watching overlay without requiring sync or restart. Original-DEX, native re-entry, runtime and bundle checks passed; TV confirmation remains pending.
 - **pillo:** Fix the 0.6.27 weight import footer passing a null required button prefix, which can close the normal weight logging menu. Use the native text-only button and theme colors; preserve normal Back/Save controls.
 - **nuviotv:** Fix beta.10 next-episode preloads warming a different source-cache entry: retain the native playback binge group, warm the local-plugin continuation mode when applicable, and invalidate cooldowns when the source group changes. Runtime and standalone/combined bundle checks passed; the user confirmed successful TV behavior after enabling next-episode preloading in the test profile.

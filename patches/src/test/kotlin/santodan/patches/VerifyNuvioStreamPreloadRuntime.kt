@@ -31,7 +31,7 @@ private class RuntimePlayerState(@JvmField val F0: String, @JvmField val y1: Run
                                 @JvmField val m1: String? = null, @JvmField val g: String = "")
 private class RuntimePlayerController {
     @JvmField val T: String = "SERIES"
-    @JvmField var r3: String? = "release-A"
+    @JvmField var u3: String? = "release-A"
 }
 private class RuntimePlayerModel(private val flow: MutableStateFlow<RuntimePlayerState>) {
     @JvmField val Y = RuntimePlayerController()
@@ -163,14 +163,14 @@ fun main() = runBlocking {
         check(repository.networkCalls.get() == 5)
         // Changing the active source group must invalidate the preload cooldown. Local-plugin
         // autoplay and the full manual list use different native modes, and both must be warm.
-        playerModel.Y.r3 = "local-plugin-demo|1080p"
+        playerModel.Y.u3 = "local-plugin-demo|1080p"
         waitFor { repository.networkCalls.get() == 7 }
         withContext(Dispatchers.Default) {
-            repository.l("series", "ttnext:1:2", 1, 2, false, playerModel.Y.r3).first()
-            repository.l("series", "ttnext:1:2", 1, 2, false, playerModel.Y.r3, true).first()
+            repository.l("series", "ttnext:1:2", 1, 2, false, playerModel.Y.u3).first()
+            repository.l("series", "ttnext:1:2", 1, 2, false, playerModel.Y.u3, true).first()
         }
         check(repository.networkCalls.get() == 7)
-        println("PASS: beta.10 binge-group cache keys, source-group changes and preferred-plugin autoplay reuse")
+        println("PASS: beta.12 binge-group cache keys, source-group changes and preferred-plugin autoplay reuse")
         check(NuvioStreamPreload.nextEpisodePluginPause(RuntimePluginRequest(repository, "unrelated", "series", 1, 2)).first())
         NuvioStreamPreload.stopNextEpisode(playerModel)
         playerFlow.value = RuntimePlayerState("ttnext:1:2", RuntimePlayerNext("ttnext:1:3", 1, 3))
@@ -181,7 +181,7 @@ fun main() = runBlocking {
         check(Log.errors.isEmpty()) { Log.errors.joinToString() }
         println("PASS: real delayed player observer, next-episode cache reuse, scoped local-scraper permission, duplicate observers and disposal")
         repository.l.value = false
-        withContext(Dispatchers.Default) { repository.l("series", "ttnext:1:2", 1, 2, true, playerModel.Y.r3).first() }
+        withContext(Dispatchers.Default) { repository.l("series", "ttnext:1:2", 1, 2, true, playerModel.Y.u3).first() }
         check(repository.networkCalls.get() == 8 && repository.forceRefreshes.get() == 1)
         prefs.edit().putBoolean("next_episode", false).apply()
         check(NuvioStreamPreload.useNativeNextEpisodeThresholdPreload())

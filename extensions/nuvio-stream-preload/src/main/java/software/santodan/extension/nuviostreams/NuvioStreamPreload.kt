@@ -173,7 +173,7 @@ object NuvioStreamPreload {
                     var lastDiagnostic: String? = null
                     fun snapshot() = StreamTargets.player(flow.value, profile(), enabled(NEXT),
                         normalizeType = true, requestType = requestType).copy(
-                            priorityBingeGroup = field(controller, "r3") as? String)
+                            priorityBingeGroup = field(controller, "u3") as? String)
                     NextEpisodePreloader(::snapshot, { state ->
                         synchronized(nextPermits) {
                             nextPermits.value = if (state == null) nextPermits.value - token

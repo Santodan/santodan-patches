@@ -1270,7 +1270,7 @@ object NuvioMergedProgress {
                 val seeds = (findMethod(provider.javaClass, "f", 0).invoke(provider) as Flow<Any>).first() as? Collection<Any>
                 if (deferred()) return@providerResult
                 if (providerId(provider) == "TRAKT") {
-                    // beta.8 ba.pc.a -> ba.jb; T is set only after f() installs
+                    // beta.8 ba.oc.a -> ba.ib; T is set only after f() installs
                     // watched episode maps and the canonical watched-show seeds.
                     val service = field(provider, "a").get(provider)
                     if (!field(service, "T").getBoolean(service)) {

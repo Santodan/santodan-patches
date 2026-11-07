@@ -86,7 +86,7 @@ final class NuvioStreamPreloadPatch {
 
     static void validateNextEpisodeContext(MutableClass controller, MutableClass plugins) {
         if (!controller.getType().equals(NuvioNative.PLAYER_CONTROLLER_TYPE)
-            || controller.getFields().stream().filter(f -> f.getName().equals("r3")
+            || controller.getFields().stream().filter(f -> f.getName().equals("u3")
                 && f.getType().equals("Ljava/lang/String;") && (f.getAccessFlags() & 8) == 0).count() != 1)
             throw NuvioRemainingEpisodesPatch.unsupported("Native playback binge-group field changed");
         MutableMethod parser = NuvioRemainingEpisodesPatch.unique(plugins, "scraperIdFromPluginBingeGroup", 1);
@@ -223,7 +223,7 @@ final class NuvioStreamPreloadPatch {
             NuvioRemainingEpisodesPatch.calls(i, NuvioNative.PLAYER_ROUTES_TYPE, "r")).count();
         long triggeredReads = thresholdInstructions.stream().filter(i -> i.getOpcode() == Opcode.IGET_BOOLEAN
             && i instanceof ReferenceInstruction && ((ReferenceInstruction) i).getReference().toString()
-                .equals(NuvioNative.PLAYER_CONTROLLER_TYPE + ("->s2:Z"))).count();
+                .equals(NuvioNative.PLAYER_CONTROLLER_TYPE + ("->t2:Z"))).count();
         if (delegates != 1 || triggeredReads != 1 || threshold.getImplementation().getRegisterCount() != (13)
             || thresholdInstructions.isEmpty() || thresholdInstructions.get(0).getOpcode() != Opcode.CONST_STRING
             || ((OneRegisterInstruction) thresholdInstructions.get(0)).getRegisterA() != 0)

@@ -9,13 +9,13 @@ import kotlin.jvm.functions.Function1;
 
 /** Observe successful native persistence, including synchronous and suspended completion. */
 public final class NuvioLocalWriteContinuation extends ContinuationImpl {
-    /** Original beta.10 state machines re-enter the wrapper with placeholder arguments. */
+    /** Original beta.12 state machines re-enter the wrapper with placeholder arguments. */
     public static String nativeState(String method) {
         switch (method) {
-            case "C": return "com.nuvio.tv.data.local.vb";
-            case "D": return "com.nuvio.tv.data.local.wb";
-            case "A": return "com.nuvio.tv.data.local.tb";
-            case "B": return "com.nuvio.tv.data.local.ub";
+            case "C": return "com.nuvio.tv.data.local.xb";
+            case "D": return "com.nuvio.tv.data.local.yb";
+            case "A": return "com.nuvio.tv.data.local.vb";
+            case "B": return "com.nuvio.tv.data.local.wb";
             default: return null;
         }
     }

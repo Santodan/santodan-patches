@@ -388,6 +388,61 @@ public final class VerifyNuvioBeta13 {
     }
 
     private static void verifyRuntimeSignatures() {
+        var metadata = new MutableClass(owner("Lcom/nuvio/tv/domain/model/MetaPreview;"));
+        NuvioSettingsMenuPatch.hookPreviewMovie(metadata);
+        boolean duplicateArtworkRejected = false;
+        try { NuvioSettingsMenuPatch.hookPreviewMovie(metadata); }
+        catch (IllegalStateException expected) { duplicateArtworkRejected = true; }
+        if (!duplicateArtworkRejected) throw new AssertionError("Duplicate preview artwork capture accepted");
+        used.removeIf(candidate -> candidate.getType().equals(metadata.getType()));
+        classes.put(metadata.getType(), metadata);
+        used.add(metadata);
+        var swatch = new MutableClass(owner("Lgb/jc;"));
+        var originalSwatch = owner("Lgb/jc;").getMethods().stream().filter(m -> m.toString().equals(software.santodan.nuvio.NuvioNative.REF_DATE_COLOR_SWATCH)).findFirst().orElseThrow();
+        int swatchRegisters = originalSwatch.getImplementation().getRegisterCount();
+        int swatchInstructions = NuvioAiringSeriesPatch.instructions(originalSwatch).size();
+        NuvioSettingsMenuPatch.hookDateColorSwatch(swatch);
+        NuvioSettingsMenuPatch.hookDateColorOpacity(swatch);
+        boolean duplicateOpacityRejected = false;
+        try { NuvioSettingsMenuPatch.hookDateColorOpacity(swatch); }
+        catch (IllegalStateException expected) { duplicateOpacityRejected = true; }
+        if (!duplicateOpacityRejected) throw new AssertionError("Duplicate opacity hook accepted");
+        var patchedSwatch = swatch.getMethods().stream().filter(m -> m.toString().equals(software.santodan.nuvio.NuvioNative.REF_DATE_COLOR_SWATCH)).findFirst().orElseThrow();
+        if (patchedSwatch.getImplementation().getRegisterCount() != swatchRegisters ||
+            NuvioAiringSeriesPatch.instructions(patchedSwatch).size() != swatchInstructions + 9)
+            throw new AssertionError("Swatch hook changed registers or native layout");
+        boolean duplicateSwatchRejected = false;
+        try { NuvioSettingsMenuPatch.hookDateColorSwatch(swatch); }
+        catch (IllegalStateException expected) { duplicateSwatchRejected = true; }
+        if (!duplicateSwatchRejected) throw new AssertionError("Duplicate swatch hook accepted");
+        rejectParameter(owner("Lgb/jc;"), "a", 0, "I", NuvioSettingsMenuPatch::hookDateColorSwatch);
+        // Keep the hooked class in the real DEX write/reload below.
+        used.removeIf(candidate -> candidate.getType().equals("Lgb/jc;"));
+        classes.put("Lgb/jc;", swatch);
+        used.add(swatch);
+        var preview = new MutableClass(owner("Lgb/x0;"));
+        NuvioSettingsMenuPatch.hookDateEditorPreview(preview);
+        boolean duplicatePreviewRejected = false;
+        try { NuvioSettingsMenuPatch.hookDateEditorPreview(preview); }
+        catch (IllegalStateException expected) { duplicatePreviewRejected = true; }
+        if (!duplicatePreviewRejected) throw new AssertionError("Duplicate label preview hook accepted");
+        rejectParameter(owner("Lgb/x0;"), "c", 0, "J", NuvioSettingsMenuPatch::hookDateEditorPreview);
+        used.removeIf(candidate -> candidate.getType().equals("Lgb/x0;"));
+        classes.put("Lgb/x0;", preview);
+        used.add(preview);
+        var saveLabel = new MutableClass(owner("Lgb/i0;"));
+        NuvioSettingsMenuPatch.hookDateEditorApply(saveLabel);
+        boolean duplicateApplyRejected = false;
+        try { NuvioSettingsMenuPatch.hookDateEditorApply(saveLabel); }
+        catch (IllegalStateException expected) { duplicateApplyRejected = true; }
+        if (!duplicateApplyRejected) throw new AssertionError("Duplicate editor Apply hook accepted");
+        used.removeIf(candidate -> candidate.getType().equals("Lgb/i0;"));
+        classes.put("Lgb/i0;", saveLabel);
+        used.add(saveLabel);
+        for (String reference : NuvioSettingsMenuPatch.DATE_COLOR_APIS)
+            NuvioSettingsMenuPatch.validateDateColorApi(owner(reference.substring(0, reference.indexOf("->"))), reference);
+        rejectParameter(owner("Lgb/x0;"), "a", 1, "I", candidate ->
+            NuvioSettingsMenuPatch.validateDateColorApi(candidate, software.santodan.nuvio.NuvioNative.REF_DATE_CUSTOM_COLOR_DIALOG));
         verifyGlyph(software.santodan.nuvio.NuvioNative.REF_ICON_MEDIA_P, "Filled.Info");
         verifyGlyph(software.santodan.nuvio.NuvioNative.REF_ICON_MEDIA_Q, "Rounded.PlayArrow");
         verifyGlyph(software.santodan.nuvio.NuvioNative.REF_ICON_PARTY_Q, "Rounded.Groups");

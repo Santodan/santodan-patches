@@ -1,5 +1,19 @@
 # Santodan Patches
 
+## NuvioTV date-label appearance
+
+For beta.13 custom date-label colors, see [NuvioBeta13.md](docs/NuvioBeta13.md).
+Keep the native palette, color names, opacity controls and Apply/Cancel. Custom
+uses the native RGB-only editor with a movie-cover label preview and an independent
+Poster/Card button; it must not read or change Continue Watching layout settings.
+Capture the native palette's live `g1.o1` opacity before entering Custom, including
+unsaved edits, and preserve it through preview and both Apply steps. The editor's
+button says Apply; normal theme customization retains Save Theme.
+Run `verifyNuvioBeta13DateStyleRuntime`, `verifyNuvioLatest`, and
+`verifyNuvioDateColorApk -PnuvioDateColorApk=<rebuilt-apk>`. The APK audit rejects
+missing live-opacity, preview, caption and native-binding hooks. Device interaction
+is still a separate check. Release-owned versions and metadata are updated by CI.
+
 ## TFD Companion
 
 For `com.nexon.tfdc` 1.1.5, use the default-enabled **TFD Companion - Remove illegal

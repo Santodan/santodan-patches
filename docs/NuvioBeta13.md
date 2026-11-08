@@ -8,8 +8,9 @@ DEX files match their original ZIP entries byte-for-byte.
 
 All sixteen public patches target beta.13 through
 `contracts/nuvio/native.properties`. `verifyNuvioLatest` uses dedicated beta.13
-fixtures. Historical beta.12 and earlier fixtures remain unchanged. The patch
-bundle release version remains 0.16.5; this local port is not a published release.
+fixtures. Historical beta.12 and earlier fixtures remain unchanged. Local
+verification below uses bundle 0.16.5 as its baseline. The Release workflow
+assigns the published version and updates release-owned metadata.
 
 The side-by-side patch also supports exporting/importing all Santodan runtime
 settings through Android's document picker. See
@@ -21,7 +22,7 @@ For the subsequent IntroDB API-key menu fix, see
 The row is explicitly enabled and the editor uses the reviewed beta.13 dialog,
 keyboard-controller and border contracts.
 The current combined rebuild is
-`../Apps/NuvioTV/NuvioTV-1.1.0-beta.13-patches-0.16.5-settings-native-ui-v2-all-unsigned.apk`;
+`../Apps/NuvioTV/NuvioTV-1.1.0-beta.13-patches-0.16.5-date-opacity-all-unsigned.apk`;
 it includes the earlier playback/IntroDB fixes, settings backup, native transfer
 dialogs and Restart button, with default package `com.nuviotv.santodan`.
 The earlier `introdb-editor-fix` output still used the String callback branch for
@@ -33,6 +34,80 @@ The earlier APK without `editor-fix` in its name is superseded; see the follow-u
 below for its crash and the replacement's verification.
 
 ## Reviewed native contracts
+
+Date-label **Label color** and **Font color** retain the native swatch row,
+opacity controls and Apply/Cancel buttons. Color names are now visible beneath
+the circles. The first **Custom** circle displays the actual draft/saved color,
+including its opacity, while retaining a separate internal marker for its action.
+All other swatches keep their order and native focus/click behavior.
+
+Custom opens the native hue/saturation/brightness/hex editor. Its preview overlays
+an actual date label on a random movie cover. A native **Switch to Card** /
+**Switch to Poster** button independently selects a 2:3 poster or 16:9 card.
+The preview keeps its mode for the current app session, without reading or
+changing Continue Watching, global landscape preferences, profiles or stores.
+Switching modes keeps the same sample movie and color draft.
+Landscape artwork prefers the movie's landscape poster, then backdrop, then the
+native cropped-poster fallback. The label uses the live edited color and the
+saved other color, position, padding, font size and native text style. Preview
+changes do not write preferences. The editor button reads **Apply** and returns to the original
+picker; that picker's Apply commits RGB and opacity. Cancel does not commit the
+draft. Normal theme customization retains its original preview and Save Theme.
+
+The custom editor now carries the native picker's live opacity, including changes
+not yet applied in that picker. The reviewed `gb.jc.b` opacity state is captured
+after its `g1.o1` cast. Opening Custom copies its current percentage into the
+separate ARGB draft; the native RGB-only editor and preview preserve that alpha.
+Custom Apply returns to the picker at the same opacity rather than resetting to
+100%. Cancel still leaves stored preferences unchanged. Regression checks cover
+0%, 30%, 50% and 100% for label and font colors through preview and both Apply
+steps. `date-opacity-native-evidence.txt` records the new native hook.
+
+The shared native `MetaPreview` constructor retains artwork/title strings for
+at most 24 unique movies already loaded by the app. Series, duplicates and empty
+or placeholder posters are skipped. The preview chooses once per editor opening,
+so slider changes do not switch movies. Image loading and caching use native
+`gb.cj.a`; there are no additional catalog/API requests. If catalogs have not
+loaded yet, the label remains visible and the first valid movie publishes a
+preview revision when available. Native image loading can still fail offline.
+
+The previous `date-custom-color-v2` output incorrectly replaced the picker with
+a list. It also passed ARGB to `CustomThemeColors`, whose constructor requires
+all three values in `0..0xFFFFFF`. The emulator log shows this exact
+`IllegalArgumentException` when opening Custom. That output is superseded.
+The corrected editor strips alpha before constructing the native model and
+preserves alpha separately for the original picker. The host fixture now enforces
+the actual constructor restriction rather than accepting invalid ARGB values.
+
+The editor binding is static
+`gb.x0.a(CustomThemeColors,boolean,Function1,Function0,Composer,int)`, with gradients
+disabled. Native swatch `gb.jc.a(J,boolean,boolean,Function0,Modifier,Composer,int)`
+is wrapped in a centered column containing the original focusable circle and a
+non-focusable caption. A recursion guard lets the circle render with the real
+custom color while preserving the Custom action. Native `gb.x0.c` delegates to
+the date-label preview only for the label editor; its native theme path remains.
+The Save Theme resource in reviewed `gb.i0.invoke` resolves to native Apply only
+in this editor. All hook targets keep their register counts. Full references are
+shared in `contracts/nuvio/native.properties`.
+Evidence is `date-preview-toggle-native-evidence.txt`, `date-cover-preview-native-evidence.txt`, `date-label-preview-native-evidence.txt`,
+`date-native-swatch-native-evidence.txt` and `date-native-swatch-user-crash.txt` in the beta.13 inspection directory.
+
+Verification: `buildAndroid`, `verifyNuvioBeta13DateStyleRuntime`,
+`verifyNuvioBeta13`, standalone/combined `verifyNuvioBeta13Bundle`,
+`verifyAndroidBundle`, Desktop 2.1.1 import and
+`verifyNuvioDateColorApk -PnuvioDateColorApk=<apk>`.
+The APK audit requires caption, preview and scoped Apply hooks, their native
+reflection bindings and the RGB mask. Host tests exercise visible color names,
+the real custom circle color, movie-only sampling, stable artwork across edits,
+an independent Poster/Card button, both dimensions, poster-only fallback, live
+label background/font previews, balanced Compose groups, native Apply/opacity, scoped button text, persistence and reset.
+
+Combined unsigned APK:
+`../Apps/NuvioTV/NuvioTV-1.1.0-beta.13-patches-0.16.5-date-opacity-all-unsigned.apk`.
+SHA-256: `0271c9efd02ad54b03666258a3838931a49b04e89b2ad276ba6cb6b8443f092f`.
+All sixteen patches rebuilt successfully; native libraries remain unchanged and
+16-KB alignment passes. Not signed or installed; corrected UI interaction and TV
+focus remain untested on a device. Bundle: `patches/build/libs/patches-0.16.5.mpp`.
 
 | Contract | Beta.13 binding |
 | --- | --- |

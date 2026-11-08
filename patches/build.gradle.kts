@@ -1220,6 +1220,14 @@ tasks.register<JavaExec>("verifyNuvioBeta13DateStyleRuntime") {
         file("${layout.buildDirectory.get()}/verification").absolutePath)
 }
 
+tasks.register<JavaExec>("verifyNuvioDateColorApk") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioDateColorApk")
+    args(providers.gradleProperty("nuvioDateColorApk").getOrElse(
+        "../../Apps/NuvioTV/NuvioTV-1.1.0-beta.13-patches-0.16.5-date-opacity-all-unsigned.apk"))
+}
+
 
 tasks.register<JavaExec>("verifyNuvioBeta13TrackingDialogs") {
     dependsOn("testClasses")

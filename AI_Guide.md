@@ -21,6 +21,12 @@ inspection, implementation, runtime, or verification workflow from there. Retain
 app evidence is in `E:\Morphe\Skills\inspection-evidence`; use those paths directly.
 OpenCode and Kilo discover the Skills directory through their user configuration.
 
+The shared inspection/implementation/runtime/verification skills include the
+beta.13 migration lessons: verify both inventories against originals, preserve
+historical fixtures, share complete native references with runtime reflection,
+and audit the delivered APK's reflected bindings. Nuvio evidence routing is in
+`E:\Morphe\Skills\morphe-inspection-evidence\references\nuvio-migrations.md`.
+
 Latest Monet target: **1.1.1** (code 135). Read [Monet111.md](docs/Monet111.md)
 for the premium/card/catalog migration, exact original evidence, latest verifier
 commands and startup-app investigation. The unversioned card/catalog tasks now
@@ -92,7 +98,13 @@ This is the working guide for coding agents, including local models in LM Studio
 The app-specific sections below describe existing implementations; they are not
 instructions to expand their historical version support.
 
-For the latest NuvioTV **1.1.0-beta.12** (1075) port, read [NuvioBeta12.md](docs/NuvioBeta12.md). The active shared contract and `verifyNuvioLatest` target beta.12; historical fixtures remain unchanged. Beta.12 uses local stores `dc/tc`, resume states `xb/yb/vb/wb`, binge group `gc.u3`, timers `of.J/L/k` and install action `data.local.ea`. The beta.10 findings below remain historical context.
+For the latest NuvioTV **1.1.0-beta.13** (1076) port, read [NuvioBeta13.md](docs/NuvioBeta13.md). The active shared contract and `verifyNuvioLatest` target beta.13; historical fixtures remain unchanged. Beta.13 uses local stores `cc/sc`, resume states `wb/xb/ub/vb`, binge group `lc.u3`, timers `tf.J/L/k` and install action `data.local.da`. Native search is still static `ba.q5.l` with ten arguments; the Compose factory is static `g1.h.s(Object)`. Do not use unrelated `ba.c6.e` or `c9.b2.s`. Use the regenerated `reviewed-*` inventories in the beta.13 evidence folder. The beta.10 findings below remain historical context.
+Beta.13's playback editor must derive its list renderer from `REF_LAZY_LIST_I`
+(`d7.a.H`, twelve arguments). The removed duplicate `LAZY_LIST_METHOD=G` caused
+the user-reported opening crash. Host fixtures must retain the unrelated native
+`G(int):long` overload, and actual-APK checks reject the stale runtime binding.
+Use the `editor-fix-unsigned.apk` output in `docs/NuvioBeta13.md`.
+
 Next-episode preloads must use the native `bb.gc.r3` binge group; a null group
 warms a different cache entry. Warm the separate plugin-continuation autoplay mode
 only for groups recognized by the native parser. See
@@ -158,7 +170,7 @@ Paths below are relative to `E:\Morphe\santodan-patches` unless stated otherwise
 | `../backups/workspaces/` | Historical backup/staging workspaces; use the main repository for active work |
 | `../Apps/` | Patched app outputs; do not use as original patch inputs |
 
-At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.12`,
+At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.13`,
 Pillo `0.6.27`, Reddit `2026.37.0`, MEO Android TV `5.7.0`, and Peafowl
 `GMS_27.5.1`. These are discovery hints, not a permanent version allowlist.
 Rescan inputs for each task. Apps without existing patches need their own inspection.

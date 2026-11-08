@@ -122,10 +122,10 @@ public final class NuvioDateLabelStyle {
         layer.setAccessible(true);
         modifier = modifierType.getMethod("d", modifierType).invoke(modifier, layer.newInstance(10f));
         // Fixed inset from the card edge; only inner padding changes label size.
-        modifier = method(Class.forName("e0.b", false, loader), "u", 2).invoke(null, modifier, 6f);
-        modifier = method(Class.forName("b2.j", false, loader), "b", 2).invoke(null, modifier, staticValue(loader, shapeOwner, "a"));
-        modifier = method(Class.forName("y.m", false, loader), "g", 3).invoke(null, modifier,
-            color(scope, 2), staticValue(loader, "e2.i0", "b"));
+        modifier = method(Class.forName("d0.b", false, loader), "u", 2).invoke(null, modifier, 6f);
+        modifier = method(Class.forName("a2.j", false, loader), "b", 2).invoke(null, modifier, staticValue(loader, shapeOwner, "a"));
+        modifier = method(Class.forName("x.m", false, loader), "g", 3).invoke(null, modifier,
+            color(scope, 2), staticValue(loader, "d2.i0", "b"));
         float scale = percent(scope, 1) / 100f;
         Object spacing = staticValue(loader, NuvioNative.NATIVE_SPACING_LOCAL_NAME, "a");
         float horizontal = field(spacing.getClass(), "e").getFloat(spacing);
@@ -134,7 +134,7 @@ public final class NuvioDateLabelStyle {
         long nativeFont = field(span.getClass(), "b").getLong(span);
         float font = Float.intBitsToFloat((int) nativeFont) * percent(scope, 3) / 100f;
         long fontSize = (nativeFont & 0xffffffff00000000L) | (Float.floatToRawIntBits(font) & 0xffffffffL);
-        modifier = method(Class.forName("e0.b", false, loader), "v", 3).invoke(null, modifier,
+        modifier = method(Class.forName("d0.b", false, loader), "v", 3).invoke(null, modifier,
             horizontal * scale, vertical * scale);
         return new Object[]{modifier, color(scope, 4), fontSize, textStyle};
     }

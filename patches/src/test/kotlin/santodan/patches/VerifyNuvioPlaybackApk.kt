@@ -1,5 +1,7 @@
 package santodan.patches
 
+import software.santodan.nuvio.NuvioNative
+
 import app.morphe.patcher.dex.SdkDexVerifier
 import com.android.tools.smali.dexlib2.dexbacked.DexBackedDexFile
 import com.android.tools.smali.dexlib2.iface.instruction.ReferenceInstruction
@@ -67,6 +69,7 @@ fun main(args: Array<String>) {
         val calls = mutableSetOf<String>()
         val parents = mutableMapOf<String, String?>()
         var hooks = 0
+        var editorListReferences = 0
         var stabilityGuards = 0
         ZipFile(path).use { zip ->
             for (entry in zip.entries().asSequence().filter { it.name.matches(Regex("classes\\d*\\.dex")) }) {
@@ -89,7 +92,7 @@ fun main(args: Array<String>) {
                                     body[4].opcode == com.android.tools.smali.dexlib2.Opcode.IGET_OBJECT)
                                 check((body[4] as ReferenceInstruction).reference.toString() == NuvioAccessPatch.FIELDS.getValue(method.name))
                             }
-                            if (index == 1 && extension == NuvioPlaybackButtonsPatch.EXTENSION && owner.type == "Lbb/ji;" && method.name == "invoke") {
+                            if (index == 1 && extension == NuvioPlaybackButtonsPatch.EXTENSION && owner.type == "Lbb/oi;" && method.name == "invoke") {
                                 val code = method.implementation?.instructions?.toList() ?: emptyList()
                                 val intro = code.indexOfFirst { NuvioPlaybackButtonsPatch.reference(it) == NuvioIntroDbPatch.RENDER }
                                 if (intro >= 0) check(code.getOrNull(intro + 1)?.let { NuvioPlaybackButtonsPatch.reference(it) }
@@ -98,6 +101,8 @@ fun main(args: Array<String>) {
                                 }
                             }
                             for (instruction in method.implementation?.instructions ?: emptyList()) {
+                                if (index == 1 && owner.type == "Lsoftware/santodan/extension/nuviobuttons/ButtonsUi;" &&
+                                    NuvioApkUpdates.string(instruction) == NuvioNative.REF_LAZY_LIST_I) editorListReferences++
                                 val ref = (instruction as? ReferenceInstruction)?.reference as? MethodReference ?: continue
                                 if (index == 1 && owner.type.startsWith("Lsoftware/santodan/extension/nuviobuttons/")) {
                                     check(!(ref.definingClass == "Ljava/util/Optional;" && ref.name == "orElseThrow" && ref.parameterTypes.isEmpty())) {
@@ -115,6 +120,11 @@ fun main(args: Array<String>) {
             }
         }
         if (index == 1) {
+            if (extension == NuvioPlaybackButtonsPatch.EXTENSION) {
+                check(NuvioNative.REF_LAZY_LIST_I in definitions && editorListReferences > 0) {
+                    "Playback editor is missing the verified native list reference; the stale beta.12 G lookup can crash beta.13"
+                }
+            }
             if (requireStability) check(stabilityGuards == 1) { "Startup seek guard is missing from the rebuilt APK" }
             check(NuvioAccessPatch.TYPE in parents) { "Shared direct native accessors are missing from the rebuilt APK" }
             check(hooks == expectedHooks) { "Rebuilt APK has $hooks hooks for $extension; expected $expectedHooks" }

@@ -228,7 +228,7 @@ fun main(args: Array<String>) = runBlocking {
                 check(manifestXml.split("android:targetActivity").drop(1).size == 6)
                 check(manifestXml.lineSequence().filter { "android:targetActivity" in it }.all { NUVIO_STARTUP_ACTIVITY in it })
                 check("com.nuvio.tv.MainActivity" in manifestXml || ".MainActivity" in manifestXml)
-                if (startupClone) check("com.nuvio.santodan" in manifestXml)
+                if (startupClone) check("com.nuviotv.santodan" in manifestXml)
                 println("PASS: $mode compiled early splash theme and all six launcher aliases resolve; native activity/deep links remain")
             }
             val patchedDex = result.dexFiles

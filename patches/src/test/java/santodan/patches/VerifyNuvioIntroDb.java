@@ -29,6 +29,10 @@ public final class VerifyNuvioIntroDb {
         }
         ClassDef originalMain = classes.get("Lbb/oi;"), originalMore = classes.get("Lbb/ti;"), originalActivity = classes.get("Lcom/nuvio/tv/MainActivity;");
         MutableClass main = new MutableClass(originalMain), activity = new MutableClass(originalActivity);
+        MutableClass focus = new MutableClass(classes.get(software.santodan.nuvio.NuvioNative.INPUT_FOCUS_TYPE));
+        NuvioIntroDbPatch.validateInputFocus(focus, Integer.parseInt(software.santodan.nuvio.NuvioNative.INPUT_FOCUS_BRANCH));
+        rejected(() -> NuvioIntroDbPatch.validateInputFocus(focus, 2));
+        rejected(() -> NuvioIntroDbPatch.validateInputFocus(focus, 999));
         NuvioIntroDbPatch.validateState(new MutableClass(classes.get("Lbb/sl;")));
         MutableClass timers = new MutableClass(classes.get("Lbb/tf;"));
         var nativeTimer = NuvioIntroDbPatch.require(timers, software.santodan.nuvio.NuvioNative.REF_PLAYER_TIMERS_F);

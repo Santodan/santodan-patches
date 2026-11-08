@@ -655,9 +655,10 @@
     },
     {
       "name": "NuvioTV - Side-by-side installation",
-      "description": "Installs a separately named NuvioTV clone using a configurable package name and app name.",
+      "description": "Installs a separately named NuvioTV clone and adds export/import of all Santodan patch settings.",
       "default": true,
       "dependencies": [
+        "BytecodePatch",
         "BytecodePatch"
       ],
       "compatiblePackages": [
@@ -687,7 +688,7 @@
           "description": "Unique Android package name for this installation, for example com.nuvio.testing.one.",
           "required": true,
           "type": "kotlin.String",
-          "default": "com.nuvio.santodan",
+          "default": "com.nuviotv.santodan",
           "values": null
         },
         {

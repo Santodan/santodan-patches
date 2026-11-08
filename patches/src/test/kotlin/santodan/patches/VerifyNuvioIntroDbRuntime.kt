@@ -5,7 +5,7 @@ import java.net.URLClassLoader
 import java.nio.file.Files
 import javax.tools.ToolProvider
 
-/** Run the production native UI bridge with real callbacks and an isolated fake HTTPS transport. */
+/** Current beta.13 native UI, real enabled-row callbacks and isolated fake HTTPS transport. */
 fun main(args: Array<String>) {
     val root = Files.createTempDirectory(File(args[1]).apply { mkdirs() }.toPath(), "introdb-native-runtime-").toFile()
     val sources = mapOf(
@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
         "g1.i1" to """package g1; public interface i1 extends g1.b3 {void setValue(Object v);}""",
         "g1.r1" to """package g1; public class r1 implements g1.i1 {Object v;public r1(Object v){this.v=v;}public Object getValue(){return v;}public void setValue(Object v){this.v=v;}}""",
         "g1.h" to """package g1; public class h {public static g1.r1 s(Object v){return new g1.r1(v);}}""",
-        "g1.k0" to """package g1; public class k0 {public int depth;public Object j(Object key){return new x2.l2();}public void d0(int k){depth++;}public void p(boolean v){if(--depth<0)throw new AssertionError();}}""",
+        "g1.k0" to """package g1; public class k0 {public int depth;public Object j(Object key){return new x2.m2();}public void d0(int k){depth++;}public void p(boolean v){if(--depth<0)throw new AssertionError();}}""",
         "w1.n" to """package w1; public class n {public static final Object b=new Object();}""",
         "b2.a0" to """package b2; public class a0 {}""",
         "l3.l" to """package l3; public class l {}""",
@@ -76,7 +76,7 @@ fun main(args: Array<String>) {
         "gb.hd" to """package gb; import kotlin.jvm.functions.*;import fixture.Ui; public class hd {
             public static void m(String t,String s,boolean v,Function0 c,Object mod,Function0 f,boolean x,Object i,long l,boolean z,Object co,int flags,int defaults){Ui.toggle=c;Ui.setting=v;}
             public static void a(String t,String s,String v,Function0 c,Object m,Object f,boolean e,Object i,Object j,long l,Object k,Object n,float x,long color,Object co,int a,int b,int mask){
-                if(mask!=16368)throw new AssertionError();Ui.keyRow=c;Ui.keyStatus=v;}
+                if(mask!=16336||f==null)throw new AssertionError();Ui.keyRow=e?c:null;Ui.keyStatus=v;}
             public static void d(String t,Function0 c,boolean primary,boolean enabled,Object co,int a,int b){Ui.actions.put(t,c);Ui.enabled.put(t,enabled);Ui.actionRows.put(t,Ui.row);}
             public static void e(Object a,q1.t content,Object co,int flags,int defaults){int previous=Ui.row;Ui.row=++Ui.nextRow;content.render(co);Ui.row=previous;}
             public static void j(String t,java.util.List<?> opts,Object value,Function1 select,Function0 dismiss,Object sub,float w,float h,Object co,int flags,int defaults){Ui.select=select;Ui.dismiss=dismiss;}
@@ -84,10 +84,21 @@ fun main(args: Array<String>) {
         "gb.me" to """package gb; public class me {public static void b(String t,Object m,Object style,Object co,int a,int b){fixture.Ui.labels.add(t);}}""",
         "gb.u" to """package gb;import kotlin.jvm.functions.*;public class u implements Function3 {
             public static g1.i1 text;public static b2.a0 focus;
-            public u(b2.a0 f,x2.l2 keyboard,g1.i1 v,g1.i1 focused,int branch){if(branch!=0||keyboard==null)throw new AssertionError();text=v;focus=f;}
+            public u(b2.a0 f,x2.m2 keyboard,g1.i1 v,g1.i1 focused,int branch){if(branch!=0||keyboard==null)throw new AssertionError();text=v;focus=f;}
+            public u(b2.a0 f,x2.l2 keyboard,g1.i1 v,g1.i1 focused,int branch){throw new AssertionError("Stale keyboard-controller constructor");}
             public Object invoke(Object scope,Object composer,Object flags){return kotlin.Unit.INSTANCE;}
         }""",
-        "gb.x" to """package gb;public class x implements kotlin.jvm.functions.Function1 {public x(int branch,g1.i1 state){if(branch!=2)throw new AssertionError();}public Object invoke(Object focus){return kotlin.Unit.INSTANCE;}}""",
+        "gb.x" to """package gb;public class x implements kotlin.jvm.functions.Function1 {
+            final int branch;final g1.i1 state;public x(int branch,g1.i1 state){this.branch=branch;this.state=state;}
+            public Object invoke(Object focus){
+                if(branch==2){state.setValue((String)focus);return kotlin.Unit.INSTANCE;}
+                if(branch!=0)throw new AssertionError("Unexpected focus branch");
+                b2.j0 value=(b2.j0)focus;state.setValue(value.b()||value.a());return kotlin.Unit.INSTANCE;}
+        }""",
+        "b2.j0" to """package b2;public class j0 {
+            final boolean focused,hasFocus;public j0(boolean f,boolean h){focused=f;hasFocus=h;}
+            public boolean b(){return focused;} public boolean a(){return hasFocus;}
+        }""",
         "bb.x1" to """package bb;public class x1 implements kotlin.jvm.functions.Function0 {public x1(b2.a0 f,int branch){if(branch!=0)throw new AssertionError();}public Object invoke(){return kotlin.Unit.INSTANCE;}}""",
         "gb.j0" to """package gb;public class j0 {
             static q1.t text(String label){return new q1.t(1,(kotlin.jvm.functions.Function3)(x,y,z)->{fixture.Ui.nativeText=label;return kotlin.Unit.INSTANCE;},true);}
@@ -99,8 +110,12 @@ fun main(args: Array<String>) {
         }""",
         "x2.l1" to """package x2;public class l1 {public static final Object q=new Object();}""",
         "x2.l2" to """package x2;public class l2 {}""",
+        "x2.m2" to """package x2;public class m2 {}""",
         "androidx.compose.foundation.layout.b" to """package androidx.compose.foundation.layout;public class b {public static Object f(Object m,float fraction){return m;}}""",
-        "b2.d" to """package b2;public class d {public static Object i(Object m,Object callback){return m;}}""",
+        "b2.d" to """package b2;public class d {
+            public static kotlin.jvm.functions.Function1 callback;public static Object i(Object m,Object value){
+                callback=(kotlin.jvm.functions.Function1)value;callback.invoke(new b2.j0(false,false));return m;}
+        }""",
         "gb.oj" to """package gb;public class oj {public static jb.e z(Object composer){return new jb.e();}public static jb.m B(Object composer){return new jb.m();}}""",
         "jb.e" to """package jb;public class e {public long b=1,c=2,l=3,x=4;}""",
         "jb.l0" to """package jb;public class l0 {public static final jb.l0 a=new jb.l0();public float b=1,c=2;}""",
@@ -108,9 +123,10 @@ fun main(args: Array<String>) {
         "x.m" to """package x;public class m {public static x.u a(long color,float width){return new x.u();}}""",
         "x.u" to """package x;public class u {}""",
         "d2.w0" to """package d2;public interface w0 {}""",
-        "k0.f" to """package k0;public class f implements d2.w0 {}""",
+        "d2.y0" to """package d2;public interface y0 {}""",
+        "k0.f" to """package k0;public class f implements d2.y0 {}""",
         "k0.g" to """package k0;public class g {public static f b(float radius){if(radius!=10)throw new AssertionError();return new f();}}""",
-        "y5.c" to """package y5;public class c {public c(x.u stroke,d2.w0 shape,int flags){if(flags!=2)throw new AssertionError();}}""",
+        "y5.c" to """package y5;public class c {public c(x.u stroke,d2.y0 shape,int flags){if(flags!=2)throw new AssertionError();}public c(x.u stroke,d2.w0 shape,int flags){throw new AssertionError("Stale border shape constructor");}}""",
         "y5.m" to """package y5;public class m {
             public static Object b(long bg,long focused,Object composer,int flags,int defaults){if(bg!=1||focused!=1||defaults!=58)throw new AssertionError();return new Object();}
             public static Object a(c border,c focused,Object composer,int flags){return new Object();}
@@ -124,7 +140,8 @@ fun main(args: Array<String>) {
                 if(defaults!=3966)throw new AssertionError();text.render(composer);fixture.Ui.actions.put(fixture.Ui.nativeText,click);fixture.Ui.enabled.put(fixture.Ui.nativeText,true);}
         }""",
         "na.f2" to """package na;import kotlin.jvm.functions.*;public class f2 {
-            public static void z(Function0 d,String title,String sub,float width,int align,boolean suppress,boolean platform,Object brush,Object border,float a,float b,float c,float e,Object bg,q1.t content,Object composer,int f,int f2,int defaults){
+            public static void z(Function0 d,String title,String sub,float width,int align,boolean suppress,boolean platform,Object brush,Object border,float a,float b,float c,float e,Object bg,q1.t content,Object composer,int f,int f2,int defaults){throw new AssertionError("Stale dialog renderer");}
+            public static void B(Function0 d,String title,String sub,float width,int align,boolean suppress,boolean platform,Object brush,Object border,float a,float b,float c,float e,Object bg,q1.t content,Object composer,int f,int f2,int defaults){
                 if(title.equals("IntroDB API key")?(defaults!=16368||width!=700):defaults!=16336)throw new AssertionError();fixture.Ui.title=title;fixture.Ui.subtitle=sub;fixture.Ui.dismiss=d;content.render(composer);}
         }""",
         "j2.e" to """package j2;public class e {public final String name;public e(String n){name=n;}}""",
@@ -189,7 +206,14 @@ fun main(args: Array<String>) {
                     }:null);
                     Activity activity=new Activity();NuvioIntroDb.resume(activity);bb.oi owner=new bb.oi();
                     settings();check(!Ui.setting&&Ui.keyStatus.equals("Not set"));render(owner);check(Ui.button==null&&owner.c.Y.reads==0&&requests==0);
-                    settings();Ui.keyRow.invoke();settings();check(Ui.title.equals("IntroDB API key")&&Ui.actions.keySet().containsAll(java.util.List.of("Cancel","Clear","Save")));
+                    settings();check(!Ui.setting&&Ui.keyRow!=null);Ui.keyRow.invoke();settings();check(Ui.title.equals("IntroDB API key")&&Ui.actions.keySet().containsAll(java.util.List.of("Cancel","Clear","Save")));
+                    java.lang.reflect.Field focusState=NuvioIntroDb.class.getDeclaredField("keyFocused");focusState.setAccessible(true);
+                    g1.i1 focused=(g1.i1)focusState.get(null);check(focused.getValue().equals(false));
+                    b2.d.callback.invoke(new b2.j0(true,false));check(focused.getValue().equals(true));
+                    b2.d.callback.invoke(new b2.j0(false,true));check(focused.getValue().equals(true));
+                    b2.d.callback.invoke(new b2.j0(false,false));check(focused.getValue().equals(false));
+                    g1.i1 textTrap=new g1.r1("");boolean wrongBranch=false;
+                    try{new gb.x(2,textTrap).invoke(new b2.j0(true,false));}catch(ClassCastException expected){wrongBranch=true;}check(wrongBranch);
                     gb.u.text.setValue("test-key");Ui.click("Save");
                     settings();check(Ui.keyStatus.equals("Configured"));Ui.toggle.invoke();settings();check(Ui.setting);
                     var pendingStandby=owner.c.Y.p4;owner.c.Y.standby=true;
@@ -257,5 +281,5 @@ fun main(args: Array<String>) {
             .exceptionOrNull()?.cause is NoSuchMethodException)
         it.loadClass("fixture.Runner").getMethod("run").invoke(null)
     }
-    println("PASS: Anime Skip single-line key editor and Cancel/Clear/Save, three distinct segment icons, exact cancellation overload with legacy overload trap, two-press review, native actions, timer lifecycle, HTTPS failures/cancellation, credential-safe logging and balanced Compose groups")
+    println("PASS: native editor initial focus, focus gain/loss and wrong string-branch regression; Cancel/Clear/Save, three distinct segment icons, exact cancellation overload with legacy overload trap, two-press review, native actions, timer lifecycle, HTTPS failures/cancellation, credential-safe logging and balanced Compose groups")
 }

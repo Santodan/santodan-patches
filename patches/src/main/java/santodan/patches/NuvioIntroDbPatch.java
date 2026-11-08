@@ -29,6 +29,7 @@ public final class NuvioIntroDbPatch {
                     throw new IllegalStateException("IntroDB requires NuvioTV 1.1.0-beta.13");
                 validateState(new MutableClass(context.classDefBy(NuvioNative.PLAYER_STATE_TYPE)));
                 for (String signature : UI) require(new MutableClass(context.classDefBy(signature.substring(0, signature.indexOf("->")))), signature);
+                validateInputFocus(new MutableClass(context.classDefBy(NuvioNative.INPUT_FOCUS_TYPE)), Integer.parseInt(NuvioNative.INPUT_FOCUS_BRANCH));
                 fields(new MutableClass(context.classDefBy(NuvioNative.PLAYER_MAIN_ROW_TYPE)), "c:Lbb/vl;", "d:Lbb/sl;", "i:Lb2/a0;", "j:Lkotlin/jvm/functions/Function0;", "k:Lkotlin/jvm/functions/Function0;");
                 fields(new MutableClass(context.classDefBy(NuvioNative.PLAYER_MODEL_TYPE)), "Y:Lbb/lc;");
                 fields(new MutableClass(context.classDefBy(NuvioNative.PLAYER_CONTROLLER_TYPE)), "H0:Lkotlinx/coroutines/flow/StateFlow;", "U0:Lkotlinx/coroutines/Job;");
@@ -96,12 +97,13 @@ public final class NuvioIntroDbPatch {
         NuvioNative.REF_COMPOSE_FACTORY_T, NuvioNative.REF_COMPOSER_D0, NuvioNative.REF_COMPOSER_P,
         NuvioNative.REF_INPUT_FIELD_INIT,
         NuvioNative.REF_INPUT_FOCUS_INIT, NuvioNative.REF_INPUT_CLICK_INIT,
+        NuvioNative.REF_INPUT_FOCUS_INVOKE,
         NuvioNative.REF_INPUT_SAVE_LABEL_INIT,
         NuvioNative.REF_NATIVE_F,
         NuvioNative.REF_FOCUS_MODIFIERS_I,
         NuvioNative.REF_POSTER_IMAGE_Y, NuvioNative.REF_POSTER_IMAGE_A,
         "Lx/m;->a(JF)Lx/u;", NuvioNative.REF_NATIVE_FOCUS_STYLE_A,
-        "Lk0/g;->b(F)Lk0/f;", "Ly5/c;-><init>(Lx/u;Ld2/y0;I)V",
+        "Lk0/g;->b(F)Lk0/f;", NuvioNative.REF_INPUT_BORDER_INIT,
         NuvioNative.REF_NATIVE_B_2, NuvioNative.REF_NATIVE_A_2,
         "Ly5/m;->e(Ld2/y0;I)Ly5/q;", "Ly5/m;->d(FI)Ly5/p;",
         NuvioNative.REF_NATIVE_C,
@@ -124,10 +126,38 @@ public final class NuvioIntroDbPatch {
         MutableMethod method = owner.getMethods().stream().filter(m -> m.toString().equals(signature)).reduce((a,b) -> {
             throw new IllegalStateException("Ambiguous IntroDB native API: " + signature);
         }).orElseThrow(() -> new IllegalStateException("Missing IntroDB native API: " + signature));
-        boolean instance = method.getName().equals("<init>") || List.of(NuvioNative.COMPOSER_TYPE, NuvioNative.NATIVE_FOCUS_STYLE_TYPE, "Lio/sentry/d2;").contains(owner.getType()) ||
+        boolean instance = method.getName().equals("<init>") || List.of(NuvioNative.COMPOSER_TYPE, NuvioNative.NATIVE_FOCUS_STYLE_TYPE, NuvioNative.INPUT_FOCUS_TYPE, "Lio/sentry/d2;").contains(owner.getType()) ||
             signature.equals(NuvioNative.REF_VECTOR_BUILDER_B);
         if (((method.getAccessFlags() & 8) == 0) != instance) throw new IllegalStateException("Native API static status changed: " + signature);
         return method;
+    }
+    /** R8 merges string-change and focus-state callbacks into the same constructor. */
+    static void validateInputFocus(MutableClass owner, int branch) {
+        MutableMethod invoke = require(owner, NuvioNative.REF_INPUT_FOCUS_INVOKE);
+        var body = NuvioAiringSeriesPatch.instructions(invoke);
+        if (body.size() < 3 || body.get(0).getOpcode() != Opcode.IGET || body.get(1).getOpcode() != Opcode.PACKED_SWITCH)
+            throw new IllegalStateException("IntroDB focus callback selector changed");
+        var payload = (SwitchPayload) body.get(NuvioAnchors.branchTarget(body, 1));
+        var selected = payload.getSwitchElements().stream().filter(e -> e.getKey() == branch).findFirst()
+            .orElseThrow(() -> new IllegalStateException("IntroDB focus callback branch is missing"));
+        int address = body.get(0).getCodeUnits() + selected.getOffset();
+        int cursor = 0, start = -1;
+        for (int i = 0; i < body.size(); i++) {
+            if (cursor == address) { start = i; break; }
+            cursor += body.get(i).getCodeUnits();
+        }
+        if (start < 0 || body.get(start).getOpcode() != Opcode.CHECK_CAST ||
+            !NuvioPlaybackButtonsPatch.reference(body.get(start)).equals("Lb2/i0;"))
+            throw new IllegalStateException("IntroDB callback branch does not accept native focus state");
+        Set<String> calls = new HashSet<>();
+        for (int i = start; i < Math.min(start + 40, body.size()); i++) {
+            calls.add(NuvioPlaybackButtonsPatch.reference(body.get(i)));
+            if (body.get(i).getOpcode() == Opcode.RETURN_OBJECT) break;
+        }
+        if (!calls.containsAll(List.of("Lb2/j0;->a()Z", "Lb2/j0;->b()Z",
+                "Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;", "Lg1/i1;->setValue(Ljava/lang/Object;)V")) ||
+            calls.contains("Ljava/lang/String;"))
+            throw new IllegalStateException("IntroDB callback branch no longer publishes Boolean focus state");
     }
     static void fields(MutableClass owner, String... expected) {
         for (String signature : expected) if (owner.getFields().stream().filter(f -> f.toString().equals(owner.getType() + "->" + signature) && (f.getAccessFlags() & 8) == 0).count() != 1)

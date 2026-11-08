@@ -140,7 +140,7 @@ These sixteen patches target NuvioTV beta.13 only. See [beta.13 verification](do
 
 ### Installation
 
-- **Side-by-side installation**: Lets you choose a different package name and launcher name so the patched app can coexist with the official app.
+- **Side-by-side installation**: Lets you choose a different package name and launcher name so the patched app can coexist with the official app. The default package is `com.nuviotv.santodan`. Export/import all Santodan runtime settings under **Layout > Santodan-Patches**, using native Nuvio dialogs and a **Restart NuvioTV** button after import. Backups include the IntroDB API key and profile-specific choices; tracking accounts must be connected separately. See [settings backup and verification](docs/NuvioPatchSettingsBackup.md).
 
 The patch settings are under **Layout > Santodan-Patches**, grouped under **Continue Watching**, **UI**, **Streams**, **Android TV launcher**, and **Playback** labels. Labels appear only for installed patch groups. Package and launcher names are configured when patching the APK.
 
@@ -166,7 +166,7 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 | [NuvioTV - Preload streams in Continue Watching](#nuviotv-preload-streams-in-continue-watching) | Adds an opt-in Streams setting to search sources in the background for visible Continue Watching episodes and movies, reusing Nuvio's native search cache. |  |
 | [NuvioTV - Preload streams on detail page](#nuviotv-preload-streams-on-detail-page) | Adds an opt-in Streams setting to search sources for the detail page's Play or Resume episode or movie, reusing Nuvio's native search cache. |  |
 | [NuvioTV - Remaining episodes in Continue Watching](#nuviotv-remaining-episodes-in-continue-watching) | Adds a disabled-by-default setting that displays aired, unwatched episode counts for every tracking integration. Controlled by Settings > Layout > Santodan-Patches. |  |
-| [NuvioTV - Side-by-side installation](#nuviotv-side-by-side-installation) | Installs a separately named NuvioTV clone using a configurable package name and app name. | • Package name<br>• App name |
+| [NuvioTV - Side-by-side installation](docs/NuvioPatchSettingsBackup.md) | Installs a separately named NuvioTV clone and adds export/import of all Santodan patch settings. | • Package name<br>• App name |
 | [NuvioTV - Submit segments to IntroDB](docs/NuvioIntroDb.md) | Adds an optional playback button that captures segment start/end times and opens a native NuvioTV submission dialog. Enable it and enter your IntroDB API key in Settings. |  |
 | [NuvioTV - Upcoming movie dates in library and collections](#nuviotv-upcoming-movie-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show known release dates on unreleased movie posters in library and collections. |  |
 

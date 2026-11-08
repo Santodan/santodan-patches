@@ -11,6 +11,22 @@ All sixteen public patches target beta.13 through
 fixtures. Historical beta.12 and earlier fixtures remain unchanged. The patch
 bundle release version remains 0.16.5; this local port is not a published release.
 
+The side-by-side patch also supports exporting/importing all Santodan runtime
+settings through Android's document picker. See
+[NuvioPatchSettingsBackup.md](NuvioPatchSettingsBackup.md) for usage, profile
+handling, included settings and verification.
+
+For the subsequent IntroDB API-key menu fix, see
+[NuvioIntroDb.md](NuvioIntroDb.md#beta13-api-key-editor-fix-2026-11-08).
+The row is explicitly enabled and the editor uses the reviewed beta.13 dialog,
+keyboard-controller and border contracts.
+The current combined rebuild is
+`../Apps/NuvioTV/NuvioTV-1.1.0-beta.13-patches-0.16.5-settings-native-ui-v2-all-unsigned.apk`;
+it includes the earlier playback/IntroDB fixes, settings backup, native transfer
+dialogs and Restart button, with default package `com.nuviotv.santodan`.
+The earlier `introdb-editor-fix` output still used the String callback branch for
+focus events and is superseded; see the focus-crash follow-up in the same document.
+
 For the corrected playback editor, use
 `../Apps/NuvioTV/NuvioTV-1.1.0-beta.13-patches-0.16.5-editor-fix-unsigned.apk`.
 The earlier APK without `editor-fix` in its name is superseded; see the follow-up

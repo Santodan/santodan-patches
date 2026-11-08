@@ -103,7 +103,19 @@ Beta.13's playback editor must derive its list renderer from `REF_LAZY_LIST_I`
 (`d7.a.H`, twelve arguments). The removed duplicate `LAZY_LIST_METHOD=G` caused
 the user-reported opening crash. Host fixtures must retain the unrelated native
 `G(int):long` overload, and actual-APK checks reject the stale runtime binding.
-Use the `editor-fix-unsigned.apk` output in `docs/NuvioBeta13.md`.
+Use the current `settings-native-ui-v2-all-unsigned.apk` output in
+`docs/NuvioBeta13.md`; it includes the playback editor and IntroDB focus fixes.
+
+The side-by-side patch defaults to `com.nuviotv.santodan` and exposes all-patch
+settings export/import in native Nuvio dialogs, with Restart/Later after import.
+See `docs/NuvioPatchSettingsBackup.md` for schema, included preferences, profiles,
+restart isolation and final artifacts. Verify with `verifyNuvioSettingsBackup`,
+`verifyNuvioSettingsTransferRuntime`, `verifyNuvioSettingsRestart` and
+`verifyNuvioSettingsTransferApk`. The private restart process must skip native
+application startup; the main process retains its original body. IntroDB focus
+uses reviewed `gb.x` branch 0; branch 2 expects String and crashes on focus state.
+Keep initial/gained/lost focus dispatch in `verifyNuvioIntroDbRuntime` and the
+packaged focus/dialog references in `verifyNuvioIntroDbApk`.
 
 Next-episode preloads must use the native `bb.gc.r3` binge group; a null group
 warms a different cache entry. Warm the separate plugin-continuation autoplay mode

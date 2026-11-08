@@ -114,7 +114,7 @@ tasks.register<JavaExec>("reportNuvioUpdate") {
 tasks.register("verifyNuvioLatest") {
     group = "verification"
     description = "Verify the currently reviewed Nuvio contract, runtime features and packaged patch combinations."
-    dependsOn("verifyNuvioMaintenance", "verifyNuvioBeta13", "verifyNuvioBeta13Launcher", "verifyNuvioBeta13Player",
+    dependsOn("verifyNuvioSettingsRestart", "verifyNuvioSettingsBackup", "verifyNuvioSettingsTransferRuntime", "verifyNuvioMaintenance", "verifyNuvioBeta13", "verifyNuvioBeta13Launcher", "verifyNuvioBeta13Player",
         "verifyNuvioCurrentStream", "verifyNuvioPreferredAddon", "verifyNuvioPlaybackButtons", "verifyNuvioIntroDb", "verifyNuvioApkUpdates", "verifyNuvioUpdateInstaller",
         "verifyNuvioUpdateFlow", "verifyNuvioUpdateProgressRuntime", "verifyNuvioUpdateUiRuntime",
         "verifyNuvioBeta13DateStyleRuntime", "verifyNuvioBeta13SettingsMenuRuntime", "verifyNuvioBeta13TrackingDialogs",
@@ -123,6 +123,40 @@ tasks.register("verifyNuvioLatest") {
         "verifyNuvioSettingsStoreRuntime", "verifyNuvioWatchedSnapshotRuntime", "verifyNuvioPlayerStability",
         "verifyNuvioNextEpisodeCooldown", "verifyNuvioBeta13Bundle",
         "verifyNuvioBeta13MovieReleaseRuntime", "verifyNuvioBeta13RemainingSyncRuntime")
+}
+
+tasks.named<JavaCompile>("compileTestJava") {
+    source(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu/PatchSettingsBackup.java"))
+}
+tasks.register<JavaExec>("verifyNuvioSettingsBackup") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioSettingsBackup")
+}
+tasks.register<JavaExec>("verifyNuvioSettingsTransferRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioSettingsTransferRuntime")
+    args(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu/SettingsTransferActivity.java").absolutePath,
+        layout.buildDirectory.dir("verification/settings-transfer-runtime").get().asFile.absolutePath)
+}
+tasks.register<JavaExec>("verifyNuvioSettingsRestart") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioSettingsRestart")
+    args(nuvioOriginal.absolutePath,
+        layout.buildDirectory.file("verification/nuvio-settings-restart.dex").get().asFile.absolutePath)
+}
+tasks.register<JavaExec>("verifyNuvioSettingsTransferApk") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioPlaybackApkKt")
+    maxHeapSize = "3g"
+    val targetApk = file(providers.gradleProperty("nuvioSettingsApk").getOrElse(
+        "../../Apps/NuvioTV/NuvioTV-$nuvioTargetVersion-patches-${project.version}-settings-native-ui-v2-all-unsigned.apk"))
+    args(nuvioOriginal.absolutePath, targetApk.absolutePath, file(androidSdkDirectory.get()).absolutePath,
+        layout.buildDirectory.dir("verification/nuvio-settings-apk/${targetApk.nameWithoutExtension}").get().asFile.absolutePath,
+        "Lsoftware/santodan/extension/nuviomenu/SettingsRestartActivity;", "1")
 }
 
 dependencies {
@@ -229,10 +263,12 @@ tasks.register<JavaExec>("verifyNuvioIntroDbApk") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioPlaybackApkKt")
     maxHeapSize = "3g"
+    val targetApk = file(providers.gradleProperty("nuvioIntroDbApk").getOrElse(
+        "../../Apps/NuvioTV/NuvioTV-$nuvioTargetVersion-patches-${project.version}-settings-native-ui-v2-all-unsigned.apk"))
     args(nuvioOriginal.absolutePath,
-        file(providers.gradleProperty("nuvioIntroDbApk").getOrElse("../../Apps/NuvioTV/NuvioTV-1.1.0-beta.8-introdb-timer-signed.apk")).absolutePath,
+        targetApk.absolutePath,
         file(androidSdkDirectory.get()).absolutePath,
-        file("${layout.buildDirectory.get()}/verification/nuvio-introdb-apk").absolutePath,
+        file("${layout.buildDirectory.get()}/verification/nuvio-introdb-apk/${targetApk.nameWithoutExtension}").absolutePath,
         "Lsoftware/santodan/extension/nuviointro/NuvioIntroDb;", "5")
 }
 

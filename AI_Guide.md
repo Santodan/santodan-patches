@@ -1,13 +1,25 @@
 # Santodan Patches
 
+Never commit, push, or run a publishing workflow without an explicit user request
+for that action on the current changes. Authorization for an earlier release
+does not authorize a follow-up fix or another commit.
+
 ## Car Scanner 2.2.42
 
+Arm64 plain-PE placement must be four-byte aligned. Its original XALZ block starts
+at file 9828258 (2 mod 4); the rewritten PE starts at 9828260. Reusing the compressed
+block's unaligned start misaligns Mono's exception-section lookup, leaks settings
+locks and hangs profile application/startup. Retain the real `y.ad<T>` finally
+section regression in `VerifyCarScanner242Arm64`. See the model-wait investigation
+in [CarScanner242.md](docs/CarScanner242.md). Diagnostic JIT builds alter exception
+behavior and are not deliverables; restore the normal manifest and AOT image.
+
 Latest original: `../OriginalApps/Car_Scanner-2.2.42.apk`, package
-`com.ovz.carscanner`, versionCode 52002042, extracted from emulator-5554.
-Read [CarScanner242.md](docs/CarScanner242.md). This input is x86_64 only;
-arm64 2.2.42 is not verified. `CarScanner242` covers managed and compiled premium
+`com.ovz.carscanner`, versionCode 42002042, supplied as the replacement arm64 original.
+Read [CarScanner242.md](docs/CarScanner242.md). `CarScanner242Arm64` adds the
+phone layout; `CarScanner242` retains the earlier x86_64 layout. Both cover managed and compiled premium
 and ECU predicates, the failure-only exit scheduler, and both settings/profile
-decoder paths. Its XABA format is `0x80030003`, distinct from 2.2.21.
+decoder paths. The x86_64 XABA format is `0x80030003`; arm64 uses `0x80010003`.
 The exact-version patch and the new unrestricted experimental alternative are
 mutually exclusive choices. Experimental retains the old and new implementations
 and selects by archive layout, with exact image validation; changed future images

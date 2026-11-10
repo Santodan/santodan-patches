@@ -19,9 +19,9 @@ https://github.com/Santodan/santodan-patches
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
 
-**Premium status** supports Car Scanner ELM OBD2 **2.2.42 (x86_64)**, with existing **2.2.21** and **2.1.50** support preserved. Select either **Car Scanner - Premium status** or **Car Scanner - Premium status (Experimental)**; both are disabled by default and must be used separately. The experimental alternative has no version-name restriction and retains the reviewed old and new implementations. Exact image validation still rejects unknown or modified binaries, so future updates may need review.
+**Premium status** supports Car Scanner ELM OBD2 **2.2.42 (arm64 and x86_64)**, with existing **2.2.21** and **2.1.50** support preserved. Select either **Car Scanner - Premium status** or **Car Scanner - Premium status (Experimental)**; both are disabled by default and must be used separately. The experimental alternative has no version-name restriction and retains the reviewed old and new implementations. Exact image validation still rejects unknown or modified binaries, so future updates may need review.
 
-The 2.2.42 implementation covers managed and compiled premium/ECU predicates, settings and profile decoding, and the native delayed exit after repackaging. Both alternatives passed host verification, bundle application and unsigned APK rebuilding. The extracted emulator APK is x86_64 only; arm64 2.2.42, device settings persistence and ECU connectivity remain unverified. See [2.2.42 implementation and verification details](docs/CarScanner242.md).
+The 2.2.42 implementation covers managed and compiled premium/ECU predicates, settings and profile decoding, and the native delayed exit after repackaging. Both alternatives passed host verification, bundle application and unsigned APK rebuilding. The arm64 phone original and the earlier x86_64 emulator original have separate reviewed implementations. The alignment fix in the refreshed v0.18.1 release passes emulator model-selection and restart-persistence checks; ECU connectivity remains unverified. The arm64 correction requires the updated bundle; published 0.18.0 originally covered only x86_64. See [2.2.42 implementation and verification details](docs/CarScanner242.md).
 
 For 2.2.21, the user reported successful device operation including ECU connection. Emulator settings persistence tests passed, and the user confirmed correct operation on 2026-10-30. These historical results do not establish device behavior on 2.2.42; individual premium features and purchase/restore behavior have not all been verified. See [2.2.21 details](docs/CarScanner221.md).
 
@@ -32,7 +32,7 @@ For 2.2.21, the user reported successful device operation including ECU connecti
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Car Scanner - Premium status](#car-scanner-premium-status) | Enables premium status in Car Scanner 2.1.50, 2.2.21 and 2.2.42 (x86_64); preserves settings, profiles and ECU initialization. Select only one Car Scanner premium patch. |  |
+| [Car Scanner - Premium status](#car-scanner-premium-status) | Enables premium status in Car Scanner 2.1.50, 2.2.21 and 2.2.42 (arm64 and x86_64); preserves settings, profiles and ECU initialization. Select only one Car Scanner premium patch. |  |
 | [Car Scanner - Premium status (Experimental)](#car-scanner-premium-status-experimental) | No version restriction. Retains the reviewed legacy and new managed/native methods; rejects unknown or modified images. Future builds may need an update. Select only one Car Scanner premium patch. |  |
 
 </details>
@@ -314,7 +314,7 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 
 | App | Package | Supported version | Patch |
 | --- | --- | --- | --- |
-| Car Scanner ELM OBD2 | `com.ovz.carscanner` | `2.2.42` (x86_64), `2.2.21`, `2.1.50` | Premium status; unrestricted experimental alternative; settings/profile and ECU compatibility fixes |
+| Car Scanner ELM OBD2 | `com.ovz.carscanner` | `2.2.42` (arm64 and x86_64), `2.2.21`, `2.1.50` | Premium status; unrestricted experimental alternative; settings/profile and ECU compatibility fixes |
 | MEO (Android TV) | `com.alticelabs.meo.androidtv` | `5.7.0` | Side-by-side installation; Spoof supported device |
 | NuvioTV | `com.nuvio.tv` | `1.1.0-beta.8` | Android TV launcher channels; Finale dates in library and collections; Keep airing series in Upcoming; Merge tracking progress; Preload streams for next episode; Preload streams in Continue Watching; Preload streams on detail page; Remaining episodes in Continue Watching; Upcoming movie dates in library and collections; Side-by-side installation |
 | Reddit | `com.reddit.frontpage` | `2026.37.0` | Content filters (Experimental); Show flairs in home feed (Experimental); Start as guest |

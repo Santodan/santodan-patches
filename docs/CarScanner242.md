@@ -1,6 +1,137 @@
-﻿# Car Scanner 2.2.42
+# Car Scanner 2.2.42
 
-Latest original: `../OriginalApps/Car_Scanner-2.2.42.apk`, pulled from the installed
+## Model-selection wait: mapped PE alignment
+
+The user reproduced an indefinite **Please, wait...** when applying a Mitsubishi
+model on the cloned `com.ovz.carscanner.morphe` 2.2.42 / 42002042 installation on
+`emulator-5554`. The supplied `E:/Morphe/logs_patch.log` has no app exception at
+that step. Retained evidence and the pre-fix APK/data backup are under
+`E:/Morphe/Skills/inspection-evidence/.inspect-carscanner-2.2.42-model-wait`.
+
+The 0.18.1 arm64 repacker replaced XALZ with a plain PE at the compressed block's
+original file offset **9828258**, which is 2 mod 4. XALZ decompression provides
+aligned memory; a directly mapped plain image needs the same alignment. Mono
+rounds the mapped method code-end pointer to a four-byte boundary when locating
+extra exception sections. At this unaligned PE base it reads those sections two
+bytes late, breaking catch/finally handling. A settings getter can then retain
+`y.Locker`, preventing both profile application and startup's current-car/database
+initialization from completing. Native counters reproduced the stopped
+`get_CurrentCarId` path without changing the original compiled loading logic.
+
+`CarScanner242Arm64` now adds **two leading padding bytes** and moves only the
+shared assembly descriptor's data start to **9828260**. Its trailing padding is
+recomputed to keep ELF section headers aligned to eight bytes; all following
+assembly blocks remain intact. Managed code, AOT bodies, decoder logic, settings
+serialization and database work retain their existing transformations.
+
+`VerifyCarScanner242Arm64` independently checks the actual exception-section
+address for `y.ad<T>` (RVA `0x9eed8`, PE header `0x9d0d8`, 511 IL bytes, one fat
+finally clause at PE `0x9d2e4`, header `0x1c41`). It accepts the corrected mapped
+address and rejects the exact previous XALZ starting address. Both packaged patch
+alternatives, Android bundle validation and Desktop import passed.
+
+Agent-observed emulator check: the aligned build completes startup, applies the
+Mitsubishi **Outlander II, XL, III, ASX, RVR (2.0, 2.4), Lancer X (1.8, 2.0),
+ASX (1.8, 2.0), Citroen C-Crosser, Peugeot 3008 (2008-2016), 4007 (2007-2012)
++ CVT** profile, dismisses the wait and returns to Settings showing that selection.
+The final normal-manifest, signed APK retains the selection after update/restart.
+No app data was cleared. Device ECU connectivity is not tested.
+
+Temporary debug, managed JIT/trace and native-counter builds were diagnostic only.
+The managed trace changed exception behavior and must not be used as a production
+fix. The delivered APK restores the original manifest, includes the complete
+compiled AOT image, and differs from the user's installed APK in only the assembly
+store (excluding signature metadata). The diagnostic helper and ADB forwarding
+were removed. The original app data backup is retained.
+
+Validated local deliverables before the authorized release refresh:
+
+- `../Apps/Car-Scanner-ELM-OBD2/patches-0.18.1-carscanner-model-wait-fix.mpp`,
+  SHA-256 `4aa553bb99f3c1b6ed7479fd168a0a65529fa67a8dd86c4b3edf04a918528434`.
+- `../Apps/Car-Scanner-ELM-OBD2/Car-Scanner-2.2.42-model-wait-fix.apk`, signed with
+  the existing Morphe certificate and installed in place on the emulator;
+  SHA-256 `f4657f74285ecfb535fa7cf8389794d23e5a3d56aed0c7e4f5d241f37dc0adc6`.
+
+The initial v0.18.1 asset did not include this alignment fix. The user subsequently
+authorized folding the fix into the previous commits and refreshing that existing
+release, retaining version 0.18.1. The refresh workflow rebuilds and attests the
+bundle at the updated v0.18.1 tag and replaces its existing assets. No additional
+release version or feature commit is created. Future commits and publishing still
+require a new explicit request for the current changes.
+
+## Arm64 correction after mobile patching failure
+
+The current `../OriginalApps/Car_Scanner-2.2.42.apk` is the user's replacement
+**arm64-v8a** original: `com.ovz.carscanner` **2.2.42 / 42002042**, minSdk 23,
+targetSdk 36. APK SHA-256:
+`79986b0a1621c4e048252ba2ab2ca3228a296348b28a4dc5e22b5dfdc60a14f9`.
+Evidence: `E:/Morphe/Skills/inspection-evidence/.inspect-carscanner-2.2.42-arm64`.
+The published 0.18.0 build covered only x86_64 2.2.42. An arm64 APK reached
+`CarScanner221.patch`, whose original-image hash correctly rejected the new
+store. Selecting the experimental alternative separately had the same gap.
+
+`CarScanner242Arm64` adds the reviewed arm64 implementation; the dispatcher
+recognizes its assembly-store hash before falling back to the preserved 2.2.21
+implementation. Both premium alternatives use this implementation. Unknown or
+already modified 2.2.42 arm64 stores fail with an explicit 2.2.42 arm64 error.
+Choose only one premium alternative.
+
+| Image | SHA-256 |
+| --- | --- |
+| arm64 assembly store | `7b2d468c293ef32ac1d3524819df083b7d27f364bb17549f64244039ced0d8a2` |
+| decoded shared assembly | `1b7bb9554abb0a0f3d0d84c47200443fc647305c6d7138d7b305b5e43c6050b7` |
+| arm64 AOT image | `aecfeab8c728f860f9fcd2bdb721303c55a159abfdee1727c1b3a89c09772fd6` |
+
+The guard and decoder hashes are identical to the reviewed 2.2.21 originals.
+Their scheduler (`0x2abf0`) and settings/profile selectors (`0x23fcc`, `0x25d68`)
+therefore retain the same proven instruction contracts and transformations.
+
+The new XABA `0x80010003` has 216 descriptors and 5616 index bytes at ELF payload
+16384. Shared assembly descriptor 192 / XALZ index 123 starts at file 9828258,
+compressed length 25111997, decoded length 40797184. Independent metadata
+inspection confirms the purchase getter token `0x060015dc`, signature `200002`,
+RVA `0x9f514`, file header `0x9d714`, code length 124; and the ECU certificate
+predicate token `0x06002901`, signature `2001020e`, RVA `0x1ab228`, file header
+`0x1a9428`, code length 115. Both IL bodies return true with unreachable NOPs.
+
+Mono format 187: file-info VA `0x19582b0`, table VA `0x1937698`. Getter slot
+file `0x1934e04`, BL `0x97a410f7`, targets VA `0x2411e0` / file `0x23d1e0`.
+Predicate slot file `0x1939a98`, BL `0x97b61eaa`, targets VA `0x6c9540` / file
+`0x6c5540`. Both compiled prologues become `mov w0,#1; ret` before stack changes.
+Every other assembly and native byte remains unchanged except the reviewed
+scheduler and decoder mutation regions. No older-version mapping was extended.
+
+The existing `verifyCarScanner242` and `verifyCarScanner242Bundle` tasks select
+the arm64 verifier when the current original contains arm64 libraries; the
+previous x86_64 verifier remains available for that architecture. The bundle
+check applies the standard and experimental patches separately.
+
+### Arm64 validation
+
+`verifyCarScanner242`, `verifyCarScanner242Bundle`, the unchanged
+`verifyCarScanner221Bundle`, `verifyAndroidBundle` and `verifyMorpheDesktopImport`
+all passed. Both premium alternatives applied independently to the replacement
+original. Desktop 2.1.1 rebuilt both with `--exclusive --unsigned`; the resulting
+APKs are byte-identical, SHA-256
+`eeb9f657a1a696c293f194244105a0232e97c7c5e7a333517faa60ac2457b3f7`:
+
+- `../Apps/Car-Scanner-ELM-OBD2/Car-Scanner-2.2.42-arm64-premium-unsigned.apk`
+- `../Apps/Car-Scanner-ELM-OBD2/Car-Scanner-2.2.42-arm64-experimental-unsigned.apk`
+
+The delivered-APK audit confirms exactly the four intended native library entries
+change and match the bundle-verifier outputs. Manifest, DEX, assets and unrelated
+libraries remain unchanged. The independent metadata reader reloaded both IL
+bodies and confirmed true returns with original tokens/signatures/RVAs. Changed
+and already-patched resources are rejected, unrelated assemblies/managed bytes
+are preserved, and settings byte round trips pass. The local fixed 0.18.0 bundle
+before CI versioning has SHA-256
+`146b5b3c0a5524e94096b251ef938e4e0ba21ea8c380f1033ccdd5096fd0f065`.
+No APK was signed, installed or device/ECU tested. Evidence and build logs remain
+in the arm64 evidence directory. Release metadata is updated by CI.
+
+## Historical x86_64 investigation
+
+Historical x86_64 original (replaced at this path): `../OriginalApps/Car_Scanner-2.2.42.apk`, pulled from the installed
 `com.ovz.carscanner` on `emulator-5554`. Manifest confirms **2.2.42 / 52002042**,
 minSdk 23, targetSdk 36. This APK contains **x86_64 only**. It does not establish
 compatibility with an arm64 build of 2.2.42.

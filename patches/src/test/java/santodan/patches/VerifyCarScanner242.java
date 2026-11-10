@@ -8,6 +8,12 @@ import java.util.zip.ZipFile;
 /** Real-input verifier, including all unaffected assembly blocks and failure paths. */
 public final class VerifyCarScanner242 {
     public static void main(String[] args) throws Exception {
+        try (ZipFile input = new ZipFile(args[0])) {
+            if (input.getEntry(CarScanner242Arm64.ENTRY) != null) {
+                VerifyCarScanner242Arm64.main(args);
+                return;
+            }
+        }
         byte[] store, aot, guard;
         try (ZipFile apk = new ZipFile(args[0])) {
             store = apk.getInputStream(apk.getEntry(CarScanner242.ENTRY)).readAllBytes();

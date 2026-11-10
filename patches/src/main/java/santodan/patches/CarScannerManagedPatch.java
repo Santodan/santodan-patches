@@ -22,7 +22,7 @@ public final class CarScannerManagedPatch {
         return PatchKt.rawResourcePatch(experimental ? "Car Scanner - Premium status (Experimental)" : "Car Scanner - Premium status",
             experimental
                 ? "No version restriction. Retains the reviewed legacy and new managed/native methods; rejects unknown or modified images. Future builds may need an update. Select only one Car Scanner premium patch."
-                : "Enables premium status in Car Scanner 2.1.50, 2.2.21 and 2.2.42 (x86_64); preserves settings, profiles and ECU initialization. Select only one Car Scanner premium patch.",
+                : "Enables premium status in Car Scanner 2.1.50, 2.2.21 and 2.2.42 (arm64 and x86_64); preserves settings, profiles and ECU initialization. Select only one Car Scanner premium patch.",
             false, builder -> {
                 builder.compatibleWith(experimental
                     ? new app.morphe.patcher.patch.Compatibility(CarScannerCompatibility.PACKAGE,
@@ -49,6 +49,25 @@ public final class CarScannerManagedPatch {
                             Files.write(guard, rewritten.guard());
                             Files.write(decoder, rewrittenDecoder);
                             return Unit.INSTANCE;
+                        }
+                        if (context.get(CarScanner242Arm64.ENTRY, true).isFile()) {
+                            Path store = context.get(CarScanner242Arm64.ENTRY, true).toPath();
+                            byte[] originalStore = Files.readAllBytes(store);
+                            // Distinguish reviewed arm64 layouts by bytes, including for unrestricted versions.
+                            if (CarScanner242Arm64.matchesStore(originalStore)) {
+                                Path aot = context.get(CarScanner242Arm64.AOT_ENTRY, true).toPath();
+                                Path guard = context.get(CarScanner242Arm64.GUARD_ENTRY, true).toPath();
+                                Path decoder = context.get(CarScanner242Arm64.DECODER_ENTRY, true).toPath();
+                                var rewritten = CarScanner242Arm64.patch(originalStore, Files.readAllBytes(aot), Files.readAllBytes(guard));
+                                byte[] rewrittenDecoder = CarScanner242Arm64.patchDecoder(Files.readAllBytes(decoder));
+                                Files.write(store, rewritten.store());
+                                Files.write(aot, rewritten.aot());
+                                Files.write(guard, rewritten.guard());
+                                Files.write(decoder, rewrittenDecoder);
+                                return Unit.INSTANCE;
+                            }
+                            if ("2.2.42".equals(context.getPackageMetadata().getVersionName()))
+                                throw new IllegalStateException("Car Scanner 2.2.42 arm64: unsupported or already modified assembly store");
                         }
                         if (context.get(CarScanner221.ENTRY, true).isFile()) {
                             // Patcher 2 extracts archive entries on demand; request extraction before reading.

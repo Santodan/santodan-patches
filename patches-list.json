@@ -4,7 +4,7 @@
   "patches": [
     {
       "name": "Car Scanner - Premium status",
-      "description": "Enables premium status in Car Scanner 2.1.50, 2.2.21 and 2.2.42 (x86_64); preserves settings, profiles and ECU initialization. Select only one Car Scanner premium patch.",
+      "description": "Enables premium status in Car Scanner 2.1.50, 2.2.21 and 2.2.42 (arm64 and x86_64); preserves settings, profiles and ECU initialization. Select only one Car Scanner premium patch.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -503,7 +503,7 @@
           "description": "Version of THIS APK, matching its GitHub release tag without v. Defaults to the patch bundle version; override only if publishing the APK under a different version.",
           "required": true,
           "type": "kotlin.String",
-          "default": "0.18.0",
+          "default": "0.18.1",
           "values": null
         }
       ]

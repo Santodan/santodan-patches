@@ -8,6 +8,10 @@ import java.util.zip.ZipFile
 import kotlinx.coroutines.runBlocking
 
 fun main(args: Array<String>) = runBlocking {
+    if (ZipFile(args[0]).use { it.getEntry(CarScanner242Arm64.ENTRY) != null }) {
+        verifyCarScanner242Arm64Bundle(args)
+        return@runBlocking
+    }
     for (patchName in listOf("Car Scanner - Premium status", "Car Scanner - Premium status (Experimental)")) {
 
         val selected = loadPatchesFromJar(setOf(File(args[1])))

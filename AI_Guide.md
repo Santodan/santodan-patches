@@ -28,6 +28,12 @@ app reference and current verification tasks. Preserve the original APKS splits
 and package identity; the successful setup also used the separate Google Play
 installer-source spoof.
 
+## NuvioTV official 1.1.0
+
+The latest reviewed target is **1.1.0 / 1077**. Read [Nuvio110.md](docs/Nuvio110.md).
+The active contract and `verifyNuvioLatest` use dedicated release fixtures.
+Beta.13 notes below describe the preceding target; its historical fixtures remain unchanged.
+
 ## Start here: creating or modifying a patch
 
 Shared local skills are in `E:\Morphe\Skills\morphe-*\SKILL.md`. Load the relevant

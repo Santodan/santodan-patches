@@ -1,3 +1,9 @@
+## [0.18.1](https://github.com/Santodan/santodan-patches/compare/v0.18.0...v0.18.1) (2026-11-10)
+
+### 🐛 Bug Fixes
+
+* **carscanner:** support arm64 2.2.42 and fix model-selection/startup waits ([12fb877](https://github.com/Santodan/santodan-patches/commit/12fb8778e2f46d7dd5bb4996c3fbdeab663ba792))
+
 ## [0.18.0](https://github.com/Santodan/santodan-patches/compare/v0.17.0...v0.18.0) (2026-11-10)
 
 ### 🐛 Bug Fixes

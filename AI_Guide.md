@@ -1,5 +1,16 @@
 # Santodan Patches
 
+## Fylo File Manager 2.6
+
+For `com.aeroloom.fylofilemanager` **2.6 / 19**, see [Fylo26.md](docs/Fylo26.md).
+The exact-version and unrestricted experimental **Fylo - Enable Pro** patches are
+alternatives. Both preserve the local Pro boolean at startup and billing refresh;
+they do not write purchase records or replace the entitlement vault. The original
+1.9 upstream debug-unlock class is absent in 2.6. Both patches also skip the Pairip
+launch license-check entry for rebuilt APKs. Run `verifyFylo`, `verifyFyloBundle`,
+and `verifyFyloApk`; retain all original Play configuration splits. Future versions
+must satisfy the structural matcher. Device behavior remains unverified.
+
 ## NuvioTV date-label appearance
 
 For beta.13 custom date-label colors, see [NuvioBeta13.md](docs/NuvioBeta13.md).

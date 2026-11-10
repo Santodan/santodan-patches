@@ -1522,3 +1522,31 @@ tasks.register<JavaExec>("verifyMonetDisplayedCards111Apk") {
         file(providers.gradleProperty("monetCards111Apk").getOrElse("../../Apps/Monet/monet-1.1.1-displayed-cards-unsigned.apk")).absolutePath,
         providers.gradleProperty("monetCards111Premium").getOrElse("false"))
 }
+
+// Fylo's latest Google Play original, preserving the three configuration splits separately.
+tasks.register<JavaExec>("verifyFylo") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyFylo")
+    args(file("../../OriginalApps/Fylo/2.6/base.apk").absolutePath,
+        layout.buildDirectory.file("verification/fylo/billing.dex").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyFyloBundle") {
+    dependsOn("testClasses", "buildAndroid")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyFyloBundleKt")
+    maxHeapSize = "3g"
+    args(file("../../OriginalApps/Fylo/2.6/base.apk").absolutePath,
+        layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile.absolutePath,
+        layout.buildDirectory.dir("verification/fylo/bundle").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyFyloApk") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyFylo")
+    maxHeapSize = "3g"
+    args("--apk", file("../../OriginalApps/Fylo/2.6/base.apk").absolutePath,
+        file(providers.gradleProperty("fyloApk").getOrElse("../../Apps/Fylo/Fylo-2.6-pro-unsigned.apk")).absolutePath)
+}

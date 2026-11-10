@@ -37,6 +37,60 @@
       "options": []
     },
     {
+      "name": "Fylo - Enable Pro",
+      "description": "Enable local Pro features at startup and after billing refresh. Updated from Morning Entree's Fylo 1.9 approach for 2.6. Disables the Pairip launch license check for rebuilt APKs. Select only one Fylo Pro patch. Verified bytecode target: Fylo 2.6.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.aeroloom.fylofilemanager",
+          "name": "Fylo — File Manager",
+          "description": null,
+          "apkFileType": "APK",
+          "formFactor": "MOBILE",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": "2.6",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 32,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Fylo - Enable Pro (Experimental, any version)",
+      "description": "Enable local Pro features at startup and after billing refresh. Updated from Morning Entree's Fylo 1.9 approach for 2.6. Disables the Pairip launch license check for rebuilt APKs. Select only one Fylo Pro patch. No version restriction; unsupported bytecode layouts are rejected.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.aeroloom.fylofilemanager",
+          "name": "Fylo — File Manager",
+          "description": null,
+          "apkFileType": "APK",
+          "formFactor": "MOBILE",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": 32,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
       "name": "MEO - Side-by-side installation",
       "description": "Installs a separately named MEO clone using a configurable package name and app name.",
       "default": true,

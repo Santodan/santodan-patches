@@ -14,7 +14,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.17.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.17.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;35 patches total
+> **[v0.17.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.17.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;37 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;1 patch</summary>
 <br>
@@ -31,6 +31,26 @@ The 2.2.21 patch also fixes settings resetting after exit/restart. Emulator pers
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [Car Scanner - Premium status](#car-scanner-premium-status) | Enables premium status in Car Scanner 2.1.50 and 2.2.21; preserves profile decoding and ECU initialization and prevents the repackaging exit in 2.2.21. |  |
+
+</details>
+
+<details>
+<summary>📦 Fylo — File Manager&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
+<br>
+
+**Fylo - Enable Pro** supports Fylo File Manager **2.6 (code 19)**. A separate **Experimental, any version** alternative removes the version restriction while requiring the reviewed bytecode structure. Select **only one** alternative; both are disabled by default. The implementation preserves local Pro access at startup and after billing refresh, and skips the Pairip launch license check for rebuilt APKs. It does not create a purchase or write a fabricated entitlement.
+
+The upstream 1.9 patch is from [Morning Entree's Patches](https://github.com/Entree3k/Morning-Entree-Patches); its debug-unlock class is absent in 2.6. Both new alternatives passed original-DEX, packaged-bundle and rebuilt unsigned-APK checks. Device testing and future-version compatibility remain unverified. See [inputs, behavior and verification](docs/Fylo26.md).
+
+**🎯 Supported versions:**
+
+| 2.6 |
+| :---: |
+
+| 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
+|----------|----------------|-----------|
+| [Fylo - Enable Pro](docs/Fylo26.md) | Enable local Pro features at startup and after billing refresh. Updated from Morning Entree's Fylo 1.9 approach for 2.6. Disables the Pairip launch license check for rebuilt APKs. Select only one Fylo Pro patch. Verified bytecode target: Fylo 2.6. |  |
+| [Fylo - Enable Pro (Experimental, any version)](docs/Fylo26.md) | Enable local Pro features at startup and after billing refresh. Updated from Morning Entree's Fylo 1.9 approach for 2.6. Disables the Pairip launch license check for rebuilt APKs. Select only one Fylo Pro patch. No version restriction; unsupported bytecode layouts are rejected. |  |
 
 </details>
 
@@ -148,7 +168,7 @@ The patch settings are under **Layout > Santodan-Patches**, grouped under **Cont
 
 **🎯 Supported versions:**
 
-| 1.1.0-beta.13 |
+| 1.1.0 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |

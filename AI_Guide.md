@@ -1,5 +1,20 @@
 # Santodan Patches
 
+## Car Scanner 2.2.42
+
+Latest original: `../OriginalApps/Car_Scanner-2.2.42.apk`, package
+`com.ovz.carscanner`, versionCode 52002042, extracted from emulator-5554.
+Read [CarScanner242.md](docs/CarScanner242.md). This input is x86_64 only;
+arm64 2.2.42 is not verified. `CarScanner242` covers managed and compiled premium
+and ECU predicates, the failure-only exit scheduler, and both settings/profile
+decoder paths. Its XABA format is `0x80030003`, distinct from 2.2.21.
+The exact-version patch and the new unrestricted experimental alternative are
+mutually exclusive choices. Experimental retains the old and new implementations
+and selects by archive layout, with exact image validation; changed future images
+still need review. Historical implementations remain unchanged. Run
+`verifyCarScanner242`, `verifyCarScanner242Bundle`, `verifyAndroidBundle` and
+`verifyMorpheDesktopImport` with the current Desktop JAR.
+
 ## Fylo File Manager 2.6
 
 For `com.aeroloom.fylofilemanager` **2.6 / 19**, see [Fylo26.md](docs/Fylo26.md).
@@ -879,7 +894,7 @@ read/write contract and emulator reproduction; retain the byte-round-trip test.
 The agent verified settings persistence across force-stop and normal exit on
 `emulator-5554`; the user subsequently confirmed correct operation on 2026-10-30.
 
-The latest local input is `com.ovz.carscanner` **2.2.21**, versionCode 42002021.
+The preceding reviewed input is `com.ovz.carscanner` **2.2.21**, versionCode 42002021.
 `CarScanner221` handles its XABA v3 assembly store, premium getter and ECU
 certificate predicate in both IL and compiled arm64 AOT code. It also disables
 the failure-only native scheduler that calls `_exit(0)` after APK integrity

@@ -4,7 +4,7 @@
   "patches": [
     {
       "name": "Car Scanner - Premium status",
-      "description": "Enables premium status in Car Scanner 2.1.50 and 2.2.21; preserves profile decoding and ECU initialization and prevents the repackaging exit in 2.2.21.",
+      "description": "Enables premium status in Car Scanner 2.1.50, 2.2.21 and 2.2.42 (x86_64); preserves settings, profiles and ECU initialization. Select only one Car Scanner premium patch.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -29,6 +29,40 @@
               "versionCodes": null,
               "isExperimental": false,
               "minSdk": 23,
+              "description": null
+            },
+            {
+              "version": "2.2.42",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 23,
+              "description": null
+            }
+          ]
+        }
+      ],
+      "options": []
+    },
+    {
+      "name": "Car Scanner - Premium status (Experimental)",
+      "description": "No version restriction. Retains the reviewed legacy and new managed/native methods; rejects unknown or modified images. Future builds may need an update. Select only one Car Scanner premium patch.",
+      "default": false,
+      "dependencies": [],
+      "compatiblePackages": [
+        {
+          "packageName": "com.ovz.carscanner",
+          "name": "Car Scanner ELM OBD2",
+          "description": null,
+          "apkFileType": "APK",
+          "formFactor": "MOBILE",
+          "appIconColor": null,
+          "signatures": null,
+          "targets": [
+            {
+              "version": null,
+              "versionCodes": null,
+              "isExperimental": true,
+              "minSdk": 21,
               "description": null
             }
           ]

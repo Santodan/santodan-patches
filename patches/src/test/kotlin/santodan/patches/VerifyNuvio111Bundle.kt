@@ -415,14 +415,17 @@ fun main(args: Array<String>) = runBlocking {
             }
             }
             if (combined || mergeOnly) {
-                for (hook in listOf("registerNavigation", "activityResumed", "activityPaused", "activityDestroyed", "playbackScrobblers", "homePipelineStarted",
-                    "localSave", "localSaveBatch", "localRemove", "localRemoveBatch", "localUnwatch", "localUnwatchBatch"))
+                for (hook in listOf("registerNavigation", "activityResumed", "activityPaused", "activityDestroyed", "playbackScrobblers",
+                    "localSave", "localSaveBatch", "localRemove", "localRemoveBatch", "localUnwatch", "localUnwatchBatch",
+                    "retainInitialContinueWatching", "retainPartialContinueWatching", "captureHomeSnapshot"))
                     check(mergeHooks[hook] == 1) { "Expected one merge $hook hook: $mergeHooks" }
+                check(mergeHooks["homePipelineStarted"] == 2)
                 check(mergeHooks["syncLocalProgress"] == 2 && mergeHooks["mergedProvider"] == 1)
                 check("setPlaybackPaused" !in mergeHooks) { "Search pause must not control merged sync" }
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioMergePolicy;" in classes)
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioLocalWriteContinuation;" in classes)
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioPlaybackJournal;" in classes)
+                check("Lsoftware/santodan/extension/nuviomerged/NuvioHomeTransition;" in classes)
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioSyncBanner;" in classes)
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioMergeWork\$HomeRequests;" in classes)
                 check("Lsoftware/santodan/extension/nuviomerged/NuvioSyncBanner;->update(Landroid/app/Activity;Ljava/lang/String;IIZZ)V" in definitions)

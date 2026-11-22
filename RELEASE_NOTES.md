@@ -1,6 +1,7 @@
 ## Pending changes since v0.20.0
 
 - **nuviotv:** Update all seventeen patches for **1.1.1 (1081)**, including player fields, current-stream rendering, icon helpers, artwork and updater bindings. Original-DEX, runtime, standalone/combined bundle and unsigned-APK audits passed; device confirmation remains pending.
+- **nuviotv:** Update Continue Watching locally during playback and resolve the next episode in the background, independently of tracker sync. Coalesce repeated completion writes and prevent cached cards from overwriting local updates. Runtime, native/bundle and delivered-APK checks passed; Mi Box timing/performance remains unverified.
 
 ## Released in v0.20.0
 

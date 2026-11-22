@@ -86,3 +86,58 @@ APK SHA-256: `c00e4b8fcb7438ee5b98dc8de9808e6341d16d9254399eca669682fdf63c42e9`.
 The APK is unsigned. No signing, installation or device testing was performed.
 Device checks remain for remote focus, native settings editors, playback/resume,
 profiles, tracking, metadata artwork across restarts, TV channels and installation.
+
+## Continue Watching transition follow-up
+
+The merge patch now preserves the existing card during initial/partial Home
+publications while the next episode is being resolved. The final native result
+still replaces or removes it. See [NuvioMergedProgress.md](NuvioMergedProgress.md)
+for the reported Mi Box delay, native hook evidence and behavior limits.
+
+`home-transition-final-validation.log` records a successful Android build,
+native hook/rejection/roundtrip and runtime checks, existing local playback
+regressions, standalone merge/combined bundle checks, Android bundle verification
+and Desktop import. `home-transition-old-apk-regression.log` rejects the preceding
+APK specifically for missing staged Home hooks. `home-transition-apk-audit.log`
+checks the replacement's delivered hooks/reflection strings and existing APK
+integration. The separate rebuild command and identity/library/alignment audits
+are recorded in `home-transition-all.*` in the same evidence folder.
+
+Replacement APK:
+`../Apps/NuvioTV/NuvioTV-1.1.1-patches-0.20.0-all-cw-transition-unsigned.apk`.
+SHA-256: `d00cb0c8c05ac462e48d2c99426d3cf894a9f1b35d681b6e58ff4937d43dfd6e`.
+The bundle path is unchanged; its content now includes the transition fix.
+Bundle SHA-256: `669496187d5aa64fa46374f15d67bd37813bbb2955b518ed2f10a3cf43ff5a79`.
+The earlier `all-unsigned.apk` is retained as the regression input.
+The replacement is unsigned; no installation or device test was performed.
+
+
+## Live local playback projection delivery
+
+Continue Watching now follows the local playback journal behind the player.
+Position updates do not run metadata lookups; completion starts one coalesced,
+bounded native single-show next-up lookup. Existing quick/normal tracker sync
+remains separate. The earlier keep-visible-only output is superseded by this
+local-update implementation; see [NuvioMergedProgress.md](NuvioMergedProgress.md).
+Fast playback launches retain the native observer until its settings snapshot is
+captured, then pause bulk work while leaving the local updater active.
+
+`local-home-final-validation.log` records the full latest suite. Its sole failure
+was the maintenance verifier treating `REF_HOME_NEXT_TYPE` (a field reference)
+as a class; `local-home-final-focused.log` records the corrected classification,
+original native-reference checks, runtime tests and standalone/combined bundle
+checks passing. `local-live-release-check.log` and
+`local-live-native-context-check.log` record the final lifecycle/native-context
+checks. The previous APK is rejected in `local-live-old-apk-regression.log`.
+`local-live-final-apk-audit.log` records successful actual-APK checks, including
+settings capture, native resolver/state-copy bindings and cache-free Home resume.
+The exact rebuild command and native-library/identity/alignment audit are in
+`local-live-all.*`. Original native libraries remain unchanged.
+
+Latest bundle: `patches/build/libs/patches-0.20.0.mpp`.
+Bundle SHA-256: `a06607ace86074b8679d53aed8c075f8974ecf96011c5c0c835ede62be1ca98b`.
+Latest APK: `../Apps/NuvioTV/NuvioTV-1.1.1-patches-0.20.0-all-local-live-unsigned.apk`.
+APK SHA-256: `8e7fcc2659f78969407357e26436f3cc7cf65f1500e794ce2c1785f2bd389c78`.
+
+The APK is unsigned. No signing, installation or Mi Box device test was performed.
+Native cache-miss latency and playback/frame behavior remain device checks.

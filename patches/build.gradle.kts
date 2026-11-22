@@ -114,7 +114,7 @@ tasks.register<JavaExec>("reportNuvioUpdate") {
 tasks.register("verifyNuvioLatest") {
     group = "verification"
     description = "Verify the currently reviewed Nuvio contract, runtime features and packaged patch combinations."
-    dependsOn("verifyNuvioMetadataAddon", "verifyNuvioMetadataRuntime", "verifyNuvioMetadataSettingsRuntime", "verifyNuvioSettingsRestart", "verifyNuvioSettingsBackup", "verifyNuvioSettingsTransferRuntime", "verifyNuvioMaintenance", "verifyNuvio111", "verifyNuvio111Launcher", "verifyNuvio111Player",
+    dependsOn("verifyNuvio111LocalHomeRuntime", "verifyNuvio111HomeTransition", "verifyNuvio111HomeTransitionRuntime", "verifyNuvioMetadataAddon", "verifyNuvioMetadataRuntime", "verifyNuvioMetadataSettingsRuntime", "verifyNuvioSettingsRestart", "verifyNuvioSettingsBackup", "verifyNuvioSettingsTransferRuntime", "verifyNuvioMaintenance", "verifyNuvio111", "verifyNuvio111Launcher", "verifyNuvio111Player",
         "verifyNuvio111CurrentStream", "verifyNuvioPreferredAddon", "verifyNuvioPlaybackButtons", "verifyNuvioIntroDb", "verifyNuvioApkUpdates", "verifyNuvioUpdateInstaller",
         "verifyNuvioUpdateFlow", "verifyNuvioUpdateProgressRuntime", "verifyNuvioUpdateUiRuntime",
         "verifyNuvio111DateStyleRuntime", "verifyNuvio111SettingsMenuRuntime", "verifyNuvio111TrackingDialogs",
@@ -311,6 +311,9 @@ tasks.named<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>("compileTestKotlin"
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioProviderRefresh.kt"))
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioMergeWork.kt"))
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioLocalOverlay.kt"))
+    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioHomeTransition.kt"))
+    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioLocalHomeUpdates.kt"))
+    source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioLocalHomeProjection.kt"))
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioPlaybackJournal.kt"))
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioLocalWriteContinuation.java"))
     source(file("../extensions/nuvio-merged-progress/src/main/java/software/santodan/extension/nuviomerged/NuvioSourceContinuation.java"))
@@ -1739,4 +1742,26 @@ tasks.register<JavaExec>("verifyNuvio111Apk") {
     mainClass.set("santodan.patches.VerifyNuvio111Apk")
     args(file(providers.gradleProperty("nuvio111Apk").getOrElse(
         "../../Apps/NuvioTV/NuvioTV-1.1.1-patches-${project.version}-all-unsigned.apk")).absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvio111HomeTransition") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvio111HomeTransition")
+    args(nuvioOriginal.absolutePath, layout.buildDirectory.file("verification/nuvio-111-home-transition.dex").get().asFile.absolutePath)
+    providers.gradleProperty("nuvio111TransitionApk").orNull?.let { args(file(it).absolutePath) }
+}
+
+tasks.register<JavaExec>("verifyNuvio111HomeTransitionRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvio111HomeTransitionRuntimeKt")
+}
+
+
+tasks.register<JavaExec>("verifyNuvio111LocalHomeRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvio111LocalHomeRuntimeKt")
+    args(layout.buildDirectory.dir("verification").get().asFile.absolutePath)
 }

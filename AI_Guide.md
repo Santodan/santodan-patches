@@ -94,6 +94,18 @@ dedicated `111` fixtures; historical fixtures remain unchanged. Controller field
 current-stream card, icon helpers, native library image helper and guarded method
 fingerprints were reviewed against both original APKs. The delivered APK audit
 `verifyNuvio111Apk` checks the runtime's migrated reflection strings too.
+For the playback-to-Home card disappearing while next-up resolves, read the
+1.1.1 transition section in [NuvioMergedProgress.md](docs/NuvioMergedProgress.md).
+Retain local completed shows only during initial/partial native publications;
+leave final removal authoritative. Run `verifyNuvio111HomeTransition`,
+`verifyNuvio111HomeTransitionRuntime`, playback overlay regressions and the
+standalone merge/combined bundle checks. Audit the delivered APK with
+`-Pnuvio111TransitionApk=<apk>`; the old `all-unsigned.apk` predates this fix.
+For live updates behind the player, use the newer local-projection section in
+that document. `verifyNuvio111LocalHomeRuntime` checks the coalesced local worker
+and native adapter. Keep bulk Home work paused during playback, allow the local
+projection to advance the affected show, and never add a provider refresh per
+position write. Preserve the cache-free resume clone and final native authority.
 
 ## NuvioTV official 1.1.0 (preceding target)
 

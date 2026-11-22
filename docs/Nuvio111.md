@@ -3,7 +3,7 @@
 Target: `com.nuvio.tv`, version `1.1.1`, version code `1081`.
 Original: `../OriginalApps/NuvioTV-1.1.1.apk`.
 SHA-256: `1ac8aa80ad9fff7b4c21cfe4bfdfed61b4de44a120ff4b1b5743149ccb00928d`.
-SDK aapt confirms the package and version. All seventeen public NuvioTV patches
+SDK aapt confirms the package and version. All eighteen public NuvioTV patches
 use this exact target, including metadata add-on selection. Bundle versions remain
 owned by the release workflow.
 
@@ -150,3 +150,10 @@ update for that part. The opacity/size sliders are below the color picker,
 outside the preview. Position and reset are also inside, with a shared preview
 and one Apply/Cancel for the draft.
 See [behavior, native evidence and verification](NuvioDateLabelEditor.md).
+
+## Optional badge editor
+
+The eighteenth public patch, [Customize labels](NuvioLabelCustomization.md), adds
+per-label caption and appearance drafts using the native date editor UI. It is
+independent of the existing date-label patches. Historical rebuild evidence above
+records the preceding seventeen-patch bundle.

@@ -114,7 +114,7 @@ tasks.register<JavaExec>("reportNuvioUpdate") {
 tasks.register("verifyNuvioLatest") {
     group = "verification"
     description = "Verify the currently reviewed Nuvio contract, runtime features and packaged patch combinations."
-    dependsOn("verifyNuvio111LocalHomeRuntime", "verifyNuvio111HomeTransition", "verifyNuvio111HomeTransitionRuntime", "verifyNuvioMetadataAddon", "verifyNuvioMetadataRuntime", "verifyNuvioMetadataSettingsRuntime", "verifyNuvioSettingsRestart", "verifyNuvioSettingsBackup", "verifyNuvioSettingsTransferRuntime", "verifyNuvioMaintenance", "verifyNuvio111", "verifyNuvio111Launcher", "verifyNuvio111Player",
+    dependsOn("verifyNuvioLabelCustomization", "verifyNuvioLabelsRuntime", "verifyNuvio111LocalHomeRuntime", "verifyNuvio111HomeTransition", "verifyNuvio111HomeTransitionRuntime", "verifyNuvioMetadataAddon", "verifyNuvioMetadataRuntime", "verifyNuvioMetadataSettingsRuntime", "verifyNuvioSettingsRestart", "verifyNuvioSettingsBackup", "verifyNuvioSettingsTransferRuntime", "verifyNuvioMaintenance", "verifyNuvio111", "verifyNuvio111Launcher", "verifyNuvio111Player",
         "verifyNuvio111CurrentStream", "verifyNuvioPreferredAddon", "verifyNuvioPlaybackButtons", "verifyNuvioIntroDb", "verifyNuvioApkUpdates", "verifyNuvioUpdateInstaller",
         "verifyNuvioUpdateFlow", "verifyNuvioUpdateProgressRuntime", "verifyNuvioUpdateUiRuntime",
         "verifyNuvio111DateStyleRuntime", "verifyNuvio111SettingsMenuRuntime", "verifyNuvio111TrackingDialogs",
@@ -127,6 +127,7 @@ tasks.register("verifyNuvioLatest") {
 
 tasks.named<JavaCompile>("compileTestJava") {
     source(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu/PatchSettingsBackup.java"))
+    source(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu/LabelCustomization.java"))
 }
 tasks.register<JavaExec>("verifyNuvioSettingsBackup") {
     dependsOn("testClasses")
@@ -1764,4 +1765,28 @@ tasks.register<JavaExec>("verifyNuvio111LocalHomeRuntime") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvio111LocalHomeRuntimeKt")
     args(layout.buildDirectory.dir("verification").get().asFile.absolutePath)
+}
+
+
+tasks.register<JavaExec>("verifyNuvioLabelCustomization") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioLabelCustomization")
+    maxHeapSize = "3g"
+    args(nuvioOriginal.absolutePath, layout.buildDirectory.dir("verification/nuvio-labels").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioLabelsRuntime") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioLabelsRuntime")
+    args(file("../extensions/nuvio-settings-menu/src/main/java/software/santodan/extension/nuviomenu").absolutePath,
+        layout.buildDirectory.dir("verification").get().asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("verifyNuvioLabelsApk") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyNuvioLabelsApk")
+    args(file(providers.gradleProperty("nuvioLabelsApk").getOrElse("../../Apps/NuvioTV/NuvioTV-1.1.1-patches-${project.version}-all-labels-large-poster-unsigned.apk")).absolutePath)
 }

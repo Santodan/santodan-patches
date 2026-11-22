@@ -102,16 +102,20 @@ Startup app selection and **After standby** are cumulative: enabling both is int
 </details>
 
 <details>
-<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
+<summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;18 patches</summary>
 <br>
 
-These seventeen patches target NuvioTV **1.1.1 (1081)** only. See [1.1.1 verification](docs/Nuvio111.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
+These eighteen patches target NuvioTV **1.1.1 (1081)** only. See [1.1.1 verification](docs/Nuvio111.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
 
 - **GitHub APK updates**: Optional patch that checks APK releases from `Santodan/santodan-patches`, shares background download progress with the native banner, and opens Android's normal APK installer for foreground installation progress. The installed release version defaults to the bundle version. Includes installer fixes for patched APKs and side-by-side installations. See [GitHub release publishing instructions](docs/NuvioApkUpdates.md).
 
 ### Metadata
 
 - **Metadata add-on selection**: Choose an enabled metadata add-on per profile under **Settings > Layout > Santodan-Patches**. Separate, disabled-by-default switches apply its metadata/artwork to **Continue Watching** and its poster artwork to the **library**. Existing artwork remains the fallback when the selected provider has no replacement. The picker checks declared `meta` support; catalog/stream add-ons can also provide metadata. Restart after changing these settings. See [usage, capability filtering and verification](docs/NuvioMetadataAddon.md).
+
+### Badge labels
+
+[Customize labels](docs/NuvioLabelCustomization.md) adds a label dropdown and Text/Label editor for native text badges such as New Season, Next Up and New Episode. Text/Label buttons sit beside the dropdown in a fixed header, with scrollable customization below and an enlarged preview on the right. Edit captions, colors, opacity, size and position; copy Text, Label or All from another label, or reset only the selected label. Apply saves all drafts.
 
 ### Date labels
 
@@ -187,6 +191,7 @@ Metadata selection and the independent Continue Watching/library artwork switche
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [NuvioTV - Android TV launcher channels](#nuviotv-android-tv-launcher-channels) | Choose individual catalogs and tracking lists, Library, and Upcoming to publish as Android TV launcher channels. |  |
+| [NuvioTV - Customize labels](docs/NuvioLabelCustomization.md) | Customize individual text badges, edit captions, copy Text/Label/All and reset a selected label. |  |
 | [NuvioTV - Customize playback buttons](docs/NuvioPlaybackButtons.md) | Adds optional playback button visibility, ordering and placement in the main row or More actions, with saved settings and reset. |  |
 | [NuvioTV - Finale dates in library and collections](#nuviotv-finale-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters. |  |
 | [NuvioTV - Fix startup track reselection](docs/NuvioPlayerStability.md) | Prevents a startup ExoPlayer crash when track reselection requests a seek before a playing media period exists. |  |

@@ -8,8 +8,7 @@ import javax.tools.ToolProvider;
 
 /** Exercises production settings callbacks and modifier construction against the reviewed 1.1.1 layout. */
 public final class VerifyNuvio111DateStyleRuntime {
-    public static void main(String[] args) throws Exception {
-        Path dir = Files.createTempDirectory(Path.of(args[1]), "date-label-style-");
+    static Map<String,String> fixtures() {
         Map<String,String> sources = new LinkedHashMap<>();
         sources.put("android.content.Context", "package android.content; public class Context { public static final int MODE_PRIVATE=0; }");
         sources.put("android.content.SharedPreferences", "package android.content; public class SharedPreferences { public final java.util.Map<String,Object> values=new java.util.HashMap<>(); public int getInt(String k,int d){return (Integer)values.getOrDefault(k,d);} public long getLong(String k,long d){return (Long)values.getOrDefault(k,d);} public Editor edit(){return new Editor();} public class Editor { public Editor putInt(String k,int v){values.put(k,v);return this;} public Editor putLong(String k,long v){values.put(k,v);return this;} public Editor remove(String k){values.remove(k);return this;} public void apply(){} } }");
@@ -59,6 +58,11 @@ public final class VerifyNuvio111DateStyleRuntime {
         sources.put("com.nuvio.tv.domain.model.ContentType", "package com.nuvio.tv.domain.model; public enum ContentType { MOVIE,SERIES }");
         sources.put("com.nuvio.tv.domain.model.MetaPreview", "package com.nuvio.tv.domain.model; public class MetaPreview { public String id,name,poster,landscape,background; public ContentType type; public MetaPreview(String id,ContentType type,String poster,String landscape,String background){this.id=id;this.type=type;this.name=id;this.poster=poster;this.landscape=landscape;this.background=background;} public String getId(){return id;} public ContentType getType(){return type;} public String getName(){return name;} public String getPoster(){return poster;} public String getLandscapePoster(){return landscape;} public String getBackground(){return background;} }");
         sources.put("gb.cj", "package gb; public class cj { public static String image; public static float width,height; public static void a(Object model,String title,w1.q modifier,Object alignment,Object scale,float alpha,g1.h composer,int flags,int defaults){if(scale!=u2.l.a||alpha!=1f||defaults!=0)throw new AssertionError(\"Native image defaults changed\");image=(String)model;width=androidx.compose.foundation.layout.b.width;height=androidx.compose.foundation.layout.b.height;} }");
+        return sources;
+    }
+    public static void main(String[] args) throws Exception {
+        Path dir = Files.createTempDirectory(Path.of(args[1]), "date-label-style-");
+        Map<String,String> sources = fixtures();
         List<String> compile = new ArrayList<>(List.of("-d", dir.toString()));
         for (var source : sources.entrySet()) { Path file=dir.resolve(source.getKey().replace('.','/')+".java");Files.createDirectories(file.getParent());Files.writeString(file,source.getValue());compile.add(file.toString()); }
         for (String file : List.of("DateLabelStyle.java","NuvioDateLabelStyle.java")) compile.add(Path.of(args[0],file).toString());

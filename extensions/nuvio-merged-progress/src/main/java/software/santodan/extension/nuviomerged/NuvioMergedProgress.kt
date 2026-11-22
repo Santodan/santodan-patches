@@ -572,12 +572,12 @@ object NuvioMergedProgress {
     }
 
     private fun renderTrackingDialog(composer: Any) {
-        val mode = activeDialog ?: return
-        if (dialogProfile != snapshotKey()) { dismissTrackingDialog(); return }
-        val ids = listOf("NUVIO_SYNC", "TRAKT", "SIMKL", "MDBLIST")
-        val profile = dialogProfile
         findMethod(composer.javaClass, "d0", 1).invoke(composer, 0x534d4757)
         try {
+            val mode = activeDialog ?: return
+            if (dialogProfile != snapshotKey()) { dismissTrackingDialog(); return }
+            val ids = listOf("NUVIO_SYNC", "TRAKT", "SIMKL", "MDBLIST")
+            val profile = dialogProfile
             if (mode == "main") {
                 NuvioTrackingDialogs.picker(composer, "Main tracking service", ids, ids.map(::trackingLabel),
                     mainTracking(), { id ->

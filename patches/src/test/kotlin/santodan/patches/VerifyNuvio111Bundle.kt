@@ -164,7 +164,7 @@ fun main(args: Array<String>) = runBlocking {
     val baselineIssues = hierarchyIssues(originalDex)
     val nextName = "NuvioTV - Preload streams for next episode"
     check(available.count { it.name == nextName } == 1)
-    val modes = listOf("next", "merged", "startup-clone", "buttons", "introdb", "current-stream", "preferred", "apk-updates", "stability", "metadata", "combined")
+    val modes = listOf("next", "merged", "startup-clone", "buttons", "introdb", "current-stream", "preferred", "apk-updates", "stability", "metadata", "labels", "combined")
     val requested = args.getOrNull(4)?.split(',') ?: modes
     require(requested.isNotEmpty() && requested.all { it in modes }) { "Unknown bundle selection: $requested" }
     for (mode in modes.filter { it in requested }) {
@@ -178,14 +178,16 @@ fun main(args: Array<String>) = runBlocking {
         val currentOnly = mode == "current-stream"
         val preferredOnly = mode == "preferred"
         val metadataOnly = mode == "metadata"
+        val labelsOnly = mode == "labels"
         val selected = available.filter {
             if (startupClone) it.name in setOf("NuvioTV - Merge tracking progress", "NuvioTV - Side-by-side installation")
+            else if (labelsOnly) it.name == NuvioLabelCustomizationPatch.NAME
             else if (metadataOnly) it.name == "NuvioTV - Metadata add-on selection"
             else if (stabilityOnly) it.name == "NuvioTV - Fix startup track reselection"
             else if (combined) it.name?.startsWith("NuvioTV - ") == true && it.name != "NuvioTV - Side-by-side installation"
             else it.name == if (updatesOnly) "NuvioTV - GitHub APK updates" else if (preferredOnly) "NuvioTV - Preferred source add-on" else if (currentOnly) "NuvioTV - Indicate current stream" else if (introOnly) "NuvioTV - Submit segments to IntroDB" else if (buttonsOnly) "NuvioTV - Customize playback buttons" else if (mergeOnly) "NuvioTV - Merge tracking progress" else nextName
         }.toSet()
-        check(selected.size == if (combined) 16 else if (startupClone) 2 else 1)
+        check(selected.size == if (combined) 17 else if (startupClone) 2 else 1)
         val output = File(args[2], mode).apply { mkdirs() }
         // Patcher 2 partitions copied/modified DEX differently. Remove only prior
         // generated root DEX files so hierarchy checks see this run's output.
@@ -382,6 +384,8 @@ fun main(args: Array<String>) = runBlocking {
             }
             check(classes.containsAll(libraryTypes)) { "Native library classes missing" }
             println("PASS: $mode native library preserved; only existing launcher observation allowed when selected")
+            check("Lsoftware/santodan/extension/nuviomenu/NuvioLabelStyles;" in classes)
+            check("Lsoftware/santodan/extension/nuviomenu/NuvioLabelsEditor;" in classes)
             check((NuvioPreferredAddonPatch.EXTENSION in classes) == (preferredOnly || combined))
             check(("Lsoftware/santodan/extension/nuviomerged/NuvioStartupActivity;" in classes) == (mergeOnly || combined))
             if (preferredOnly || combined) {
@@ -391,7 +395,7 @@ fun main(args: Array<String>) = runBlocking {
             check(currentLabels == if (currentOnly || combined) 1 else 0)
             check((NuvioCurrentStreamPatch.EXTENSION in classes) == (currentOnly || combined))
             check(stabilityGuards == if (stabilityOnly || combined) 1 else 0)
-            if (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !metadataOnly && !updatesOnly && !stabilityOnly) {
+            if (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !metadataOnly && !updatesOnly && !stabilityOnly && !labelsOnly) {
             for (hook in listOf("registerComponent", "observeNextEpisode", "stopNextEpisode", "nextEpisodePluginPause"))
                 check(nativeHooks[hook] == 1) { "Expected one $hook hook, found ${nativeHooks[hook]}" }
             check(nativeHooks["nextEpisodePickerRefresh"] == 1) { "Next-episode picker entry must reuse the warmed search" }
@@ -440,7 +444,7 @@ fun main(args: Array<String>) = runBlocking {
             check(updaterRepository == if (updatesOnly || combined) 2 else 0)
             check(safeInstaller == if (updatesOnly || combined) 1 else 0)
             check(safeReceiver == if (updatesOnly || combined) 1 else 0)
-            check(updatesOnly || stabilityOnly || NuvioAccessPatch.TYPE in classes) { "Shared direct native accessors are missing" }
+            check(updatesOnly || stabilityOnly || labelsOnly || NuvioAccessPatch.TYPE in classes) { "Shared direct native accessors are missing" }
             fun resolves(reference: String): Boolean {
                 val signature = reference.substringAfter("->")
                 val visited = mutableSetOf<String>()
@@ -460,7 +464,7 @@ fun main(args: Array<String>) = runBlocking {
             check(coroutineCalls.all { resolves(it) }) {
                 "Missing native coroutine APIs: ${coroutineCalls.filter { !resolves(it) }}"
             }
-            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !metadataOnly && !updatesOnly && !stabilityOnly))
+            check(("Lsoftware/santodan/extension/nuvionextstreams/NuvioNextEpisodeStreams;" in classes) == (!mergeOnly && !buttonsOnly && !introOnly && !currentOnly && !preferredOnly && !metadataOnly && !updatesOnly && !stabilityOnly && !labelsOnly))
             check(("Lsoftware/santodan/extension/nuviobuttons/NuvioPlaybackButtons;" in classes) == (buttonsOnly || combined))
             check(("Lsoftware/santodan/extension/nuviocwstreams/NuvioContinueWatchingStreams;" in classes) == combined)
             check(("Lsoftware/santodan/extension/nuviodetailstreams/NuvioDetailStreams;" in classes) == combined)

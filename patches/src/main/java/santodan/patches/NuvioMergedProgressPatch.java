@@ -39,6 +39,7 @@ public final class NuvioMergedProgressPatch {
                     String version = context.getPackageMetadata().getVersionName();
                 NuvioLayout.use(version);
                     NuvioLayout.modern(version);
+                    NuvioSettingsMenuPatch.validateDateColorApi(new MutableClass(context.classDefBy("Lna/f2;")), NuvioNative.REF_LIBRARY_CONTENT_Z);
                     MutableClass repository = context.mutableClassDefBy(NuvioNative.PROGRESS_REPOSITORY_TYPE);
                     hookRepository(repository);
                     hookLocalProgressWrites(repository);

@@ -37,6 +37,7 @@ public final class VerifyNuvio111Apk {
                 }
             }
         }
+        require(strings, "Lsoftware/santodan/extension/nuviomerged/NuvioTrackingDialogs;", List.of(NuvioNative.LIBRARY_DIALOG_METHOD));
         require(strings, "Lsoftware/santodan/extension/nuviomenu/NuvioDateLabelStyle;",
             List.of(NuvioNative.REF_DATE_PERCENT_ROW, NuvioNative.REF_DATE_ROW_POLICY, NuvioNative.REF_DATE_SCROLL, NuvioNative.REF_DATE_SCROLL_STATE,
                 "Label opacity", "Font opacity", "Editing: Label", "Editing: Text", "Label", "Text"));

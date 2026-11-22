@@ -271,23 +271,41 @@ public final class NuvioDateLabelStyle {
     }
 
     public static int editorSaveResource(int original) throws Exception {
-        return activeColorProperty(true) >= 0 && original == Integer.decode(NuvioNative.DATE_THEME_SAVE_ID)
+        return (activeColorProperty(true) >= 0 || labelEditor("active")) && original == Integer.decode(NuvioNative.DATE_THEME_SAVE_ID)
             ? Integer.decode(NuvioNative.DATE_APPLY_ID) : original;
     }
 
     /** The live native model is passed on every slider/hex edit, without persisting the draft. */
     public static boolean renderEditorPreview(Object model, Object modifier, Object composer, int flags) throws Exception {
+        if (labelEditor("renderEditorPreview", model, modifier, composer, flags)) return true;
         int property = activeColorProperty(true);
         if (property < 0) return false;
         ClassLoader loader = composer.getClass().getClassLoader();
         int rgb = ((Number) method(model.getClass(), referenceName(NuvioNative.REF_DATE_CUSTOM_COLOR_GET), 0).invoke(model)).intValue();
-        get(state(loader, PREFS + ":artworkRevision", 0));
         long live = (((long) rgb & 0xffffffL) << 32) | (((Number) get(colorDraft(loader, property))).longValue() & 0xff00000000000000L);
         long background = property == 2 ? live : ((Number) get(colorDraft(loader, 2))).longValue();
         long foreground = property == 4 ? live : ((Number) get(colorDraft(loader, 4))).longValue();
+        return renderSamplePreview(modifier, composer, background, foreground,
+            ((Number)get(sizeDraft(loader,2))).intValue(), ((Number)get(sizeDraft(loader,4))).intValue(),
+            ((Number)get(state(loader,PREFS+":positionDraft",choice(PREFS,0)))).intValue(), "15-Nov");
+    }
+
+    static void newPreviewSample() { previewMovie = randomPreviewMovie(); }
+
+    static boolean renderSamplePreview(Object modifier,Object composer,long background,long foreground,
+            int labelSize,int fontSize,int position,String text) throws Exception {
+        return renderSamplePreviewSized(modifier,composer,background,foreground,labelSize,fontSize,position,text,Float.POSITIVE_INFINITY,Float.POSITIVE_INFINITY);
+    }
+
+    static boolean renderSamplePreviewSized(Object modifier,Object composer,long background,long foreground,
+            int labelSize,int fontSize,int position,String text,float availableWidth,float availableHeight) throws Exception {
+        ClassLoader loader=composer.getClass().getClassLoader();
+        get(state(loader, PREFS + ":artworkRevision", 0));
         Object previewCard = state(loader, PREFS + ":previewCard", false);
         boolean landscape = (Boolean) get(previewCard);
-        float cardHeight = landscape ? 144f : 216f;
+        float nativeWidth=landscape?256f:144f,nativeHeight=landscape?144f:216f;
+        float scale=Float.isInfinite(availableWidth)||Float.isInfinite(availableHeight)?1f:Math.max(0.25f,Math.min((availableWidth-32f)/nativeWidth,(availableHeight-100f)/nativeHeight));
+        float cardHeight=nativeHeight*scale,cardWidth=nativeWidth*scale;
         if (previewMovie == null) previewMovie = randomPreviewMovie();
         String[] movie = previewMovie;
         Object panel = method(Class.forName("x.m", false, loader), "g", 3).invoke(null, modifier,
@@ -301,7 +319,7 @@ public final class NuvioDateLabelStyle {
             invokeReference(loader, NuvioNative.REF_SETTINGS_ROWS_D,
                 landscape ? "Switch to Poster" : "Switch to Card", toggle, false, true, composer, 0, 0);
             Object card = method(Class.forName("androidx.compose.foundation.layout.b", false, loader), "q", 2)
-                .invoke(null, staticValue(loader, NuvioNative.EMPTY_MODIFIER_NAME, "b"), landscape ? 256f : 144f);
+                .invoke(null, staticValue(loader, NuvioNative.EMPTY_MODIFIER_NAME, "b"), cardWidth);
             card = invokeReference(loader, NuvioNative.REF_DATE_PREVIEW_HEIGHT, card, cardHeight);
             card = method(Class.forName("a2.j", false, loader), "b", 2).invoke(null, card,
                 staticValue(loader, NuvioNative.WIDE_CARD_NAME, "a"));
@@ -317,9 +335,8 @@ public final class NuvioDateLabelStyle {
                 }
                 Object[] style = buildColors(loader, staticValue(loader, "d0.v", "a"), composer,
                     NuvioNative.WIDE_CARD_NAME, background, foreground,
-                    ((Number) get(sizeDraft(loader, 2))).intValue(), ((Number) get(sizeDraft(loader, 4))).intValue(),
-                    ((Number) get(state(loader, PREFS + ":positionDraft", choice(PREFS, 0)))).intValue());
-                invokeReference(loader, NuvioNative.REF_DATE_TEXT, "15-Nov", style[0], style[1], style[2], null, null,
+                    labelSize, fontSize, position);
+                invokeReference(loader, NuvioNative.REF_DATE_TEXT, text, style[0], style[1], style[2], null, null,
                     0L, null, 0L, 0, false, 0, 0, null, style[3], composer, 0, 0, 65520);
             });
         });
@@ -328,6 +345,7 @@ public final class NuvioDateLabelStyle {
 
     /** First child of the editor window, above its native color-picker/preview body. */
     public static void renderEditorTargetRow(Object model, Object composer) throws Exception {
+        if (labelEditor("renderEditorTargetRow", model, composer)) return;
         int property = activeColorProperty(true);
         if (property < 0) return;
         ClassLoader loader = composer.getClass().getClassLoader();
@@ -356,6 +374,7 @@ public final class NuvioDateLabelStyle {
 
     /** Appended to the native color-picker column; never rendered inside the preview. */
     public static void renderEditorControls(Object model, Object composer) throws Exception {
+        if (labelEditor("renderEditorControls", model, composer)) return;
         int property = activeColorProperty(true);
         if (property < 0) return;
         ClassLoader loader = composer.getClass().getClassLoader();
@@ -383,9 +402,9 @@ public final class NuvioDateLabelStyle {
         });
     }
 
-    private interface Content { void render() throws Exception; }
+    interface Content { void render() throws Exception; }
 
-    private static void column(Object composer, Object modifier, float gap, Content content) throws Exception {
+    static void column(Object composer, Object modifier, float gap, Content content) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
         Object spacing = invokeReference(loader, NuvioNative.REF_DATE_SPACED_BY, gap);
         Object center = Class.forName("w1.g", false, loader).getDeclaredConstructor(float.class).newInstance(0f);
@@ -394,7 +413,7 @@ public final class NuvioDateLabelStyle {
     }
 
     /** Same Compose node protocol used by the original swatch and preview renderers. */
-    private static void node(Object composer, Object modifier, Object policy, Content content) throws Exception {
+    static void node(Object composer, Object modifier, Object policy, Content content) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
         method(composer.getClass(), "d0", 1).invoke(composer, 0x53444c43);
         try {
@@ -416,7 +435,7 @@ public final class NuvioDateLabelStyle {
         } finally { method(composer.getClass(), "p", 1).invoke(composer, false); }
     }
 
-    private static void caption(Object composer, String text) throws Exception {
+    static void caption(Object composer, String text) throws Exception {
         ClassLoader loader = composer.getClass().getClassLoader();
         Object typography = method(composer.getClass(), "j", 1).invoke(composer, staticValue(loader, NuvioNative.TEXT_STYLE_LOCAL_NAME, "a"));
         invokeReference(loader, NuvioNative.REF_DATE_TEXT, text, staticValue(loader, NuvioNative.EMPTY_MODIFIER_NAME, "b"),
@@ -424,7 +443,7 @@ public final class NuvioDateLabelStyle {
             0L, null, 0L, 0, false, 0, 0, null, field(typography.getClass(), "o").get(typography), composer, 0, 0, 65520);
     }
 
-    private static Object invokeReference(ClassLoader loader, String reference, Object... args) throws Exception {
+    static Object invokeReference(ClassLoader loader, String reference, Object... args) throws Exception {
         return method(Class.forName(referenceOwner(reference), false, loader), referenceName(reference), args.length).invoke(null, args);
     }
 
@@ -482,27 +501,43 @@ public final class NuvioDateLabelStyle {
             null, noop, true, modifier, composer, 0, 128);
     }
 
-    private static String referenceOwner(String reference) { return reference.substring(1, reference.indexOf(';')).replace('/', '.'); }
-    private static String referenceName(String reference) { return reference.substring(reference.indexOf("->") + 2, reference.indexOf('(')); }
-    private static String referenceField(String reference) { return reference.substring(reference.indexOf("->") + 2, reference.indexOf(':')); }
+    static String referenceOwner(String reference) { return reference.substring(1, reference.indexOf(';')).replace('/', '.'); }
+    static String referenceName(String reference) { return reference.substring(reference.indexOf("->") + 2, reference.indexOf('(')); }
+    static String referenceField(String reference) { return reference.substring(reference.indexOf("->") + 2, reference.indexOf(':')); }
+
+    private static volatile Method labelEditorDispatch;
+    private static boolean labelEditor(String name,Object... args) throws Exception {
+        try {
+            Method dispatch=labelEditorDispatch;
+            if(dispatch==null) {
+                Class<?> editor=Class.forName("software.santodan.extension.nuviomenu.NuvioLabelsEditor",false,NuvioDateLabelStyle.class.getClassLoader());
+                dispatch=editor.getMethod("dispatch",String.class,Object[].class);labelEditorDispatch=dispatch;
+            }
+            return Boolean.TRUE.equals(dispatch.invoke(null,name,args));
+        } catch(ClassNotFoundException absent) { return false; }
+        catch(java.lang.reflect.InvocationTargetException failure) {
+            Throwable cause=failure.getCause();if(cause instanceof Exception)throw (Exception)cause;
+            throw new RuntimeException(cause);
+        }
+    }
 
     private static String key(int property) { return "date_label_" + DateLabelStyle.KEYS[property]; }
     private static int choice(String scope, int property) throws Exception {
         return DateLabelStyle.valid(property, preferences(scope).getInt(key(property), DateLabelStyle.defaultChoice(property)));
     }
     private static void subscribe(ClassLoader loader, String scope) throws Exception { get(state(loader, scope + ":revision", 0)); }
-    private static synchronized Object state(ClassLoader loader, String key, Object initial) throws Exception {
+    static synchronized Object state(ClassLoader loader, String key, Object initial) throws Exception {
         Object state = STATES.get(key);
         if (state == null) { state = method(Class.forName(NuvioNative.COMPOSE_FACTORY_NAME, false, loader), NuvioNative.STATE_FACTORY_METHOD, 1).invoke(null, initial); STATES.put(key, state); }
         return state;
     }
-    private static Object get(Object state) throws Exception { return method(state.getClass(), "getValue", 0).invoke(state); }
-    private static void set(Object state, Object value) throws Exception { method(state.getClass(), "setValue", 1).invoke(state, value); }
+    static Object get(Object state) throws Exception { return method(state.getClass(), "getValue", 0).invoke(state); }
+    static void set(Object state, Object value) throws Exception { method(state.getClass(), "setValue", 1).invoke(state, value); }
     private static Application application() throws Exception { return (Application) Class.forName("android.app.ActivityThread").getMethod("currentApplication").invoke(null); }
     private static SharedPreferences preferences(String scope) throws Exception { return application().getSharedPreferences(scope, Context.MODE_PRIVATE); }
     private static String rowsOwner() { return NuvioNative.SETTINGS_ROWS_NAME; }
-    private interface Callback { Object invoke(Object[] args) throws Exception; }
-    private static Object callback(ClassLoader loader, String type, Callback action) throws Exception {
+    interface Callback { Object invoke(Object[] args) throws Exception; }
+    static Object callback(ClassLoader loader, String type, Callback action) throws Exception {
         return Proxy.newProxyInstance(loader, new Class<?>[]{Class.forName("kotlin.jvm.functions." + type, false, loader)}, (proxy, method, args) -> {
             if ("invoke".equals(method.getName())) return action.invoke(args);
             if ("hashCode".equals(method.getName())) return System.identityHashCode(proxy);
@@ -510,13 +545,13 @@ public final class NuvioDateLabelStyle {
             return "DateLabelSettingsCallback";
         });
     }
-    private static Object unit(ClassLoader loader) throws Exception {
+    static Object unit(ClassLoader loader) throws Exception {
         Class<?> unit = Class.forName("kotlin.Unit", false, loader);
         try { return unit.getField("INSTANCE").get(null); } catch (NoSuchFieldException ignored) { return unit.getField("a").get(null); }
     }
-    private static Object staticValue(ClassLoader loader, String owner, String name) throws Exception { return field(Class.forName(owner, false, loader), name).get(null); }
-    private static Field field(Class<?> owner, String name) throws Exception { Field field = owner.getDeclaredField(name); field.setAccessible(true); return field; }
-    private static Method method(Class<?> owner, String name, int count) throws Exception {
+    static Object staticValue(ClassLoader loader, String owner, String name) throws Exception { return field(Class.forName(owner, false, loader), name).get(null); }
+    static Field field(Class<?> owner, String name) throws Exception { Field field = owner.getDeclaredField(name); field.setAccessible(true); return field; }
+    static Method method(Class<?> owner, String name, int count) throws Exception {
         for (Method method : owner.getDeclaredMethods()) if (method.getName().equals(name) && method.getParameterCount() == count) { method.setAccessible(true); return method; }
         throw new NoSuchMethodException(owner.getName() + '.' + name);
     }

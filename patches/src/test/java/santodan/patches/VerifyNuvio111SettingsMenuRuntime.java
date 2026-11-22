@@ -43,7 +43,7 @@ public final class VerifyNuvio111SettingsMenuRuntime {
             sources.put("g1.n", "package g1; public interface n {}");
             sources.put("g1.r1", "package g1; public class r1 { private Object value; public r1(Object v){value=v;} public Object getValue(){return value;} public void setValue(Object v){value=v;} }");
             sources.put("g1.p1", "package g1; public class p1 {}");
-            sources.put("g1.h", "package g1; public class h { public static class Composer implements g1.n {} public static g1.r1 s(Object value){return new g1.r1(value);} public static g1.p1 r(long value){throw new AssertionError(\"Incompatible long factory was invoked\");} }");
+            sources.put("g1.h", "package g1; public class h { public static class Composer implements g1.n { public int depth;public void d0(int key){depth++;}public void p(boolean node){if(node||--depth<0)throw new AssertionError();}} public static g1.r1 s(Object value){return new g1.r1(value);} public static g1.p1 r(long value){throw new AssertionError(\"Incompatible long factory was invoked\");} }");
             sources.put("w1.q", "package w1; public interface q {}");
             sources.put("j2.e", "package j2; public class e {}");
             sources.put("b2.a0", "package b2; public class a0 {}");
@@ -74,7 +74,7 @@ public final class VerifyNuvio111SettingsMenuRuntime {
                 expected.add(bridge);
                 int dot = bridge.lastIndexOf('.');
                 sources.put(bridge, "package " + bridge.substring(0, dot) + "; public class " + bridge.substring(dot + 1)
-                    + " { public static void renderSettings(Object composer){gb.me.rendered++;gb.me.events.add(\"" + bridge + "\");} }");
+                    + " { public static void renderSettings(Object composer){if(((g1.h.Composer)composer).depth!=1)throw new AssertionError();gb.me.rendered++;gb.me.events.add(\"" + bridge + "\");} }");
             }
             if ((selection & 28) != 0) {
                 int streamsIndex = expected.indexOf("Streams");

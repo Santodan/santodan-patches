@@ -38,6 +38,19 @@ launch license-check entry for rebuilt APKs. Run `verifyFylo`, `verifyFyloBundle
 and `verifyFyloApk`; retain all original Play configuration splits. Future versions
 must satisfy the structural matcher. Device behavior remains unverified.
 
+## NuvioTV badge labels
+
+Read [NuvioLabelCustomization.md](docs/NuvioLabelCustomization.md). The optional
+Customize labels patch activates the shared runtime only for 1.1.1. Preserve
+sparse native defaults and dynamic values; Copy offers Text, Label and All.
+Label/target switches retain drafts; Apply saves all and Cancel drops all.
+The label editor follows the owner mockup: fixed left header with Text/Label beside the dropdown, weighted scrolling controls
+below it, and an enlarged preview on the right. Read active Compose screen dimensions,
+disable platform-default dialog width, and preserve image aspect ratio. Sync dialogs use the validated native `B` method,
+and each settings bridge and conditional dialog needs a stable Compose group.
+Run `verifyNuvioLabelCustomization`, `verifyNuvioLabelsRuntime`, existing date
+and backup regressions, standalone/combined bundles and `verifyNuvioLabelsApk`.
+
 ## NuvioTV date-label appearance
 
 The latest target is **1.1.1 / 1081**. Read
@@ -96,7 +109,7 @@ checks; these are included in `verifyNuvioLatest`.
 ## NuvioTV official 1.1.1
 
 The active target is **1.1.1 / 1081**. Read [Nuvio111.md](docs/Nuvio111.md).
-All seventeen public patches target this original. `verifyNuvioLatest` uses
+All eighteen public patches target this original. `verifyNuvioLatest` uses
 dedicated `111` fixtures; historical fixtures remain unchanged. Controller fields,
 current-stream card, icon helpers, native library image helper and guarded method
 fingerprints were reviewed against both original APKs. The delivered APK audit

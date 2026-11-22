@@ -70,7 +70,7 @@ installer-source spoof.
 
 ## NuvioTV metadata provider and Continue Watching artwork
 
-The optional **NuvioTV - Metadata add-on selection** targets official 1.1.0 only.
+The optional **NuvioTV - Metadata add-on selection** targets official 1.1.1 only.
 Read [NuvioMetadataAddon.md](docs/NuvioMetadataAddon.md). It selects an enabled
 metadata installation per profile and independently opts Continue Watching and
 library poster artwork into that provider. Library cards use native composition
@@ -86,10 +86,19 @@ Run `verifyNuvioMetadataAddon`, `verifyNuvioMetadataRuntime`,
 `verifyNuvioMetadataSettingsRuntime` and the latest standalone/combined bundle
 checks; these are included in `verifyNuvioLatest`.
 
-## NuvioTV official 1.1.0
+## NuvioTV official 1.1.1
 
-The latest reviewed target is **1.1.0 / 1077**. Read [Nuvio110.md](docs/Nuvio110.md).
-The active contract and `verifyNuvioLatest` use dedicated release fixtures.
+The active target is **1.1.1 / 1081**. Read [Nuvio111.md](docs/Nuvio111.md).
+All seventeen public patches target this original. `verifyNuvioLatest` uses
+dedicated `111` fixtures; historical fixtures remain unchanged. Controller fields,
+current-stream card, icon helpers, native library image helper and guarded method
+fingerprints were reviewed against both original APKs. The delivered APK audit
+`verifyNuvio111Apk` checks the runtime's migrated reflection strings too.
+
+## NuvioTV official 1.1.0 (preceding target)
+
+The preceding reviewed target was **1.1.0 / 1077**. Read [Nuvio110.md](docs/Nuvio110.md).
+That port introduced dedicated release fixtures.
 Beta.13 notes below describe the preceding target; its historical fixtures remain unchanged.
 
 ## Start here: creating or modifying a patch

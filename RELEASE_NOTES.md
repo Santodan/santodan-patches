@@ -1,4 +1,8 @@
-## Pending changes since v0.18.1
+## Pending changes since v0.20.0
+
+- **nuviotv:** Update all seventeen patches for **1.1.1 (1081)**, including player fields, current-stream rendering, icon helpers, artwork and updater bindings. Original-DEX, runtime, standalone/combined bundle and unsigned-APK audits passed; device confirmation remains pending.
+
+## Released in v0.20.0
 
 - **nuviotv:** Add **Metadata add-on selection** for NuvioTV **1.1.0 / 1077**, with a per-profile provider picker and independent switches for Continue Watching metadata/artwork and library poster artwork. Preserve native fetching, caching, cancellation and fallback artwork; include the new settings in export/import. The picker lists enabled add-ons declaring `meta` support, including add-ons that also provide streams or catalogs. Original-DEX, runtime/settings, standalone/combined bundle and rebuilt unsigned-APK checks passed; device interaction remains unverified.
 

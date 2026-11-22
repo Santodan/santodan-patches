@@ -105,7 +105,7 @@ Startup app selection and **After standby** are cumulative: enabling both is int
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;17 patches</summary>
 <br>
 
-These seventeen patches target NuvioTV **1.1.0 (1077)** only. See [1.1.0 verification](docs/Nuvio110.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
+These seventeen patches target NuvioTV **1.1.1 (1081)** only. See [1.1.1 verification](docs/Nuvio111.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
 
 - **GitHub APK updates**: Optional patch that checks APK releases from `Santodan/santodan-patches`, shares background download progress with the native banner, and opens Android's normal APK installer for foreground installation progress. The installed release version defaults to the bundle version. Includes installer fixes for patched APKs and side-by-side installations. See [GitHub release publishing instructions](docs/NuvioApkUpdates.md).
 
@@ -175,7 +175,7 @@ Metadata selection and the independent Continue Watching/library artwork switche
 
 **🎯 Supported versions:**
 
-| 1.1.0 |
+| 1.1.1 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |

@@ -141,3 +141,12 @@ APK SHA-256: `8e7fcc2659f78969407357e26436f3cc7cf65f1500e794ce2c1785f2bd389c78`.
 
 The APK is unsigned. No signing, installation or Mi Box device test was performed.
 Native cache-miss latency and playback/frame behavior remain device checks.
+
+## Direct date-label editor
+
+Date label appearance is a clickable row that opens one menu directly.
+Select Text or Label in the horizontal top row; the color picker and sliders
+update for that part. The opacity/size sliders are below the color picker,
+outside the preview. Position and reset are also inside, with a shared preview
+and one Apply/Cancel for the draft.
+See [behavior, native evidence and verification](NuvioDateLabelEditor.md).

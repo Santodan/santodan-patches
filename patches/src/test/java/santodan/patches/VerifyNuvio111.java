@@ -423,6 +423,30 @@ public final class VerifyNuvio111 {
         classes.put("Lgb/jc;", swatch);
         used.add(swatch);
         var preview = new MutableClass(owner("Lgb/x0;"));
+        NuvioSettingsMenuPatch.validateDateColorApi(owner("Lgb/jg;"), software.santodan.nuvio.NuvioNative.REF_DATE_COLOR_PICKER);
+        var originalEditor = owner("Lgb/x0;").getMethods().stream()
+            .filter(m -> m.toString().equals(software.santodan.nuvio.NuvioNative.REF_DATE_CUSTOM_EDITOR)).findFirst().orElseThrow();
+        int editorRegisters = originalEditor.getImplementation().getRegisterCount();
+        int editorInstructions = NuvioAiringSeriesPatch.instructions(originalEditor).size();
+        NuvioSettingsMenuPatch.hookDateEditorControls(preview);
+        var editor = preview.getMethods().stream().filter(m -> m.toString().equals(software.santodan.nuvio.NuvioNative.REF_DATE_CUSTOM_EDITOR)).findFirst().orElseThrow();
+        var editorBody = NuvioAiringSeriesPatch.instructions(editor);
+        int pickerIndex = NuvioAnchors.reference(editorBody, software.santodan.nuvio.NuvioNative.REF_DATE_COLOR_PICKER, "color picker");
+        if (editor.getImplementation().getRegisterCount() != editorRegisters || editorBody.size() != editorInstructions + 4 ||
+            editorBody.get(pickerIndex + 1).getOpcode() != com.android.tools.smali.dexlib2.Opcode.MOVE_OBJECT_FROM16 ||
+            !NuvioPlaybackButtonsPatch.reference(editorBody.get(pickerIndex + 2)).equals(
+                NuvioSettingsMenuPatch.DATE_STYLE + "->renderEditorControls(Ljava/lang/Object;Ljava/lang/Object;)V"))
+            throw new AssertionError("Controls not immediately below the native color picker");
+        int targetRow = NuvioAnchors.reference(editorBody, NuvioSettingsMenuPatch.DATE_STYLE +
+            "->renderEditorTargetRow(Ljava/lang/Object;Ljava/lang/Object;)V", "top target selector");
+        int firstContent = NuvioAnchors.reference(editorBody, software.santodan.nuvio.NuvioNative.REF_DATE_ROW_ALIGNMENT, "first editor content");
+        if (targetRow != firstContent - 1 || targetRow >= pickerIndex)
+            throw new AssertionError("Target selector is not at the top of the editor");
+        boolean duplicateControlsRejected = false;
+        try { NuvioSettingsMenuPatch.hookDateEditorControls(preview); }
+        catch (IllegalStateException expected) { duplicateControlsRejected = true; }
+        if (!duplicateControlsRejected) throw new AssertionError("Duplicate editor controls hook accepted");
+        rejectParameter(owner("Lgb/x0;"), "b", 0, "J", NuvioSettingsMenuPatch::hookDateEditorControls);
         NuvioSettingsMenuPatch.hookDateEditorPreview(preview);
         boolean duplicatePreviewRejected = false;
         try { NuvioSettingsMenuPatch.hookDateEditorPreview(preview); }

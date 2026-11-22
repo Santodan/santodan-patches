@@ -113,6 +113,10 @@ These seventeen patches target NuvioTV **1.1.1 (1081)** only. See [1.1.1 verific
 
 - **Metadata add-on selection**: Choose an enabled metadata add-on per profile under **Settings > Layout > Santodan-Patches**. Separate, disabled-by-default switches apply its metadata/artwork to **Continue Watching** and its poster artwork to the **library**. Existing artwork remains the fallback when the selected provider has no replacement. The picker checks declared `meta` support; catalog/stream add-ons can also provide metadata. Restart after changing these settings. See [usage, capability filtering and verification](docs/NuvioMetadataAddon.md).
 
+### Date labels
+
+[Date label appearance](docs/NuvioDateLabelEditor.md) opens one editor directly. A horizontal Text/Label button row at the top selects which saved color, opacity and size to edit. The opacity and size sliders sit below the color picker, outside the live poster/card preview. Position and reset are inside the same menu; Apply saves the whole draft and Cancel discards it.
+
 ### Continue Watching
 
 Continue Watching follows local playback saves while the player is open. Completion resolves the next episode in the background without waiting for tracker sync. Home retains the local result when returning from playback. Runtime, bundle and rebuilt-APK checks passed; Mi Box timing and performance still need device confirmation. See [local playback updates](docs/NuvioMergedProgress.md).

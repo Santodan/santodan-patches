@@ -26,98 +26,53 @@ public final class NuvioDateLabelStyle {
     public static void renderSettings(Object composer, String ignored, String title) throws Exception {
         String scope = PREFS;
         ClassLoader loader = composer.getClass().getClassLoader();
-        Object expanded = state(loader, scope + ":expanded", false);
         Object dialog = state(loader, scope + ":dialog", -1);
         subscribe(loader, scope);
-        Object toggle = callback(loader, "Function0", args -> {
-            set(expanded, !((Boolean) get(expanded))); return unit(loader);
-        });
-        Object noop = callback(loader, "Function0", args -> unit(loader));
-        Object body = Class.forName(NuvioNative.COMPOSABLE_LAMBDA_NAME, false, loader).getDeclaredConstructor(int.class, Object.class, boolean.class)
-            .newInstance(scope.hashCode(), callback(loader, "Function3", args -> {
-                renderRows(args[1], scope, dialog); return unit(loader);
-            }), true);
-        method(Class.forName(NuvioNative.SETTINGS_SECTION_NAME, false, loader), "a", 11).invoke(null,
-            title, "Position, label size and color, font size and color", get(expanded),
-            toggle, staticValue(loader, NuvioNative.EMPTY_MODIFIER_NAME, "b"), null, null, noop, body, composer, 0);
-        int property = ((Number) get(dialog)).intValue();
-        if (property == 12 || property == 14) {
-            renderCustomColorDialog(composer, scope, property - 10, dialog);
-            return;
-        }
-        if (property < 0 || property >= DateLabelStyle.KEYS.length) return;
-        if (property == 2 || property == 4) {
-            renderColorDialog(composer, scope, property, dialog);
-            return;
-        }
-        String[] choices = DateLabelStyle.choices(property);
-        java.util.ArrayList<Object> options = new java.util.ArrayList<>();
-        Class<?> optionType = Class.forName(NuvioNative.SETTINGS_ROWS_NAME.equals(rowsOwner()) ? NuvioNative.SETTINGS_PICKER_NAME : NuvioNative.SETTINGS_PICKER_NAME, false, loader);
-        java.lang.reflect.Constructor<?> option = Arrays.stream(optionType.getDeclaredConstructors())
-            .filter(value -> value.getParameterCount() == 6).findFirst().orElseThrow();
-        option.setAccessible(true);
-        for (String value : choices) options.add(option.newInstance(value, value, null, null, null, 28));
-        Object select = callback(loader, "Function1", args -> {
-            int value = Arrays.asList(choices).indexOf(args[0]);
-            if (value >= 0) {
-                preferences(scope).edit().putInt(key(property), value).apply();
-                Object revision = state(loader, scope + ":revision", 0);
-                set(revision, ((Number) get(revision)).intValue() + 1);
+        Object open = callback(loader, "Function0", args -> {
+            for (int property : new int[]{2, 4}) {
+                set(colorDraft(loader, property), color(scope, property));
+                set(sizeDraft(loader, property), percent(scope, property - 1));
             }
-            set(dialog, -1); return unit(loader);
-        });
-        Object dismiss = callback(loader, "Function0", args -> { set(dialog, -1); return unit(loader); });
-        method(Class.forName(rowsOwner(), false, loader), "j", 11).invoke(null,
-            DateLabelStyle.TITLES[property], options, choices[choice(scope, property)],
-            // R8 removes the width/height default branches; supply real dp values.
-            select, dismiss, null, 420f, 320f, composer, 0, 32);
-    }
-
-    private static void renderRows(Object composer, String scope, Object dialog) throws Exception {
-        ClassLoader loader = composer.getClass().getClassLoader();
-        for (int property = 0; property < DateLabelStyle.KEYS.length; property++) {
-            final int selected = property;
-            Object noop = callback(loader, "Function0", args -> unit(loader));
-            if (property == 1 || property == 3) {
-                int percent = percent(scope, property);
-                Object change = callback(loader, "Function1", args -> {
-                    preferences(scope).edit().putInt(percentKey(selected), ((Number) args[0]).intValue()).apply();
-                    revise(loader, scope); return unit(loader);
-                });
-                method(Class.forName(playbackOwner(), false, loader), "j", 14).invoke(null,
-                    DateLabelStyle.TITLES[property], percent, percent + "%", 50, 200, 10, change,
-                    null, noop, true, staticValue(loader, NuvioNative.EMPTY_MODIFIER_NAME, "b"), composer, 0, 128);
-                continue;
-            }
-            Object click = callback(loader, "Function0", args -> {
-                if (selected == 2 || selected == 4) set(colorDraft(loader, selected), color(scope, selected));
-                set(dialog, selected); return unit(loader);
-            });
-            if (property == 2 || property == 4) {
-                long color = color(scope, property);
-                method(Class.forName(playbackOwner(), false, loader), "c", 9).invoke(null,
-                    DateLabelStyle.TITLES[property], color, property == 2 && color == 0L,
-                    click, noop, true, composer, 0, 0);
-            } else {
-                method(Class.forName(rowsOwner(), false, loader), "a", 18).invoke(null,
-                    DateLabelStyle.TITLES[property], null, DateLabelStyle.choices(property)[choice(scope, property)],
-                    click, null, noop, true, null, null, 0L, null, null, 0f, 0L, composer, 0, 0, 16336);
-            }
-        }
-        Object reset = callback(loader, "Function0", args -> {
-            SharedPreferences.Editor editor = preferences(scope).edit();
-            for (int property = 0; property < DateLabelStyle.KEYS.length; property++) {
-                editor.remove(key(property)).remove(percentKey(property)).remove(colorKey(property));
-            }
-            editor.apply();
-            Object revision = state(loader, scope + ":revision", 0);
+            set(state(loader, scope + ":positionDraft", choice(scope, 0)), choice(scope, 0));
+            set(state(loader, scope + ":positionDialog", false), false);
+            previewMovie = randomPreviewMovie();
+            Object revision = state(loader, scope + ":editorRevision", 0);
             set(revision, ((Number) get(revision)).intValue() + 1);
+            set(dialog, 12);
             return unit(loader);
         });
         Object noop = callback(loader, "Function0", args -> unit(loader));
-        method(Class.forName(rowsOwner(), false, loader), "a", 18).invoke(null,
-            "Reset date label appearance", "Restore the default style for all date labels.", null,
-            reset, null, noop, true, null, null, 0L, null, null, 0f, 0L, composer, 0, 0, 16336);
+        invokeReference(loader, NuvioNative.REF_SETTINGS_ROWS_A,
+            title, "Edit label and text color, opacity, size and position", null,
+            open, null, noop, true, null, null, 0L, null, null, 0f, 0L, composer, 0, 0, 16336);
+        int property = ((Number) get(dialog)).intValue();
+        if (property != 12 && property != 14) return;
+        // Recreate native remembered RGB state when changing the selected target or resetting.
+        int revision = ((Number) get(state(loader, scope + ":editorRevision", 0))).intValue();
+        method(composer.getClass(), "d0", 1).invoke(composer, 0x53444500 + property + revision * 31);
+        try { renderCustomColorDialog(composer, scope, property - 10, dialog); }
+        finally { method(composer.getClass(), "p", 1).invoke(composer, false); }
+        if ((Boolean) get(state(loader, scope + ":positionDialog", false))) renderPositionDialog(composer);
+    }
+
+    private static void renderPositionDialog(Object composer) throws Exception {
+        ClassLoader loader = composer.getClass().getClassLoader();
+        Object position = state(loader, PREFS + ":positionDraft", choice(PREFS, 0));
+        Object visible = state(loader, PREFS + ":positionDialog", false);
+        java.util.ArrayList<Object> options = new java.util.ArrayList<>();
+        java.lang.reflect.Constructor<?> option = Arrays.stream(Class.forName(NuvioNative.SETTINGS_PICKER_NAME, false, loader)
+            .getDeclaredConstructors()).filter(value -> value.getParameterCount() == 6).findFirst().orElseThrow();
+        option.setAccessible(true);
+        for (String value : DateLabelStyle.POSITIONS) options.add(option.newInstance(value, value, null, null, null, 28));
+        Object select = callback(loader, "Function1", args -> {
+            int value = Arrays.asList(DateLabelStyle.POSITIONS).indexOf(args[0]);
+            if (value >= 0) set(position, value);
+            set(visible, false); return unit(loader);
+        });
+        Object dismiss = callback(loader, "Function0", args -> { set(visible, false); return unit(loader); });
+        invokeReference(loader, NuvioNative.REF_SETTINGS_ROWS_J,
+            "Label position", options, DateLabelStyle.POSITIONS[((Number) get(position)).intValue()],
+            select, dismiss, null, 420f, 320f, composer, 0, 32);
     }
 
     /** Returns modifier, foreground Color, font TextUnit and native TextStyle. */
@@ -127,13 +82,18 @@ public final class NuvioDateLabelStyle {
 
     private static Object[] buildColors(ClassLoader loader, Object boxScope, Object composer, String shapeOwner,
             long background, long foreground) throws Exception {
+        return buildColors(loader, boxScope, composer, shapeOwner, background, foreground, percent(PREFS, 1), percent(PREFS, 3), choice(PREFS, 0));
+    }
+
+    private static Object[] buildColors(ClassLoader loader, Object boxScope, Object composer, String shapeOwner,
+            long background, long foreground, int labelSize, int fontSizePercent, int position) throws Exception {
         String scope = PREFS;
         subscribe(loader, scope);
         Object typography = method(composer.getClass(), "j", 1).invoke(composer, staticValue(loader, NuvioNative.TEXT_STYLE_LOCAL_NAME, "a"));
         Object textStyle = field(typography.getClass(), "o").get(typography);
         Object modifier = staticValue(loader, NuvioNative.EMPTY_MODIFIER_NAME, "b");
         modifier = method(boxScope.getClass(), "a", 2).invoke(boxScope, modifier,
-            staticValue(loader, NuvioNative.ALIGNMENTS_NAME, DateLabelStyle.alignment(choice(scope, 0))));
+            staticValue(loader, NuvioNative.ALIGNMENTS_NAME, DateLabelStyle.alignment(position)));
         Class<?> modifierType = Class.forName(NuvioNative.MODIFIER_NAME, false, loader);
         java.lang.reflect.Constructor<?> layer = Class.forName(NuvioNative.GRAPHICS_MODIFIER_NAME, false, loader).getDeclaredConstructor(float.class);
         layer.setAccessible(true);
@@ -143,13 +103,13 @@ public final class NuvioDateLabelStyle {
         modifier = method(Class.forName("a2.j", false, loader), "b", 2).invoke(null, modifier, staticValue(loader, shapeOwner, "a"));
         modifier = method(Class.forName("x.m", false, loader), "g", 3).invoke(null, modifier,
             background, staticValue(loader, "d2.i0", "b"));
-        float scale = percent(scope, 1) / 100f;
+        float scale = labelSize / 100f;
         Object spacing = staticValue(loader, NuvioNative.NATIVE_SPACING_LOCAL_NAME, "a");
         float horizontal = field(spacing.getClass(), "e").getFloat(spacing);
         float vertical = field(spacing.getClass(), "d").getFloat(spacing);
         Object span = field(textStyle.getClass(), "a").get(textStyle);
         long nativeFont = field(span.getClass(), "b").getLong(span);
-        float font = Float.intBitsToFloat((int) nativeFont) * percent(scope, 3) / 100f;
+        float font = Float.intBitsToFloat((int) nativeFont) * fontSizePercent / 100f;
         long fontSize = (nativeFont & 0xffffffff00000000L) | (Float.floatToRawIntBits(font) & 0xffffffffL);
         modifier = method(Class.forName("d0.b", false, loader), "v", 3).invoke(null, modifier,
             horizontal * scale, vertical * scale);
@@ -323,8 +283,8 @@ public final class NuvioDateLabelStyle {
         int rgb = ((Number) method(model.getClass(), referenceName(NuvioNative.REF_DATE_CUSTOM_COLOR_GET), 0).invoke(model)).intValue();
         get(state(loader, PREFS + ":artworkRevision", 0));
         long live = (((long) rgb & 0xffffffL) << 32) | (((Number) get(colorDraft(loader, property))).longValue() & 0xff00000000000000L);
-        long background = property == 2 ? live : color(PREFS, 2);
-        long foreground = property == 4 ? live : color(PREFS, 4);
+        long background = property == 2 ? live : ((Number) get(colorDraft(loader, 2))).longValue();
+        long foreground = property == 4 ? live : ((Number) get(colorDraft(loader, 4))).longValue();
         Object previewCard = state(loader, PREFS + ":previewCard", false);
         boolean landscape = (Boolean) get(previewCard);
         float cardHeight = landscape ? 144f : 216f;
@@ -333,7 +293,7 @@ public final class NuvioDateLabelStyle {
         Object panel = method(Class.forName("x.m", false, loader), "g", 3).invoke(null, modifier,
             0xff17171c00000000L, staticValue(loader, "d2.i0", "b"));
         panel = method(Class.forName("d0.b", false, loader), "u", 2).invoke(null, panel, 16f);
-        column(composer, panel, 16f, () -> {
+        column(composer, panel, 10f, () -> {
             caption(composer, "Label preview");
             Object toggle = callback(loader, "Function0", args -> {
                 set(previewCard, !((Boolean) get(previewCard))); return unit(loader);
@@ -356,12 +316,71 @@ public final class NuvioDateLabelStyle {
                         staticValue(loader, "w1.b", "e"), crop, 1f, composer, 0, 0);
                 }
                 Object[] style = buildColors(loader, staticValue(loader, "d0.v", "a"), composer,
-                    NuvioNative.WIDE_CARD_NAME, background, foreground);
+                    NuvioNative.WIDE_CARD_NAME, background, foreground,
+                    ((Number) get(sizeDraft(loader, 2))).intValue(), ((Number) get(sizeDraft(loader, 4))).intValue(),
+                    ((Number) get(state(loader, PREFS + ":positionDraft", choice(PREFS, 0)))).intValue());
                 invokeReference(loader, NuvioNative.REF_DATE_TEXT, "15-Nov", style[0], style[1], style[2], null, null,
                     0L, null, 0L, 0, false, 0, 0, null, style[3], composer, 0, 0, 65520);
             });
         });
         return true;
+    }
+
+    /** First child of the editor window, above its native color-picker/preview body. */
+    public static void renderEditorTargetRow(Object model, Object composer) throws Exception {
+        int property = activeColorProperty(true);
+        if (property < 0) return;
+        ClassLoader loader = composer.getClass().getClassLoader();
+        int rgb = ((Number) method(model.getClass(), referenceName(NuvioNative.REF_DATE_CUSTOM_COLOR_GET), 0).invoke(model)).intValue();
+        Object modifier = staticValue(loader, NuvioNative.EMPTY_MODIFIER_NAME, "b");
+        Object spacing = invokeReference(loader, NuvioNative.REF_DATE_SPACED_BY, 12f);
+        Object alignment = field(Class.forName(referenceOwner(NuvioNative.REF_DATE_ROW_ALIGNMENT), false, loader),
+            referenceField(NuvioNative.REF_DATE_ROW_ALIGNMENT)).get(null);
+        Object policy = invokeReference(loader, NuvioNative.REF_DATE_ROW_POLICY, spacing, alignment, composer, 0);
+        node(composer, modifier, policy, () -> {
+            for (int target : new int[]{4, 2}) {
+                Object selectTarget = callback(loader, "Function0", args -> {
+                    if (target != property) {
+                        long alpha = ((Number) get(colorDraft(loader, property))).longValue() & 0xff00000000000000L;
+                        set(colorDraft(loader, property), alpha | ((long) (rgb & 0xffffff) << 32));
+                        set(STATES.get(PREFS + ":dialog"), target + 10);
+                    }
+                    return unit(loader);
+                });
+                invokeReference(loader, NuvioNative.REF_SETTINGS_ROWS_D,
+                    target == 2 ? "Label" : "Text", selectTarget, false, true, composer, 0, 0);
+            }
+        });
+        caption(composer, property == 2 ? "Editing: Label" : "Editing: Text");
+    }
+
+    /** Appended to the native color-picker column; never rendered inside the preview. */
+    public static void renderEditorControls(Object model, Object composer) throws Exception {
+        int property = activeColorProperty(true);
+        if (property < 0) return;
+        ClassLoader loader = composer.getClass().getClassLoader();
+        Object modifier = staticValue(loader, NuvioNative.EMPTY_MODIFIER_NAME, "b");
+        modifier = invokeReference(loader, NuvioNative.REF_DATE_PREVIEW_HEIGHT, modifier, 200f);
+        Object scroll = invokeReference(loader, NuvioNative.REF_DATE_SCROLL_STATE, composer);
+        modifier = invokeReference(loader, NuvioNative.REF_DATE_SCROLL, modifier, scroll, true);
+        column(composer, modifier, 10f, () -> {
+            renderDraftControls(composer, property);
+            Object positionClick = callback(loader, "Function0", args -> {
+                set(state(loader, PREFS + ":positionDialog", false), true); return unit(loader);
+            });
+            invokeReference(loader, NuvioNative.REF_SETTINGS_ROWS_D, "Label position", positionClick, false, true, composer, 0, 0);
+            Object reset = callback(loader, "Function0", args -> {
+                for (int target : new int[]{2, 4}) {
+                    set(colorDraft(loader, target), DateLabelStyle.color(target, DateLabelStyle.defaultChoice(target)));
+                    set(sizeDraft(loader, target), 100);
+                }
+                set(state(loader, PREFS + ":positionDraft", choice(PREFS, 0)), DateLabelStyle.defaultChoice(0));
+                Object revision = state(loader, PREFS + ":editorRevision", 0);
+                set(revision, ((Number) get(revision)).intValue() + 1);
+                return unit(loader);
+            });
+            invokeReference(loader, NuvioNative.REF_SETTINGS_ROWS_D, "Reset appearance", reset, false, true, composer, 0, 0);
+        });
     }
 
     private interface Content { void render() throws Exception; }
@@ -417,12 +436,50 @@ public final class NuvioDateLabelStyle {
         Object save = callback(loader, "Function1", args -> {
             int selected = ((Number) method(model, referenceName(NuvioNative.REF_DATE_CUSTOM_COLOR_GET), 0).invoke(args[0])).intValue();
             long alpha = ((Number) get(colorDraft(loader, property))).longValue() & 0xff00000000000000L;
-            set(colorDraft(loader, property), alpha | (((long) selected & 0x00ffffffL) << 32));
-            set(dialog, property); return unit(loader);
+            long packed = alpha | (((long) selected & 0x00ffffffL) << 32);
+            set(colorDraft(loader, property), packed);
+            SharedPreferences.Editor editor = preferences(scope).edit();
+            for (int target : new int[]{2, 4}) {
+                editor.putLong(colorKey(target), ((Number) get(colorDraft(loader, target))).longValue());
+                editor.putInt(percentKey(target - 1), ((Number) get(sizeDraft(loader, target))).intValue());
+            }
+            editor.putInt(key(0), ((Number) get(state(loader, scope + ":positionDraft", choice(scope, 0)))).intValue()).apply();
+            revise(loader, scope);
+            set(dialog, -1); return unit(loader);
         });
-        Object dismiss = callback(loader, "Function0", args -> { set(dialog, property); return unit(loader); });
+        Object dismiss = callback(loader, "Function0", args -> { set(dialog, -1); return unit(loader); });
         method(Class.forName(referenceOwner(NuvioNative.REF_DATE_CUSTOM_COLOR_DIALOG), false, loader),
             referenceName(NuvioNative.REF_DATE_CUSTOM_COLOR_DIALOG), 6).invoke(null, initial, false, save, dismiss, composer, 0);
+    }
+
+    private static Object sizeDraft(ClassLoader loader, int property) throws Exception {
+        return state(loader, PREFS + ":sizeDraft:" + property, percent(PREFS, property - 1));
+    }
+
+    private static void renderDraftControls(Object composer, int property) throws Exception {
+        ClassLoader loader = composer.getClass().getClassLoader();
+        long packed = ((Number) get(colorDraft(loader, property))).longValue();
+        int opacity = Math.round((packed >>> 56) * 100f / 255f);
+        Object alphaChange = callback(loader, "Function1", args -> {
+            int value = Math.max(0, Math.min(100, ((Number) args[0]).intValue()));
+            long draft = ((Number) get(colorDraft(loader, property))).longValue();
+            set(colorDraft(loader, property), (draft & 0x00ffffff00000000L) | ((long) Math.round(value * 255f / 100f) << 56));
+            return unit(loader);
+        });
+        Object sizeChange = callback(loader, "Function1", args -> {
+            int value = ((Number) args[0]).intValue();
+            if (value >= 50 && value <= 200 && value % 10 == 0) set(sizeDraft(loader, property), value);
+            return unit(loader);
+        });
+        Object noop = callback(loader, "Function0", args -> unit(loader));
+        Object modifier = staticValue(loader, NuvioNative.EMPTY_MODIFIER_NAME, "b");
+        invokeReference(loader, NuvioNative.REF_DATE_PERCENT_ROW,
+            property == 2 ? "Label opacity" : "Font opacity", opacity, opacity + "%", 0, 100, 1, alphaChange,
+            null, noop, true, modifier, composer, 0, 128);
+        int size = ((Number) get(sizeDraft(loader, property))).intValue();
+        invokeReference(loader, NuvioNative.REF_DATE_PERCENT_ROW,
+            DateLabelStyle.TITLES[property - 1], size, size + "%", 50, 200, 10, sizeChange,
+            null, noop, true, modifier, composer, 0, 128);
     }
 
     private static String referenceOwner(String reference) { return reference.substring(1, reference.indexOf(';')).replace('/', '.'); }

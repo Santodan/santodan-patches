@@ -1,5 +1,6 @@
 ## Pending changes since v0.20.0
 
+- **nuviotv:** Make Date label appearance open one editor directly. Use a horizontal Text/Label button row at the top; the color picker and sliders update for the selected part. Place the opacity/size sliders below the color picker, outside the preview, with position and reset also inside the menu. Keep both drafts while switching; one Apply saves everything and Cancel discards the whole draft. Native/runtime, standalone/combined bundle and delivered unsigned-APK checks passed; TV layout and focus still need device confirmation.
 - **nuviotv:** Update all seventeen patches for **1.1.1 (1081)**, including player fields, current-stream rendering, icon helpers, artwork and updater bindings. Original-DEX, runtime, standalone/combined bundle and unsigned-APK audits passed; device confirmation remains pending.
 - **nuviotv:** Update Continue Watching locally during playback and resolve the next episode in the background, independently of tracker sync. Coalesce repeated completion writes and prevent cached cards from overwriting local updates. Runtime, native/bundle and delivered-APK checks passed; Mi Box timing/performance remains unverified.
 

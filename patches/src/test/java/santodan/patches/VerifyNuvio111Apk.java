@@ -12,6 +12,7 @@ import java.util.zip.ZipFile;
 public final class VerifyNuvio111Apk {
     public static void main(String[] args) throws Exception {
         Set<String> definitions = new HashSet<>();
+        Map<String, List<String>> calls = new HashMap<>();
         Map<String, Set<String>> strings = new HashMap<>();
         try (var zip = new ZipFile(args[0])) {
             for (var entry : Collections.list(zip.entries())) {
@@ -25,6 +26,8 @@ public final class VerifyNuvio111Apk {
                             for (var instruction : method.getImplementation().getInstructions()) {
                                 if (!(instruction instanceof ReferenceInstruction)) continue;
                                 var reference = ((ReferenceInstruction) instruction).getReference();
+                                if (reference instanceof com.android.tools.smali.dexlib2.iface.reference.MethodReference)
+                                    calls.computeIfAbsent(method.toString(), ignored -> new ArrayList<>()).add(reference.toString());
                                 if (reference instanceof StringReference)
                                     strings.computeIfAbsent(owner.getType(), ignored -> new HashSet<>())
                                         .add(((StringReference) reference).getString());
@@ -34,6 +37,19 @@ public final class VerifyNuvio111Apk {
                 }
             }
         }
+        require(strings, "Lsoftware/santodan/extension/nuviomenu/NuvioDateLabelStyle;",
+            List.of(NuvioNative.REF_DATE_PERCENT_ROW, NuvioNative.REF_DATE_ROW_POLICY, NuvioNative.REF_DATE_SCROLL, NuvioNative.REF_DATE_SCROLL_STATE,
+                "Label opacity", "Font opacity", "Editing: Label", "Editing: Text", "Label", "Text"));
+        if (!definitions.contains(NuvioNative.REF_DATE_PERCENT_ROW))
+            throw new AssertionError("Missing native date appearance slider binding");
+        String controls = "Lsoftware/santodan/extension/nuviomenu/NuvioDateLabelStyle;->renderEditorControls(Ljava/lang/Object;Ljava/lang/Object;)V";
+        List<String> editorCalls = calls.getOrDefault(NuvioNative.REF_DATE_CUSTOM_EDITOR, List.of());
+        int picker = editorCalls.indexOf(NuvioNative.REF_DATE_COLOR_PICKER);
+        int header = editorCalls.indexOf("Lsoftware/santodan/extension/nuviomenu/NuvioDateLabelStyle;->renderEditorTargetRow(Ljava/lang/Object;Ljava/lang/Object;)V");
+        if (header < 0 || header >= picker) throw new AssertionError("Missing delivered top Text/Label button row");
+        if (picker < 0 || picker + 1 >= editorCalls.size() || !editorCalls.get(picker + 1).equals(controls) ||
+            editorCalls.indexOf(NuvioNative.REF_DATE_CUSTOM_PREVIEW) <= picker + 1)
+            throw new AssertionError("Delivered appearance controls must follow the color picker, outside the sibling preview");
         String controller = NuvioNative.PLAYER_CONTROLLER_TYPE + "->";
         Set<String> bindings = new HashSet<>(List.of(
             NuvioNative.REF_CURRENT_STREAM_CARD_H, NuvioNative.REF_METADATA_LIBRARY_IMAGE,

@@ -298,7 +298,7 @@ Paths below are relative to `E:\Morphe\santodan-patches` unless stated otherwise
 
 As of 2026-11-23 the latest local originals are NuvioTV `1.1.1`, Monet `1.1.1`,
 Pillo `0.6.27`, Car Scanner `2.2.42`, TFD Companion `1.1.6`, Fylo `2.6` and Reddit
-`2026.45.0`. Reddit content filters and home flairs target `2026.45.0`; Start as
+`2026.47.0` (2026.45.0 is also present). Reddit content filters and home flairs target `2026.47.0`; Start as
 guest still targets `2026.37.0`. The separate upstream-style 2026.45.0 filter work
 lives in `E:\Morphe\morphe-patches-santodan`. These are discovery hints, not
 a permanent version allowlist.
@@ -785,18 +785,18 @@ ExoPlayer's missing playing period before seeking. Next-episode preload cooldown
 survive pause/buffering for the same target. See `docs/NuvioBeta9.md` for the
 reviewed DEX contract and focused scheduler/guard verification tasks.
 
-## Reddit 2026.45.0 (filters and flairs) / 2026.37.0 (guest)
+## Reddit 2026.47.0 (filters and flairs) / 2026.37.0 (guest)
 
 Three patches target package `com.reddit.frontpage`:
 
 1. **Reddit - Content filters (Experimental)** adds keyword and per-community flair
    filtering under **Morphe > Filters**. It installs the home-flair support patch as a
    dependency because reliable flair filtering requires native flair data in the feed.
-   Targets **2026.45.0 / 2645001** only.
+   Targets **2026.47.0 / 2647001** only (2026.45.0 support was replaced, not kept).
 2. **Reddit - Show flairs in home feed (Experimental)** restores native post-flair
    badges below titles, including cached and joined-community posts. Its display option
    is under **Morphe > Layout** and the patch can be enabled independently.
-   Targets **2026.45.0** only.
+   Targets **2026.47.0** only.
 3. **Reddit - Start as guest** invokes Reddit's native logged-out browsing action in
    place of the forced startup login screen. Login remains available from the account
    menu. This behavior is also available upstream through Morphe Patches PR #3109.
@@ -804,18 +804,27 @@ Three patches target package `com.reddit.frontpage`:
 
 The Reddit matchers are deliberately version-bound and fail closed when the expected
 bytecode layout is missing or ambiguous. `verifyRedditContentFilter` runs against the
-2026.45.0 DEX in `Skills/inspection-evidence/reddit-2026.45.0` (base APK SHA-256
-`fa1fb56c…bf67f`); `verifyRedditGuestMode` still uses the 2026.37.0 `.inspect-reddit`
-fixtures. Those proprietary inputs are not stored in this repository.
+2026.47.0 DEX in `Skills/inspection-evidence/reddit-2026.47.0` (base APK SHA-256
+`3f48864f…a8bae`, from `OriginalApps/com.reddit.frontpage_2026.47.0.apkm`);
+`verifyRedditGuestMode` still uses the 2026.37.0 `.inspect-reddit` fixtures. Those
+proprietary inputs are not stored in this repository.
 
-The 2026.45.0 port is a name remap of the same hooks. The extension reaches Reddit
-models by reflection, so every obfuscated class, field and method it names is checked
-by `verifyRedditContentFilter`. Layout changes from 2026.37.0: `PostPreviewFeedElement`
-(`p150`) keeps its flairs at `p`, its content list at `E` and children at `j`–`x`;
-`ClassicPostElement` (`qy8`) keeps title at `q` and flairs at `t`; the by-ID fetches are
-`g.d(ArrayList, …)` and `h.b(ArrayList, 5×Z, …)`; the repository provider is `G()`.
-The flair chip/row hooks derive their registers from the instructions instead of fixed
-numbers. Classic-post hiding hooks `dz8.d/e/f`; the nested `dz8.a` is covered by `d`.
+Each port is a name remap of the same hooks; almost every obfuscated name changes
+between Reddit releases. The extension reaches Reddit models by reflection, so every
+obfuscated class, field and method it names is checked by `verifyRedditContentFilter`;
+update the patch constants, the extension strings and the verifier contracts together.
+In 2026.47.0: `PostPreviewFeedElement` (`kk50`) keeps flairs at `q`, content at `G`
+(`H` is derived from other children) and children at `k`–`z`; `ClassicPostElement`
+(`y39`) keeps title at `q` and flairs at `t`; the posts-by-ID source constructor has
+10 parameters; the by-ID fetches are `g.d(ArrayList, …)` and `h.b(ArrayList, 5×Z, …)`;
+the repository provider is `G()`; `SubredditFeedScreen` exposes the name via `r5()`.
+The flair chip/row hooks and the feed post cell derive registers from the bytecode.
+Classic-post hiding hooks `l49.d/e/f`; the nested `l49.a` is covered by `d`.
+
+Both patches require Morphe's Reddit settings extension from the official bundle. The
+official Morphe 2.3.0 bundle lists Reddit only up to 2026.40.0, so a CLI check must force
+compatibility (`-f`) when adding an official patch such as Hide ads; Desktop users must
+allow non-recommended versions. These patches still check the exact version themselves.
 
 Post-detail hydration coalesces requests arriving within 25 ms into batches of up to
 50 IDs. Both the native query and public by-ID fallback request multiple posts together.

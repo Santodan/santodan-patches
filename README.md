@@ -324,7 +324,7 @@ The generated bundle is written to `patches/build/libs/patches-<version>.mpp`. `
 | Car Scanner ELM OBD2 | `com.ovz.carscanner` | `2.2.42` (arm64 and x86_64), `2.2.21`, `2.1.50` | Premium status; unrestricted experimental alternative; settings/profile and ECU compatibility fixes |
 | MEO (Android TV) | `com.alticelabs.meo.androidtv` | `5.7.0` | Side-by-side installation; Spoof supported device |
 | NuvioTV | `com.nuvio.tv` | `1.1.0-beta.8` | Android TV launcher channels; Finale dates in library and collections; Keep airing series in Upcoming; Merge tracking progress; Preload streams for next episode; Preload streams in Continue Watching; Preload streams on detail page; Remaining episodes in Continue Watching; Upcoming movie dates in library and collections; Side-by-side installation |
-| Reddit | `com.reddit.frontpage` | `2026.45.0`, `2026.37.0` | Content filters (Experimental) and Show flairs in home feed (Experimental) on 2026.45.0; Start as guest on 2026.37.0 |
+| Reddit | `com.reddit.frontpage` | `2026.47.0`, `2026.37.0` | Content filters (Experimental) and Show flairs in home feed (Experimental) on 2026.47.0; Start as guest on 2026.37.0 |
 | Peafowl Theme Maker for EMUI | `h7.hamzio.emuithemeotg` | `GMS_27.5.1` | Unlock Theme Ownership (Experimental) |
 | Pillo | `xyz.rtrvr.pillo` | `0.6.27`, `0.6.20`, `0.6.19` | Hybrid Lock-Screen Notifications |
 | Pillo | `xyz.rtrvr.pillo` | `0.6.27`, `0.6.20` | Import weight history from JSON; Local backup and restore; Weight change summaries; Weight in Progress |

@@ -1,4 +1,8 @@
-## Pending changes since v0.20.0
+## Pending changes since v0.21.0
+
+- **reddit:** Move **Content filters (Experimental)** and **Show flairs in home feed (Experimental)** to Reddit **2026.47.0 (2647001)**, replacing 2026.45.0. All native hooks and runtime bindings were remapped again, including the post-preview element (flairs at `q`, content at `G`, children `k`–`z`), the posts-by-ID source constructor and the subreddit feed screen name getter. **Start as guest** still targets 2026.37.0. Original-DEX contract checks, a Morphe CLI patch of the 2026.47.0 base APK and an audit of the delivered APK passed; device confirmation remains pending.
+
+## Released in v0.21.0
 
 - **reddit:** Update **Content filters (Experimental)** and **Show flairs in home feed (Experimental)** for Reddit **2026.45.0 (2645001)**. All native hooks and runtime bindings were remapped, including the moved post-preview, classic-post and by-ID fetch fields. **Start as guest** still targets 2026.37.0. Original-DEX contract checks, a Morphe CLI patch of the 2026.45.0 base APK and an audit of the delivered APK passed; device confirmation remains pending.
 

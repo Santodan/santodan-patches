@@ -26,7 +26,7 @@ import kotlin.Unit;
 public final class RedditContentFilterPatch {
     public static final String NAME = "Reddit - Content filters (Experimental)";
     static final String PACKAGE = "com.reddit.frontpage";
-    static final String VERSION = "2026.45.0";
+    static final String VERSION = "2026.47.0";
     static final String LINK = "Lcom/reddit/domain/model/Link;";
     static final String SUBREDDIT = "Lcom/reddit/domain/model/Subreddit;";
     static final String FLAIR_SOURCE = "Lcom/reddit/flair/impl/data/source/remote/a;";
@@ -36,29 +36,29 @@ public final class RedditContentFilterPatch {
     static final String LINK_REPOSITORY = "Lcom/reddit/link/impl/data/repository/d;";
     static final String CHANNEL_COMPOSABLE = "Lcom/reddit/screens/channels/composables/f;";
     static final String SUBREDDIT_HEADER_VIEW = "Lcom/reddit/screens/header/SubredditHeaderView;";
-    static final String FLAIR_ROW = "Lya1;";
+    static final String FLAIR_ROW = "Lf71;";
     static final String SUBREDDIT_FEED_LAMBDA = "Lcom/reddit/screens/listing/compose/d;";
-    static final String FLAIR_CHIP = "Lq95;";
-    static final String FILTER_CHIP_LAMBDA = "Lyh1;";
+    static final String FLAIR_CHIP = "Loe5;";
+    static final String FILTER_CHIP_LAMBDA = "Ldm1;";
     static final String LISTING = "Lcom/reddit/domain/model/listing/Listing;";
-    static final String FEED_POST_SECTION = "Leuj;";
-    static final String FEED_SECTION_MAPPER = "Llad;";
-    static final String FEED_SECTION = "Ljgc;";
-    static final String FEED_POST_CELL = "Lwa40;";
-    static final String HOME_POST_MAPPER = "Ljmj;";
+    static final String FEED_POST_SECTION = "Lw1k;";
+    static final String FEED_SECTION_MAPPER = "Lakp;";
+    static final String FEED_SECTION = "Lulc;";
+    static final String FEED_POST_CELL = "Lqs40;";
+    static final String HOME_POST_MAPPER = "Lxtj;";
     static final String FEED_LINK_MAPPER = "Lcom/reddit/feeds/impl/data/mapper/link/a;";
-    static final String FEED_LINK_ALTERNATE_MAPPER = "Lf6r;";
-    static final String FEED_LINK_ALTERNATE_MAPPER_METHOD = "Q";
-    static final String CLASSIC_POST_MAPPER = "Lcy8;";
-    static final String CLASSIC_POST = "Lqy8;";
-    static final String CLASSIC_POST_COMPOSABLE = "Ldz8;";
-    static final String FEED_ELEMENT_PROCESSOR = "Lzra0;";
-    static final String MODIFIER = "Lwiy;";
-    static final String COMPOSER = "Lvgc;";
-    static final String CLICKABLE = "Ll39;";
-    static final String CHIP_PALETTE = "Lwbk;";
-    static final String CHIP_DEFAULT_PALETTE = "Ltbk;->l:Ltbk;";
-    static final String CHIP_CLICK = "Lar7;";
+    static final String FEED_LINK_ALTERNATE_MAPPER = "Lqkr;";
+    static final String FEED_LINK_ALTERNATE_MAPPER_METHOD = "M";
+    static final String CLASSIC_POST_MAPPER = "Lk39;";
+    static final String CLASSIC_POST = "Ly39;";
+    static final String CLASSIC_POST_COMPOSABLE = "Ll49;";
+    static final String FEED_ELEMENT_PROCESSOR = "Lwkb0;";
+    static final String MODIFIER = "Lgwy;";
+    static final String COMPOSER = "Lgmc;";
+    static final String CLICKABLE = "Lm89;";
+    static final String CHIP_PALETTE = "Lrjk;";
+    static final String CHIP_DEFAULT_PALETTE = "Lojk;->l:Lojk;";
+    static final String CHIP_CLICK = "Ljw7;";
     static final String SETTINGS = "Lapp/morphe/extension/reddit/settings/preference/RedditPreferenceFragment;";
     static final String EXTENSION = "Lsoftware/santodan/extension/redditfilter/RedditContentFilter;";
     private static final Logger LOG = Logger.getLogger("app.morphe.patches.santodan");
@@ -291,7 +291,7 @@ public final class RedditContentFilterPatch {
         List<MutableMethod> matches = new ArrayList<>();
         for (MutableMethod method : source.getMethods())
             if ("<init>".equals(method.getName()) && method.getImplementation() != null
-                && method.getParameterTypes().equals(Arrays.asList("Lcom/squareup/moshi/j;", "Lsac0;", "Ltxo;")))
+                && method.getParameterTypes().equals(Arrays.asList("Lcom/squareup/moshi/j;", "Ly3d0;", "Lj8p;")))
                 matches.add(method);
         if (matches.size() != 1) throw unsupported("Expected one flair network source constructor; found " + matches.size());
         return matches.get(0);
@@ -318,7 +318,7 @@ public final class RedditContentFilterPatch {
                 if (reference instanceof FieldReference
                     && SUBREDDIT_SOURCE.equals(((FieldReference) reference).getDefiningClass())
                     && "j".equals(((FieldReference) reference).getName())
-                    && "Lw27;".equals(((FieldReference) reference).getType())) {
+                    && "Lh87;".equals(((FieldReference) reference).getType())) {
                     matches.add(method); break;
                 }
             }
@@ -381,10 +381,10 @@ public final class RedditContentFilterPatch {
         List<MutableMethod> constructors = new ArrayList<>();
         for (MutableMethod method : source.getMethods())
             if ("<init>".equals(method.getName()) && method.getImplementation() != null
-                && method.getParameterTypes().size() == 9) constructors.add(method);
+                && method.getParameterTypes().size() == 10) constructors.add(method);
         if (constructors.size() != 1) throw unsupported("Expected one posts-by-ID source constructor");
         MutableMethod method = constructors.get(0);
-        int thisRegister = method.getImplementation().getRegisterCount() - 10;
+        int thisRegister = method.getImplementation().getRegisterCount() - 11;
         if (thisRegister < 0) throw unsupported("Posts-by-ID source instance register was not found");
         List<Instruction> all = instructions(method);
         int index = -1;
@@ -475,9 +475,9 @@ public final class RedditContentFilterPatch {
     static MutableMethod findFlairChip(MutableClass owner) {
         List<MutableMethod> matches = new ArrayList<>();
         for (MutableMethod method : owner.getMethods())
-            if ("G".equals(method.getName()) && "V".equals(method.getReturnType())
+            if ("w".equals(method.getName()) && "V".equals(method.getReturnType())
                 && method.getParameterTypes().equals(Arrays.asList(
-                    "Ls4j0;", "I", "Z", "Lo9l;", "Lroc0;", MODIFIER, COMPOSER, "I"))
+                    "Lizj0;", "I", "Z", "Lhil;", "Lvhd0;", MODIFIER, COMPOSER, "I"))
                 && method.getImplementation() != null) matches.add(method);
         if (matches.size() != 1) throw unsupported("Expected one subreddit flair chip; found " + matches.size());
         return matches.get(0);
@@ -735,15 +735,15 @@ public final class RedditContentFilterPatch {
         List<MutableMethod> matches = new ArrayList<>();
         for (MutableMethod method : owner.getMethods())
             if ("<init>".equals(method.getName()) && method.getImplementation() != null
-                && method.getParameterTypes().size() == 10
-                && "Lsfq;".contentEquals(method.getParameterTypes().get(1))) matches.add(method);
+                && method.getParameterTypes().size() == 11
+                && "Lkpq;".contentEquals(method.getParameterTypes().get(1))) matches.add(method);
         if (matches.size() != 1)
             throw unsupported("Expected one full feed post cell constructor; found " + matches.size());
         return matches.get(0);
     }
 
     static void hookFeedPostCell(MutableMethod method) {
-        int thisRegister = method.getImplementation().getRegisterCount() - 11;
+        int thisRegister = method.getImplementation().getRegisterCount() - method.getParameterTypes().size() - 1;
         if (thisRegister < 0) throw unsupported("Feed post cell instance register was not found");
         List<Instruction> all = instructions(method);
         int calls = 0;
@@ -760,8 +760,8 @@ public final class RedditContentFilterPatch {
     static MutableMethod findHomePostMapper(MutableClass owner) {
         List<MutableMethod> matches = new ArrayList<>();
         for (MutableMethod method : owner.getMethods())
-            if ("b".equals(method.getName()) && "Lylj;".equals(method.getReturnType())
-                && method.getParameterTypes().equals(Arrays.asList("Lwz00;", "Lbi7;", "Luth;"))
+            if ("b".equals(method.getName()) && "Lmtj;".equals(method.getReturnType())
+                && method.getParameterTypes().equals(Arrays.asList("Lud10;", "Lnn7;", "Lg0i;"))
                 && method.getImplementation() != null) matches.add(method);
         if (matches.size() != 1)
             throw unsupported("Expected one home post mapper; found " + matches.size());
@@ -817,7 +817,7 @@ public final class RedditContentFilterPatch {
         List<MutableMethod> matches = new ArrayList<>();
         for (MutableMethod method : owner.getMethods())
             if ("b".equals(method.getName()) && CLASSIC_POST.equals(method.getReturnType())
-                && method.getParameterTypes().equals(Arrays.asList("Lzuo;", "Ltx8;"))
+                && method.getParameterTypes().equals(Arrays.asList("Lp5p;", "Lb39;"))
                 && method.getImplementation() != null) matches.add(method);
         if (matches.size() != 1)
             throw unsupported("Expected one GraphQL ClassicPostElement mapper; found " + matches.size());

@@ -42,7 +42,7 @@ public final class VerifyRedditContentFilter {
                 else if (RedditContentFilterPatch.SUBREDDIT_SOURCE.equals(candidate.getType())) subredditSourceClass = candidate;
                 else if (RedditContentFilterPatch.SUBREDDIT_HEADER_VIEW.equals(candidate.getType())) headerClass = candidate;
                 else if (RedditContentFilterPatch.SUBREDDIT_FEED_LAMBDA.equals(candidate.getType())) subredditFeedLambda = candidate;
-                else if ("Lua9;".equals(candidate.getType())) headerParent = candidate;
+                else if ("Lvg9;".equals(candidate.getType())) headerParent = candidate;
                 else if (RedditContentFilterPatch.FLAIR_ROW.equals(candidate.getType())) flairRowClass = candidate;
                 else if (RedditContentFilterPatch.FLAIR_CHIP.equals(candidate.getType())) flairChipClass = candidate;
                 else if (RedditContentFilterPatch.FILTER_CHIP_LAMBDA.equals(candidate.getType())) filterChipLambdaClass = candidate;
@@ -258,75 +258,75 @@ public final class VerifyRedditContentFilter {
         }
 
         // Native classes, fields and methods the runtime reaches by reflection.
-        requireField(all, "Lcom/reddit/flair/impl/data/source/remote/a;", "c", "Ltxo;");
-        requireField(all, RedditContentFilterPatch.SUBREDDIT_SOURCE, "j", "Lw27;");
-        require(all.get("Lw27;") != null && all.get("Lw27;").getInterfaces().contains("Ltxo;"),
+        requireField(all, "Lcom/reddit/flair/impl/data/source/remote/a;", "c", "Lj8p;");
+        requireField(all, RedditContentFilterPatch.SUBREDDIT_SOURCE, "j", "Lh87;");
+        require(all.get("Lh87;") != null && all.get("Lh87;").getInterfaces().contains("Lj8p;"),
             "Subreddit GraphQL client must implement the GraphQL client interface");
-        requireMethod(all, "Ltxo;", "e", "(Ltxo;Lvl10;Ljava/util/Map;Lcom/reddit/network/common/RetryAlgo;"
-            + "Ljava/util/Set;Lcom/reddit/graphql/FetchPolicy;Lrfz;Lmwz;"
+        requireMethod(all, "Lj8p;", "e", "(Lj8p;Lxz10;Ljava/util/Map;Lcom/reddit/network/common/RetryAlgo;"
+            + "Ljava/util/Set;Lcom/reddit/graphql/FetchPolicy;Latz;Lt900;"
             + "Lcom/reddit/network/orchestrator/RequestSchedulerPriority;"
-            + "Lcom/reddit/network/orchestrator/DeferPolicy;Lc2d;I)Ljava/lang/Object;");
-        requireMethod(all, "Lajm;", "<init>", "(Ljava/lang/String;)V");
-        requireField(all, "Lwim;", "a", "Lzim;");
-        requireField(all, "Lzim;", "b", "Lxim;");
-        requireField(all, "Lxim;", "a", "Ljava/util/List;");
-        requireField(all, "Lyim;", "c", "Ljava/lang/String;");
-        requireField(all, "Lyim;", "d", "Lcom/reddit/type/FlairTextColor;");
-        requireField(all, "Lyim;", "f", "Ljava/lang/String;");
-        requireMethod(all, "Lc2d;", "resumeWith", "(Ljava/lang/Object;)V");
+            + "Lcom/reddit/network/orchestrator/DeferPolicy;Lo7d;I)Ljava/lang/Object;");
+        requireMethod(all, "Lzrm;", "<init>", "(Ljava/lang/String;)V");
+        requireField(all, "Lvrm;", "a", "Lyrm;");
+        requireField(all, "Lyrm;", "b", "Lwrm;");
+        requireField(all, "Lwrm;", "a", "Ljava/util/List;");
+        requireField(all, "Lxrm;", "c", "Ljava/lang/String;");
+        requireField(all, "Lxrm;", "d", "Lcom/reddit/type/FlairTextColor;");
+        requireField(all, "Lxrm;", "f", "Ljava/lang/String;");
+        requireMethod(all, "Lo7d;", "resumeWith", "(Ljava/lang/Object;)V");
         requireMethod(all, RedditContentFilterPatch.LINK_REPOSITORY, "G", "()Lcom/reddit/data/remote/h;");
         requireMethod(all, RedditContentFilterPatch.LINK_SOURCE, "b",
             "(Ljava/util/ArrayList;ZZZZZLkotlin/coroutines/jvm/internal/ContinuationImpl;)Ljava/lang/Object;");
         requireMethod(all, RedditContentFilterPatch.POST_BY_ID_SOURCE, "d",
             "(Ljava/util/ArrayList;Lkotlin/coroutines/jvm/internal/ContinuationImpl;)Ljava/lang/Object;");
         requireMethod(all, "Lcom/reddit/data/remote/RemoteGqlLinkDataSource$getHomeFeedPostsByIds$1;", "<init>",
-            "(Lcom/reddit/data/remote/h;Lc2d;)V");
+            "(Lcom/reddit/data/remote/h;Lo7d;)V");
         requireMethod(all, "Lcom/reddit/data/remote/RemoteGqlHistoryDataSourceImpl$getPostsByIds$1;", "<init>",
-            "(Lcom/reddit/data/remote/g;Lc2d;)V");
-        requireMethod(all, "Lp4j0;", "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLw5n0;"
+            "(Lcom/reddit/data/remote/g;Lo7d;)V");
+        requireMethod(all, "Lfzj0;", "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLl0o0;"
             + "ILjava/lang/String;Ljava/util/List;)V");
-        requireField(all, "Lp4j0;", "a", "Ljava/lang/String;");
-        requireField(all, "Lp4j0;", "b", "Ljava/lang/String;");
-        requireField(all, "Lp4j0;", "c", "Ljava/lang/String;");
-        require(all.get("Lr4j0;") != null, "Native flair Feed channel is missing");
-        requireField(all, "Lhsp;", "m0", "Lhsp;");
-        require(all.get("Lhsp;") != null && all.get("Lhsp;").getInterfaces().contains("Lw5n0;"),
+        requireField(all, "Lfzj0;", "a", "Ljava/lang/String;");
+        requireField(all, "Lfzj0;", "b", "Ljava/lang/String;");
+        requireField(all, "Lfzj0;", "c", "Ljava/lang/String;");
+        require(all.get("Lhzj0;") != null, "Native flair Feed channel is missing");
+        requireField(all, "Lb3q;", "l0", "Lb3q;");
+        require(all.get("Lb3q;") != null && all.get("Lb3q;").getInterfaces().contains("Ll0o0;"),
             "Default channel status must be a channel status");
-        requireField(all, "Lwbk;", "a", "Lkotlin/jvm/functions/Function1;");
-        requireMethod(all, "Lvbk;", "<init>", "(JLkotlin/jvm/functions/Function1;)V");
+        requireField(all, "Lrjk;", "a", "Lkotlin/jvm/functions/Function1;");
+        requireMethod(all, "Lqjk;", "<init>", "(JLkotlin/jvm/functions/Function1;)V");
         requireField(all, RedditContentFilterPatch.CHIP_CLICK, "e", "Ljava/lang/Object;");
-        requireMethod(all, RedditContentFilterPatch.CLICKABLE, "a", "(Lwiy;Lidz;Lbzq;ZLjava/lang/String;Lpqc0;"
-            + "Lkotlin/jvm/functions/Function0;)Lwiy;");
-        requireMethod(all, RedditContentFilterPatch.CLICKABLE, "d", "(Lwiy;Lidz;Lbzq;ZLjava/lang/String;Lpqc0;"
-            + "Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;I)Lwiy;");
-        requireMethod(all, "Lsc40;", "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+        requireMethod(all, RedditContentFilterPatch.CLICKABLE, "a", "(Lgwy;Lrqz;Lzdr;ZLjava/lang/String;Lujd0;"
+            + "Lkotlin/jvm/functions/Function0;)Lgwy;");
+        requireMethod(all, RedditContentFilterPatch.CLICKABLE, "d", "(Lgwy;Lrqz;Lzdr;ZLjava/lang/String;Lujd0;"
+            + "Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;I)Lgwy;");
+        requireMethod(all, "Lmu40;", "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
             + "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
             + "Ljava/lang/String;)V");
-        requireMethod(all, "Lurr0;", "M", "([Ljava/lang/Object;)Lch20;");
-        requireMethod(all, "Lurr0;", "k0", "(Ljava/lang/Iterable;)Lsfq;");
-        require(all.get("Lch20;") != null && all.get("Lch20;").getInterfaces().contains("Lsfq;"),
+        requireMethod(all, "Lvcf;", "y0", "([Ljava/lang/Object;)Lxv20;");
+        requireMethod(all, "Lvcf;", "N0", "(Ljava/lang/Iterable;)Lkpq;");
+        require(all.get("Lxv20;") != null && all.get("Lxv20;").getInterfaces().contains("Lkpq;"),
             "Persistent list factory must produce the feed content list type");
-        requireMethod(all, "Lue40;", "<init>", "(Ljava/lang/String;Ljava/lang/String;ZLxg40;Lsfq;)V");
-        requireField(all, "Lue40;", "i", "Lsfq;");
-        requireMethod(all, "Lve40;", "<init>", "(Lue40;)V");
+        requireMethod(all, "Lpw40;", "<init>", "(Ljava/lang/String;Ljava/lang/String;ZLsy40;Lkpq;)V");
+        requireField(all, "Lpw40;", "i", "Lkpq;");
+        requireMethod(all, "Lqw40;", "<init>", "(Lpw40;)V");
         requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "a", "Ljava/lang/String;");
-        requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "b", "Lsfq;");
+        requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "b", "Lkpq;");
         requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "c", "Ljava/lang/String;");
-        requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "d", "Lxg40;");
-        require(all.get("Lnuj;") != null, "Native feed title section is missing");
-        requireField(all, "Lylj;", "b", "Ljava/lang/String;");
-        requireField(all, "Lp150;", "h", "Lxg40;");
-        requireField(all, "Lp150;", "p", "Lue40;");
-        requireField(all, "Lp150;", "E", "Lsfq;");
-        for (String child : Arrays.asList("j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x"))
-            require(field(all, "Lp150;", child) != null, "PostPreviewFeedElement child " + child + " is missing");
+        requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "d", "Lsy40;");
+        require(all.get("Lf2k;") != null, "Native feed title section is missing");
+        requireField(all, "Lmtj;", "b", "Ljava/lang/String;");
+        requireField(all, "Lkk50;", "h", "Lsy40;");
+        requireField(all, "Lkk50;", "q", "Lpw40;");
+        requireField(all, "Lkk50;", "G", "Lkpq;");
+        for (String child : Arrays.asList("k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"))
+            require(field(all, "Lkk50;", child) != null, "PostPreviewFeedElement child " + child + " is missing");
         requireField(all, RedditContentFilterPatch.CLASSIC_POST, "e", "Ljava/lang/String;");
         requireField(all, RedditContentFilterPatch.CLASSIC_POST, "k", "Ljava/lang/String;");
         requireField(all, RedditContentFilterPatch.CLASSIC_POST, "q", "Ljava/lang/String;");
-        requireField(all, RedditContentFilterPatch.CLASSIC_POST, "t", "Lue40;");
+        requireField(all, RedditContentFilterPatch.CLASSIC_POST, "t", "Lpw40;");
         requireField(all, "Lcom/reddit/frontpage/presentation/subreddit/header/SubredditHeaderPresentationModel;",
             "b", "Ljava/lang/String;");
-        requireMethod(all, "Lcom/reddit/screens/listing/compose/SubredditFeedScreen;", "n5", "()Ljava/lang/String;");
+        requireMethod(all, "Lcom/reddit/screens/listing/compose/SubredditFeedScreen;", "r5", "()Ljava/lang/String;");
         System.out.println("PASS: Reddit " + RedditContentFilterPatch.VERSION
             + " source registration, flair UI, feed filtering and runtime reflection contracts");
     }

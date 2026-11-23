@@ -51,7 +51,10 @@ after a fix.
 - Bundles: apply the built `.mpp` (`patches/build/libs/patches-<version>.mpp`) to the
   original input. Preserve APKS/APKM splits. Check merged extension classes and
   reflected bindings in the delivered APK, and record its hash under a distinct name.
-  Check the local Morphe CLI's help before using its flags.
+  Check the local Morphe CLI's help before using its flags. Write the patched APK
+  (`-o`) where Morphe Desktop does: `E:\Morphe\Apps\<App>\<App>-<version>-patches-<bundle
+  version>.apk` (add `-unsigned` for base-only test builds; never overwrite). Never
+  leave it in the scratchpad, and keep `morphe-data\patched-apps.json` pointing at it.
 - Review: `git diff --check`, `git diff --stat`, new files. No credentials or
   original apps added, and no new older-version support. Do not commit or push
   unless asked.

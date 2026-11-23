@@ -1788,5 +1788,5 @@ tasks.register<JavaExec>("verifyNuvioLabelsApk") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyNuvioLabelsApk")
-    args(file(providers.gradleProperty("nuvioLabelsApk").getOrElse("../../Apps/NuvioTV/NuvioTV-1.1.1-patches-${project.version}-all-labels-large-poster-unsigned.apk")).absolutePath)
+    args(file(providers.gradleProperty("nuvioLabelsApk").getOrElse("../../Apps/NuvioTV/NuvioTV-1.1.1-patches-${project.version}-all-labels-added-badges-unsigned.apk")).absolutePath)
 }

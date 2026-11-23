@@ -119,7 +119,7 @@ These eighteen patches target NuvioTV **1.1.1 (1081)** only. See [1.1.1 verifica
 
 ### Date labels
 
-[Date label appearance](docs/NuvioDateLabelEditor.md) opens one editor directly. A horizontal Text/Label button row at the top selects which saved color, opacity and size to edit. The opacity and size sliders sit below the color picker, outside the live poster/card preview. Position and reset are inside the same menu; Apply saves the whole draft and Cancel discards it.
+[Date labels](docs/NuvioDateLabelEditor.md) and the Continue Watching remaining count are edited through **Label customization**. Select their dropdown entry, then Text or Label. Controls scroll below the fixed header, with a large preview on the right. Date/count patches automatically include **Customize labels**; existing date appearance settings are retained.
 
 ### Continue Watching
 

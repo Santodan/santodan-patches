@@ -68,17 +68,6 @@ public final class NuvioSettingsMenu {
         ClassLoader loader = composer.getClass().getClassLoader();
         renderGroup(composer, loader, "Continue Watching", 0, 3);
         renderGroup(composer, loader, "UI", 3, 5);
-        for (int index = 2; index < 5; index++) {
-            try {
-                Class.forName(BRIDGES[index], false, loader);
-                method(composer.getClass(), "d0", 1).invoke(composer, 0x53430000);
-                try { NuvioDateLabelStyle.renderSettings(composer, "", "Date label appearance"); }
-                finally { method(composer.getClass(), "p", 1).invoke(composer, false); }
-                break;
-            } catch (ClassNotFoundException absent) {
-                // Show appearance controls only when at least one date-label patch is installed.
-            } catch (Throwable error) { Log.e(TAG, "Date label settings failed", error); break; }
-        }
         try {
             Method render = Class.forName("software.santodan.extension.nuviometadata.NuvioMetadataSettings", false, loader).getMethod("renderSettings", Object.class);
             method(composer.getClass(), "d0", 1).invoke(composer, 0x53430001);

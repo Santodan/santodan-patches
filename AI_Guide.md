@@ -54,23 +54,14 @@ and backup regressions, standalone/combined bundles and `verifyNuvioLabelsApk`.
 ## NuvioTV date-label appearance
 
 The latest target is **1.1.1 / 1081**. Read
-[NuvioDateLabelEditor.md](docs/NuvioDateLabelEditor.md). Date label appearance
-is a clickable row that opens one native custom editor directly. Label/Text
-selection uses a horizontal Text/Label button row at the top of the editor.
-The native color picker and sliders update for that target; opacity, size,
-position and reset stay inside the menu. Editing controls
-belong below the native color picker, outside the preview. Retain both
-targets' drafts while switching; Apply commits the whole draft and Cancel drops it.
-Recreate native remembered RGB state with a keyed group on target changes, reset
-and reopening. Preserve preference keys and the independent Poster/Card toggle.
-Normal theme customization must retain Save Theme. The percentage control and
-controls scrolling use full native references shared by validation/reflection.
-Guard the post-picker hook with the exact `gb.x0.b` fingerprint and preserve its
-register lifetimes; see `date-controls-native-evidence.txt`.
-Run `verifyNuvio111DateStyleRuntime`, `verifyNuvio111`, standalone/combined
-`verifyNuvio111Bundle`, and delivered `verifyNuvio111Apk` plus
-`verifyNuvioDateColorApk`. Historical beta.13 fixtures and notes retain the
-preceding palette behavior; do not extend them.
+[NuvioDateLabelEditor.md](docs/NuvioDateLabelEditor.md). Date labels and Continue
+Watching remaining counts use entries in Customize labels. Remove the separate
+date appearance entry; preserve legacy date preferences until edited/reset.
+Remaining-count and all date-producing patches require the public Customize labels
+patch. Cache that public patch instance to avoid duplicate execution when multiple
+features depend on it. Keep count/date values dynamic and retain feature toggles.
+Verify standalone dependencies and combined output, runtime styling, legacy date
+reset and backup. Historical targets and fixtures remain unchanged.
 
 ## TFD Companion
 

@@ -76,11 +76,6 @@ public final class VerifyNuvio111SettingsMenuRuntime {
                 sources.put(bridge, "package " + bridge.substring(0, dot) + "; public class " + bridge.substring(dot + 1)
                     + " { public static void renderSettings(Object composer){if(((g1.h.Composer)composer).depth!=1)throw new AssertionError();gb.me.rendered++;gb.me.events.add(\"" + bridge + "\");} }");
             }
-            if ((selection & 28) != 0) {
-                int streamsIndex = expected.indexOf("Streams");
-                int launcherIndex = expected.indexOf("Android TV launcher");
-                expected.add(streamsIndex >= 0 ? streamsIndex : launcherIndex >= 0 ? launcherIndex : expected.size(), "Date label appearance");
-            }
             List<String> compile = new ArrayList<>(List.of("-classpath", System.getProperty("java.class.path"), "-d", directory.toString()));
             for (Map.Entry<String, String> source : sources.entrySet()) {
                 Path file = directory.resolve(source.getKey().replace('.', '/') + ".java");

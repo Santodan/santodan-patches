@@ -6,9 +6,9 @@ import java.util.*;
 public final class LabelCustomization {
     public static final String SCOPE = "santodan_nuvio_label_styles";
     public static final String[] FIELDS = {"background_color", "foreground_color", "size_percent", "font_size_percent", "position", "text"};
-    public static final String[] IDS = {"new_season", "new_episode", "next_up", "upcoming", "resume", "percent_watched", "time_left", "airs_today", "airs_tomorrow", "airs_date", "airs_days", "file_size"};
-    public static final String[] NAMES = {"New Season", "New Episode", "Next Up", "Upcoming", "Resume", "Watched progress", "Time remaining", "Airs today", "Airs tomorrow", "Air date", "Airs in days", "File size"};
-    public static final int[][] RESOURCES = {{0x7f1103ed}, {0x7f1103eb,0x7f1103ec}, {0x7f1103ee,0x7f1103ef}, {0x7f1103f2}, {0x7f1103f1}, {0x7f1103f0}, {0x7f1103e9,0x7f1103ea}, {0x7f1103e3,0x7f1103e4}, {0x7f1103e5,0x7f1103e6}, {0x7f1103e1,0x7f1103e2}, {}, {}};
+    public static final String[] IDS = {"new_season", "new_episode", "next_up", "upcoming", "resume", "percent_watched", "time_left", "airs_today", "airs_tomorrow", "airs_date", "airs_days", "file_size", "remaining_count", "date_label"};
+    public static final String[] NAMES = {"New Season", "New Episode", "Next Up", "Upcoming", "Resume", "Watched progress", "Time remaining", "Airs today", "Airs tomorrow", "Air date", "Airs in days", "File size", "Continue Watching remaining count", "Date label"};
+    public static final int[][] RESOURCES = {{0x7f1103ed}, {0x7f1103eb,0x7f1103ec}, {0x7f1103ee,0x7f1103ef}, {0x7f1103f2}, {0x7f1103f1}, {0x7f1103f0}, {0x7f1103e9,0x7f1103ea}, {0x7f1103e3,0x7f1103e4}, {0x7f1103e5,0x7f1103e6}, {0x7f1103e1,0x7f1103e2}, {}, {}, {}, {}};
     public enum Copy { TEXT, LABEL, ALL }
     private LabelCustomization() {}
 
@@ -39,7 +39,7 @@ public final class LabelCustomization {
         return value;
     }
     private static boolean dynamic(String id) {
-        return Arrays.asList("percent_watched","time_left","airs_date","airs_days","file_size","metadata_year","metadata_runtime").contains(id);
+        return Arrays.asList("percent_watched","time_left","airs_date","airs_days","file_size","metadata_year","metadata_runtime","remaining_count","date_label").contains(id);
     }
     public static String text(String override, String nativeText) {
         return override == null || override.isEmpty() ? nativeText : override.replace("{value}", nativeText == null ? "" : nativeText);
@@ -61,7 +61,7 @@ public final class LabelCustomization {
         public boolean has(String field) { return values.containsKey(field); }
         public long color(boolean background) { return (Long)values.getOrDefault(background?"background_color":"foreground_color",background?nativeBackground:nativeForeground); }
         public int size(boolean background) { return (Integer)values.getOrDefault(background?"size_percent":"font_size_percent",100); }
-        public int position() { return (Integer)values.getOrDefault("position",2); }
+        public int position() { return (Integer)values.getOrDefault("position",id.equals("date_label")?7:id.equals("remaining_count")?0:2); }
         public String caption() { return LabelCustomization.text((String)values.get("text"),nativeText); }
         public String textOverride() { return (String)values.getOrDefault("text",""); }
         public void set(String field,Object value) {

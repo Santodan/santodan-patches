@@ -75,6 +75,20 @@ public final class NuvioDateLabelStyle {
             select, dismiss, null, 420f, 320f, composer, 0, 32);
     }
 
+    static Map<String,Object> legacyDateOverrides() throws Exception {
+        Map<String,Object> values=new java.util.LinkedHashMap<>();
+        boolean configured=((Map<String,?>)method(Class.forName("android.content.SharedPreferences"),"getAll",0).invoke(preferences(PREFS))).keySet().stream().anyMatch(k->k.startsWith("date_label_"));
+        if(configured) {
+            values.put("background_color",color(PREFS,2));values.put("foreground_color",color(PREFS,4));
+            values.put("size_percent",percent(PREFS,1));values.put("font_size_percent",percent(PREFS,3));values.put("position",choice(PREFS,0));
+        }
+        return values;
+    }
+    static void resetLegacyDate() throws Exception {
+        android.content.SharedPreferences.Editor editor=preferences(PREFS).edit();
+        for(String key:((Map<String,?>)method(Class.forName("android.content.SharedPreferences"),"getAll",0).invoke(preferences(PREFS))).keySet())if(key.startsWith("date_label_"))editor.remove(key);
+        editor.apply();revise(NuvioDateLabelStyle.class.getClassLoader(),PREFS);
+    }
     /** Returns modifier, foreground Color, font TextUnit and native TextStyle. */
     public static Object[] build(ClassLoader loader, Object boxScope, Object composer, String shapeOwner, String ignored) throws Exception {
         return buildColors(loader, boxScope, composer, shapeOwner, color(PREFS, 2), color(PREFS, 4));
@@ -85,7 +99,7 @@ public final class NuvioDateLabelStyle {
         return buildColors(loader, boxScope, composer, shapeOwner, background, foreground, percent(PREFS, 1), percent(PREFS, 3), choice(PREFS, 0));
     }
 
-    private static Object[] buildColors(ClassLoader loader, Object boxScope, Object composer, String shapeOwner,
+    static Object[] buildColors(ClassLoader loader, Object boxScope, Object composer, String shapeOwner,
             long background, long foreground, int labelSize, int fontSizePercent, int position) throws Exception {
         String scope = PREFS;
         subscribe(loader, scope);

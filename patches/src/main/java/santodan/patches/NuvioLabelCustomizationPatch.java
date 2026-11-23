@@ -42,8 +42,10 @@ public final class NuvioLabelCustomizationPatch {
     static final String INPUT="Lgb/u;->invoke(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;";
     static final String INPUT_HASH="ff35b06ccb51351cc69d482ddc5e091554602a61fbae49528d258179066bd71e";
     private NuvioLabelCustomizationPatch() {}
-    public static BytecodePatch getNuvioLabelCustomizationPatch() {
-        return PatchKt.bytecodePatch(NAME,"Customize Nuvio's text badges individually, including New Season, Next Up and New Episode. Edit captions, copy Text/Label/All, and reset one label.",false,builder->{
+    private static BytecodePatch patch;
+    public static synchronized BytecodePatch getNuvioLabelCustomizationPatch() {
+        if(patch!=null)return patch;
+        patch=PatchKt.bytecodePatch(NAME,"Customize Nuvio's text badges individually, including New Season, Next Up and New Episode. Edit captions, copy Text/Label/All, and reset one label.",false,builder->{
             builder.compatibleWith(new Compatibility(NuvioNative.PACKAGE_NAME,"NuvioTV",null,ApkFileType.APK,null,null,
                 List.of(new AppTarget(NuvioNative.VERSION,null,false,null,null)),FormFactor.TV,false));
             builder.dependsOn(NuvioSettingsMenuPatch.getMenuPatch());
@@ -53,6 +55,7 @@ public final class NuvioLabelCustomizationPatch {
                 validate(classes);validateActivation(classes.apply(EXT));install(classes);activate(classes.apply(EXT));return Unit.INSTANCE;
             });return Unit.INSTANCE;
         });
+        return patch;
     }
     static String owner(String ref){return ref.substring(0,ref.indexOf("->"));}
     static MutableMethod method(Function<String,MutableClass> classes,String ref){return classes.apply(owner(ref)).getMethods().stream().filter(m->m.toString().equals(ref)).reduce((a,b)->{throw new IllegalStateException("Ambiguous label method: "+ref);}).orElseThrow(()->new IllegalStateException("Missing label method: "+ref));}

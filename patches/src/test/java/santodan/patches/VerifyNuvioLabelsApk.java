@@ -51,6 +51,12 @@ public final class VerifyNuvioLabelsApk {
             for(var method:classes.get("Lsoftware/santodan/extension/nuviomerged/NuvioTrackingDialogs;").getMethods())if(method.getName().equals("dialog"))for(var ins:method.getImplementation().getInstructions())if(ins instanceof ReferenceInstruction&&((ReferenceInstruction)ins).getReference() instanceof StringReference)trackingStrings.add(((StringReference)((ReferenceInstruction)ins).getReference()).getString());
             check(trackingStrings.contains(NuvioNative.LIBRARY_DIALOG_METHOD)&&!trackingStrings.contains("z"),"Obsolete sync dialog binding in delivered APK");
         }
+        check(methods.containsKey(ext+"->applyAdded(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)[Ljava/lang/Object;"),"Missing shared added-label renderer");
+        for(String[] badge:new String[][]{{"nuvioremaining/NuvioRemainingEpisodes","remaining_count"},{"nuvioairing/NuvioAiringSeries","date_label"},{"nuviofinale/NuvioFinaleDates","date_label"},{"nuviomovierelease/NuvioMovieReleaseDates","date_label"}}) {
+            ClassDef owner=classes.get("Lsoftware/santodan/extension/"+badge[0]+";");if(owner==null)continue;
+            Set<String> route=new HashSet<>();for(var m:owner.getMethods())if(m.getImplementation()!=null)for(var ins:m.getImplementation().getInstructions())if(ins instanceof ReferenceInstruction&&((ReferenceInstruction)ins).getReference() instanceof StringReference)route.add(((StringReference)((ReferenceInstruction)ins).getReference()).getString());
+            check(route.contains("applyAdded")&&route.contains(badge[1]),"Added badge not connected to shared editor: "+badge[0]);
+        }
         // Shared header and post-picker hook order must also survive packaging.
         List<String> colorEditor=references(methods.get(NuvioNative.REF_DATE_CUSTOM_EDITOR));
         int header=colorEditor.indexOf("Lsoftware/santodan/extension/nuviomenu/NuvioDateLabelStyle;->renderEditorTargetRow(Ljava/lang/Object;Ljava/lang/Object;)V");

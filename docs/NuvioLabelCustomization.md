@@ -34,8 +34,8 @@ watched progress, remaining time, air dates and file size. Metadata/rating and
 technical text badges are added when Nuvio renders them; their names persist so
 they remain selectable. Rating numbers stay live when their provider caption is
 changed. Badges baked into images, ordinary app buttons and screen headings are
-outside this text-badge patch. Labels added by separate Santodan date patches
-retain their own Date label appearance editor.
+outside this text-badge patch. Santodan date labels and the Continue Watching
+remaining count also have entries in this editor. The separate Date label appearance settings row is removed.
 
 Overrides are sparse: unedited properties retain each native renderer's colors,
 font and translated text. Reset removes overrides. Placement uses native container
@@ -88,3 +88,38 @@ Inspection and verification evidence is under
 `labels-native-evidence.txt`, `labels-mockup-layout-evidence.txt`,
 `labels-sync-layout-device-crash.txt`, `labels-sync-layout-final.log`,
 `labels-landscape-window-validation.log` and `labels-large-poster-*`.
+
+## Date and remaining-count integration
+
+The dropdown includes **Continue Watching remaining count** (`remaining_count`) and
+**Date label** (`date_label`). The latter styles dates from the airing-series,
+series-finale and movie-release patches together. These four patches now require
+**Customize labels**; selecting any one alone automatically installs that dependency.
+Generated dependency metadata uses public patch names rather than generic class names.
+
+The renderers pass their live native text arguments through the shared style bridge.
+Count/date computations and visibility remain unchanged. `{value}` keeps captions
+live, including when copying an unmodified count/date label. Disabling customization
+returns the original text arguments unchanged. Existing date appearance preferences
+load into the Date label draft; resetting that entry clears its legacy appearance
+keys while preserving unrelated preferences. Date defaults retain bottom-center
+placement and counts retain their native placement until explicitly changed.
+
+Focused verification includes independent `remaining`, `finale`, `movie-dates`,
+`airing` and combined bundle selections, live count/caption updates, text/background
+scaling, legacy date settings, isolated reset and backup. Final device rendering
+still needs confirmation.
+
+Integrated unsigned APK (all eighteen patches):
+`E:\Morphe\Apps\NuvioTV\NuvioTV-1.1.1-patches-0.20.0-all-labels-added-badges-unsigned.apk`.
+SHA-256: `64f309b3b630e4547248c079f7e07cfd785ae30b1cdfad2b74f0b39463e86cd2`.
+Native libraries and 16 KiB alignment are preserved. Evidence uses the
+`labels-added-badges-*` prefix. No signing, installation or TV visual test was
+performed for this build.
+
+### Required patch dependencies
+
+Count/date patches declare Customize labels as a required bundle dependency. The
+patcher resolves it automatically during patching. Automatically ticking or locking
+its checkbox is client UI behavior; the repository's standalone bundle checks
+verify dependency execution, not checkbox selection.

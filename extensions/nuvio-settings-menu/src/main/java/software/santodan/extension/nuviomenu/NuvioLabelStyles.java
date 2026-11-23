@@ -174,16 +174,54 @@ public final class NuvioLabelStyles {
         invalidate();revision=NuvioDateLabelStyle.state(loader,"label-styles:revision",0);
         NuvioDateLabelStyle.set(revision,((Number)NuvioDateLabelStyle.get(revision)).intValue()+1);
     }
+    /** Customize labels created by dependent Santodan patches without changing their live calculations. */
+    public static Object[] applyAdded(String id,Object composer,Object[] original) throws Exception {
+        if(!id.equals("remaining_count")&&!id.equals("date_label"))throw new IllegalArgumentException("Unknown added label");
+        String nativeText=(String)original[0];SAMPLES.put(id,nativeText);subscribe(composer);
+        if(!available()||!prefs().getBoolean("enabled",false))return original;
+        Map<String,Object> values=saved(id);if(values.isEmpty())return original;
+        ClassLoader loader=composer.getClass().getClassLoader();Object[] result=original.clone();
+        if(id.equals("date_label")) {
+            Map<String,Object> base=new LinkedHashMap<>();base.put("background_color",0xff1976d200000000L);base.put("foreground_color",0xffffffff00000000L);base.put("size_percent",100);base.put("font_size_percent",100);base.put("position",7);
+            base.putAll(NuvioDateLabelStyle.legacyDateOverrides());base.putAll(values);
+            Object[] style=NuvioDateLabelStyle.buildColors(loader,loader.loadClass("d0.v").getField("a").get(null),composer,NuvioNative.WIDE_CARD_NAME,
+                (Long)base.get("background_color"),(Long)base.get("foreground_color"),(Integer)base.get("size_percent"),(Integer)base.get("font_size_percent"),(Integer)base.get("position"));
+            result[1]=style[0];result[2]=style[1];result[3]=style[2];result[14]=style[3];result[18]=65520;
+        } else {
+            FRAME.set(new Frame(id,values));
+            try {
+                if(values.containsKey("background_color")||values.containsKey("size_percent")||values.containsKey("position")) {
+                    Object theme=NuvioDateLabelStyle.method(composer.getClass(),"j",1).invoke(composer,NuvioDateLabelStyle.staticValue(loader,NuvioNative.NATIVE_COLOR_LOCAL_NAME,"a"));
+                    long surface=((Number)NuvioDateLabelStyle.field(theme.getClass(),"a").get(theme)).longValue();
+                    long nativeBackground=((Number)NuvioDateLabelStyle.method(loader.loadClass(NuvioNative.COLOR_NAME),"b",2).invoke(null,surface,0.8f)).longValue();
+                    Object spacing=NuvioDateLabelStyle.staticValue(loader,NuvioNative.NATIVE_SPACING_LOCAL_NAME,"a");
+                    float h=NuvioDateLabelStyle.field(spacing.getClass(),"e").getFloat(spacing),v=NuvioDateLabelStyle.field(spacing.getClass(),"d").getFloat(spacing);
+                    Object modifier=modifier(NuvioDateLabelStyle.staticValue(loader,NuvioNative.EMPTY_MODIFIER_NAME,"b"));
+                    modifier=NuvioDateLabelStyle.invokeReference(loader,NuvioNative.REF_LABEL_PADDING_ALL,modifier,h);
+                    modifier=NuvioDateLabelStyle.method(loader.loadClass("a2.j"),"b",2).invoke(null,modifier,NuvioDateLabelStyle.staticValue(loader,NuvioNative.WIDE_CARD_NAME,"a"));
+                    modifier=NuvioDateLabelStyle.invokeReference(loader,NuvioNative.REF_LABEL_BACKGROUND,modifier,background(nativeBackground),NuvioDateLabelStyle.staticValue(loader,"d2.i0","b"));
+                    modifier=NuvioDateLabelStyle.invokeReference(loader,NuvioNative.REF_LABEL_PADDING,modifier,padding(h),padding(v));
+                    result[1]=modifier;
+                }
+                result[2]=foreground((Long)original[2]);result[3]=fontSize((Long)original[3],original[14]);result[18]=defaults((Integer)original[18]);
+            } finally {end();}
+        }
+        result[0]=LabelCustomization.text((String)values.get("text"),nativeText);return result;
+    }
     public static void end() { FRAME.remove(); }
     static LabelCustomization.Draft draft(String id) throws Exception {
         Map<String,String> labels=labels();long[] colors=COLORS.get(id);
         long background=colors==null?(id.equals("new_season")?0xffb4530900000000L:0xff1976d200000000L):colors[0];
         long foreground=colors==null?0xffffffff00000000L:colors[1];
-        return new LabelCustomization.Draft(id,saved(id),background,foreground,SAMPLES.getOrDefault(id,labels.getOrDefault(id,id)));
+        Map<String,Object> values=new LinkedHashMap<>();
+        if(id.equals("date_label")){values.putAll(NuvioDateLabelStyle.legacyDateOverrides());background=0xff1976d200000000L;}
+        values.putAll(saved(id));
+        return new LabelCustomization.Draft(id,values,background,foreground,SAMPLES.getOrDefault(id,id.equals("date_label")?"15-Nov":id.equals("remaining_count")?"8":labels.getOrDefault(id,id)));
     }
     static void save(Collection<LabelCustomization.Draft> drafts) throws Exception {
         SharedPreferences.Editor editor=prefs().edit();
         for(var draft:drafts)if(draft.dirty) {
+            if(draft.id.equals("date_label")&&draft.values().isEmpty())NuvioDateLabelStyle.resetLegacyDate();
             for(String field:LabelCustomization.FIELDS)editor.remove(LabelCustomization.key(draft.id,field));
             for(var value:draft.values().entrySet()) {
                 String key=LabelCustomization.key(draft.id,value.getKey());Object v=value.getValue();

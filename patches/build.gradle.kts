@@ -924,8 +924,16 @@ tasks.register<JavaExec>("verifyNuvioUpdateInstaller") {
 tasks.register<JavaExec>("verifyMorpheDesktopImport") {
     dependsOn("testClasses", "buildAndroid")
     description = "Load the MPP using only the exact Desktop fat JAR as the patcher runtime."
-    classpath = files(sourceSets["test"].output.classesDirs,
-        providers.gradleProperty("morpheDesktopJar").getOrElse("../../morphe-desktop-1.19.0-all.jar"))
+    // Default: the newest morphe-desktop-<version>-all.jar in the workspace root (E:\Morphe); -PmorpheDesktopJar overrides.
+    val desktopJar = providers.gradleProperty("morpheDesktopJar").map { file(it) }.orElse(provider {
+        val pattern = Regex("""morphe-desktop-(\d+(?:\.\d+)*)-all\.jar""")
+        val version = { f: File -> pattern.matchEntire(f.name)!!.groupValues[1].split('.').map { it.toInt() } }
+        rootDir.parentFile.listFiles { f -> pattern.matches(f.name) }.orEmpty()
+            .maxWithOrNull { a, b -> version(a).zip(version(b)).map { (x, y) -> x.compareTo(y) }.firstOrNull { it != 0 } ?: version(a).size.compareTo(version(b).size) }
+            ?: throw GradleException("No morphe-desktop-*-all.jar in ${rootDir.parentFile}; pass -PmorpheDesktopJar=<path>")
+    })
+    classpath = files(sourceSets["test"].output.classesDirs, desktopJar)
+    doFirst { logger.lifecycle("Morphe Desktop JAR: ${desktopJar.get()}") }
     mainClass.set("santodan.patches.VerifyMorpheDesktopImport")
     args(file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath)
 }

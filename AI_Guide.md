@@ -181,7 +181,7 @@ verify the historical catalog/card-limit/premium delivery and `Catalog content v
 markers to distinguish it from the old integration. No installation was performed.
 The user subsequently confirmed on 2026-10-26 that the updated APK appears to work
 correctly. Keep this user-reported device result distinct from local APK checks.
-The local Desktop JAR is now 1.19.1; pass its path to verifyMorpheDesktopImport. Run `verifyMonetCatalog`,
+`verifyMorpheDesktopImport` uses the newest workspace Desktop JAR by default. Run `verifyMonetCatalog`,
 `verifyMonetCatalogRuntime`, `verifyMonetCatalogBundle` and `verifyMorpheDesktopImport`.
 
 For Monet Launcher `com.klevico.monet` **1.1.0** (code 134), see [Monet.md](docs/Monet.md).
@@ -198,7 +198,9 @@ specified. Keep this user-reported result distinct from local DEX/rebuild checks
 Run `verifyMonet`, `verifyMonetBundle`, `verifyAndroidBundle` and
 `verifyMorpheDesktopImport`. Both card-limit and catalog-row patches also support 1.1.0.
 
-The bundle targets Morphe Patcher **2.0.0** / Desktop **1.19.0**. Read
+The bundle targets Morphe Patcher **2.0.0** (first validated with Desktop 1.19.0).
+`verifyMorpheDesktopImport` defaults to the newest `morphe-desktop-*-all.jar` in
+`E:\Morphe` (currently 2.3.0); `-PmorpheDesktopJar=<path>` overrides it. Read
 `docs/MorpheCompatibility.md` for compatibility constructors, form factors,
 on-demand resource extraction and exact Desktop import verification. Do not
 validate this bundle with the older 1.18.1 CLI. Keep smali aligned with the

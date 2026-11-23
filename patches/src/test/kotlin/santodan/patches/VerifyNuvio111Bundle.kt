@@ -391,9 +391,16 @@ fun main(args: Array<String>) = runBlocking {
             }
             check(classes.containsAll(libraryTypes)) { "Native library classes missing" }
             println("PASS: $mode native library preserved; only existing launcher observation allowed when selected")
-            check("Lsoftware/santodan/extension/nuviomenu/NuvioLabelStyles;" in classes)
+            // GitHub APK updates and startup track reselection do not depend on the settings-menu patch,
+            // so they must not ship the shared nuviomenu runtime; every other selection does.
+            val menuBundled = !(updatesOnly || stabilityOnly)
+            check(("Lsoftware/santodan/extension/nuviomenu/NuvioLabelStyles;" in classes) == menuBundled) {
+                "$mode: shared label runtime presence must be $menuBundled"
+            }
             if(addedBadgeOnly)check(selected.single().dependencies.any { it.name == NuvioLabelCustomizationPatch.NAME }) { "Feature does not require Customize labels" }
-            check("Lsoftware/santodan/extension/nuviomenu/NuvioLabelsEditor;" in classes)
+            check(("Lsoftware/santodan/extension/nuviomenu/NuvioLabelsEditor;" in classes) == menuBundled) {
+                "$mode: shared label editor presence must be $menuBundled"
+            }
             check((NuvioPreferredAddonPatch.EXTENSION in classes) == (preferredOnly || combined))
             check(("Lsoftware/santodan/extension/nuviomerged/NuvioStartupActivity;" in classes) == (mergeOnly || combined))
             if (preferredOnly || combined) {

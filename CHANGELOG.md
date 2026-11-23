@@ -1,3 +1,9 @@
+## [0.21.1](https://github.com/Santodan/santodan-patches/compare/v0.21.0...v0.21.1) (2026-11-23)
+
+### 🚀 Updated App Support
+
+* **reddit:** support 2026.47.0 for content filters and home flairs ([87216cf](https://github.com/Santodan/santodan-patches/commit/87216cffb0b21983b953b5b2ddc05b19fe73a862))
+
 ## [0.21.0](https://github.com/Santodan/santodan-patches/compare/v0.20.0...v0.21.0) (2026-11-23)
 
 ### 🐛 Bug Fixes

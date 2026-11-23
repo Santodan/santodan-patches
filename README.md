@@ -14,7 +14,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.21.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.21.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;41 patches total
+> **[v0.21.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.21.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;41 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -259,7 +259,7 @@ The premium patch also prevents subscription refreshes from resetting the notifi
 
 **🎯 Supported versions:**
 
-| 2026.45.0 |
+| 2026.47.0 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |

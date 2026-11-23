@@ -17,9 +17,9 @@ version from the manifest, not the filename. Latest originals and repo targets:
 NuvioTV 1.1.1 (`NuvioTV-1.1.1.apk`; `OriginalApps/NuvioTV/` is the upstream source
 checkout, not proof of release DEX), Monet 1.1.1, Pillo 0.6.27 (`.apks`),
 Car Scanner 2.2.42 (arm64), TFD Companion 1.1.6 (`.apks`), Fylo 2.6, MEO 5.7.0.
-Reddit: the only original is 2026.45.0, but this repo's Reddit patches target
-2026.37.0 (2026.45.0 work lives in `E:\Morphe\morphe-patches-santodan`). Ask before
-porting. Preserve older support without extending it.
+Reddit: the only original is 2026.45.0. Content filters and home flairs target it
+(fixtures in `reddit-2026.45.0`); Start as guest still targets 2026.37.0. Ask before
+porting guest. Preserve older support without extending it.
 
 ## Evidence
 

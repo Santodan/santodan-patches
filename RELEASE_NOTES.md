@@ -1,5 +1,7 @@
 ## Pending changes since v0.20.0
 
+- **reddit:** Update **Content filters (Experimental)** and **Show flairs in home feed (Experimental)** for Reddit **2026.45.0 (2645001)**. All native hooks and runtime bindings were remapped, including the moved post-preview, classic-post and by-ID fetch fields. **Start as guest** still targets 2026.37.0. Original-DEX contract checks, a Morphe CLI patch of the 2026.45.0 base APK and an audit of the delivered APK passed; device confirmation remains pending.
+
 - **nuviotv:** Keep Customize labels usable when many different badges appear. Discovered labels are capped at 128; when full, the oldest discovered label without saved settings is dropped instead of refusing new badges. Built-in and customized labels are kept. Badge text is classified once instead of on every redraw, and nothing is written while the feature is disabled. Runtime and standalone/combined bundle checks passed; TV confirmation remains pending.
 
 - **nuviotv:** Add date-label and Continue Watching remaining-count entries to the shared label editor, remove the separate date appearance entry, and make Customize labels a required dependency of count/date patches. Preserve live values and existing date styles.

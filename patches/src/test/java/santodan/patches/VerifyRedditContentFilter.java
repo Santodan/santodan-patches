@@ -22,9 +22,11 @@ public final class VerifyRedditContentFilter {
             subredditClass = null, feedPostCellClass = null, homePostMapperClass = null, flairSourceClass = null,
             subredditSourceClass = null, headerClass = null, flairRowClass = null, flairChipClass = null,
             filterChipLambdaClass = null, classicPostComposableClass = null, feedElementProcessorClass = null;
+        Map<String, ClassDef> all = new HashMap<>();
         for (String path : args) try (InputStream input = new BufferedInputStream(new FileInputStream(path))) {
             DexBackedDexFile dex = DexBackedDexFile.fromInputStream(null, input);
             for (ClassDef candidate : dex.getClasses()) {
+                all.put(candidate.getType(), candidate);
                 if (RedditContentFilterPatch.LINK.equals(candidate.getType())) original = candidate;
                 else if (RedditContentFilterPatch.LISTING.equals(candidate.getType())) listingClass = candidate;
                 else if (RedditContentFilterPatch.CLASSIC_POST_MAPPER.equals(candidate.getType())) classicPostMapperClass = candidate;
@@ -40,7 +42,7 @@ public final class VerifyRedditContentFilter {
                 else if (RedditContentFilterPatch.SUBREDDIT_SOURCE.equals(candidate.getType())) subredditSourceClass = candidate;
                 else if (RedditContentFilterPatch.SUBREDDIT_HEADER_VIEW.equals(candidate.getType())) headerClass = candidate;
                 else if (RedditContentFilterPatch.SUBREDDIT_FEED_LAMBDA.equals(candidate.getType())) subredditFeedLambda = candidate;
-                else if ("Lz49;".equals(candidate.getType())) headerParent = candidate;
+                else if ("Lua9;".equals(candidate.getType())) headerParent = candidate;
                 else if (RedditContentFilterPatch.FLAIR_ROW.equals(candidate.getType())) flairRowClass = candidate;
                 else if (RedditContentFilterPatch.FLAIR_CHIP.equals(candidate.getType())) flairChipClass = candidate;
                 else if (RedditContentFilterPatch.FILTER_CHIP_LAMBDA.equals(candidate.getType())) filterChipLambdaClass = candidate;
@@ -202,7 +204,8 @@ public final class VerifyRedditContentFilter {
         require(calls == 1, "Expected exactly one FeedPostSection emission filter");
         require(sourceCalls == 1, "Expected exactly one feed-source diagnostic hook");
         for (ClassDef feedLinkClass : Arrays.asList(feedLinkMapperClass, feedLinkAlternateMapperClass)) {
-            String name = RedditContentFilterPatch.FEED_LINK_MAPPER.equals(feedLinkClass.getType()) ? "a" : "D";
+            String name = RedditContentFilterPatch.FEED_LINK_MAPPER.equals(feedLinkClass.getType())
+                ? "a" : RedditContentFilterPatch.FEED_LINK_ALTERNATE_MAPPER_METHOD;
             MutableMethod linkMapper = RedditContentFilterPatch.findFeedLinkMapper(new MutableClass(feedLinkClass), name);
             int parameterWords = 0;
             for (CharSequence type : linkMapper.getParameterTypes())
@@ -228,6 +231,125 @@ public final class VerifyRedditContentFilter {
                 && instruction instanceof ReferenceInstruction
                 && ((ReferenceInstruction) instruction).getReference().toString().contains("->rememberClassicPost(")),
             "GraphQL classic post mapper must capture flairs before feed rendering");
-        System.out.println("PASS: Link, Subreddit and flair network source registration and FeedPostSection emission filter");
+        require(classicRenderers.size() == 3, "Expected three classic post renderers");
+
+        // Post-detail sources used by the runtime's batched hydration.
+        for (String type : Arrays.asList(RedditContentFilterPatch.POST_BY_ID_SOURCE,
+                RedditContentFilterPatch.LINK_SOURCE, RedditContentFilterPatch.LINK_REPOSITORY)) {
+            ClassDef source = all.get(type);
+            require(source != null, "Missing post source " + type);
+            MutableClass mutable = new MutableClass(source);
+            if (RedditContentFilterPatch.POST_BY_ID_SOURCE.equals(type)) RedditContentFilterPatch.hookPostByIdSource(mutable);
+            else if (RedditContentFilterPatch.LINK_SOURCE.equals(type)) RedditContentFilterPatch.hookLinkSource(mutable);
+            else RedditContentFilterPatch.hookLinkRepository(mutable);
+            boolean hooked = false;
+            for (MutableMethod method : mutable.getMethods())
+                if ("<init>".equals(method.getName())) for (Instruction instruction : RedditContentFilterPatch.instructions(method))
+                    if (instruction instanceof RegisterRangeInstruction && instruction instanceof ReferenceInstruction
+                        && ((ReferenceInstruction) instruction).getReference().toString().startsWith(
+                            RedditContentFilterPatch.EXTENSION + "->remember")) {
+                        int parameters = method.getParameterTypes().size();
+                        require(((RegisterRangeInstruction) instruction).getStartRegister()
+                            == method.getImplementation().getRegisterCount() - parameters - 1,
+                            type + " registration must pass this");
+                        hooked = true;
+                    }
+            require(hooked, "Expected source registration in " + type);
+        }
+
+        // Native classes, fields and methods the runtime reaches by reflection.
+        requireField(all, "Lcom/reddit/flair/impl/data/source/remote/a;", "c", "Ltxo;");
+        requireField(all, RedditContentFilterPatch.SUBREDDIT_SOURCE, "j", "Lw27;");
+        require(all.get("Lw27;") != null && all.get("Lw27;").getInterfaces().contains("Ltxo;"),
+            "Subreddit GraphQL client must implement the GraphQL client interface");
+        requireMethod(all, "Ltxo;", "e", "(Ltxo;Lvl10;Ljava/util/Map;Lcom/reddit/network/common/RetryAlgo;"
+            + "Ljava/util/Set;Lcom/reddit/graphql/FetchPolicy;Lrfz;Lmwz;"
+            + "Lcom/reddit/network/orchestrator/RequestSchedulerPriority;"
+            + "Lcom/reddit/network/orchestrator/DeferPolicy;Lc2d;I)Ljava/lang/Object;");
+        requireMethod(all, "Lajm;", "<init>", "(Ljava/lang/String;)V");
+        requireField(all, "Lwim;", "a", "Lzim;");
+        requireField(all, "Lzim;", "b", "Lxim;");
+        requireField(all, "Lxim;", "a", "Ljava/util/List;");
+        requireField(all, "Lyim;", "c", "Ljava/lang/String;");
+        requireField(all, "Lyim;", "d", "Lcom/reddit/type/FlairTextColor;");
+        requireField(all, "Lyim;", "f", "Ljava/lang/String;");
+        requireMethod(all, "Lc2d;", "resumeWith", "(Ljava/lang/Object;)V");
+        requireMethod(all, RedditContentFilterPatch.LINK_REPOSITORY, "G", "()Lcom/reddit/data/remote/h;");
+        requireMethod(all, RedditContentFilterPatch.LINK_SOURCE, "b",
+            "(Ljava/util/ArrayList;ZZZZZLkotlin/coroutines/jvm/internal/ContinuationImpl;)Ljava/lang/Object;");
+        requireMethod(all, RedditContentFilterPatch.POST_BY_ID_SOURCE, "d",
+            "(Ljava/util/ArrayList;Lkotlin/coroutines/jvm/internal/ContinuationImpl;)Ljava/lang/Object;");
+        requireMethod(all, "Lcom/reddit/data/remote/RemoteGqlLinkDataSource$getHomeFeedPostsByIds$1;", "<init>",
+            "(Lcom/reddit/data/remote/h;Lc2d;)V");
+        requireMethod(all, "Lcom/reddit/data/remote/RemoteGqlHistoryDataSourceImpl$getPostsByIds$1;", "<init>",
+            "(Lcom/reddit/data/remote/g;Lc2d;)V");
+        requireMethod(all, "Lp4j0;", "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZLw5n0;"
+            + "ILjava/lang/String;Ljava/util/List;)V");
+        requireField(all, "Lp4j0;", "a", "Ljava/lang/String;");
+        requireField(all, "Lp4j0;", "b", "Ljava/lang/String;");
+        requireField(all, "Lp4j0;", "c", "Ljava/lang/String;");
+        require(all.get("Lr4j0;") != null, "Native flair Feed channel is missing");
+        requireField(all, "Lhsp;", "m0", "Lhsp;");
+        require(all.get("Lhsp;") != null && all.get("Lhsp;").getInterfaces().contains("Lw5n0;"),
+            "Default channel status must be a channel status");
+        requireField(all, "Lwbk;", "a", "Lkotlin/jvm/functions/Function1;");
+        requireMethod(all, "Lvbk;", "<init>", "(JLkotlin/jvm/functions/Function1;)V");
+        requireField(all, RedditContentFilterPatch.CHIP_CLICK, "e", "Ljava/lang/Object;");
+        requireMethod(all, RedditContentFilterPatch.CLICKABLE, "a", "(Lwiy;Lidz;Lbzq;ZLjava/lang/String;Lpqc0;"
+            + "Lkotlin/jvm/functions/Function0;)Lwiy;");
+        requireMethod(all, RedditContentFilterPatch.CLICKABLE, "d", "(Lwiy;Lidz;Lbzq;ZLjava/lang/String;Lpqc0;"
+            + "Ljava/lang/String;Lkotlin/jvm/functions/Function0;Lkotlin/jvm/functions/Function0;I)Lwiy;");
+        requireMethod(all, "Lsc40;", "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+            + "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+            + "Ljava/lang/String;)V");
+        requireMethod(all, "Lurr0;", "M", "([Ljava/lang/Object;)Lch20;");
+        requireMethod(all, "Lurr0;", "k0", "(Ljava/lang/Iterable;)Lsfq;");
+        require(all.get("Lch20;") != null && all.get("Lch20;").getInterfaces().contains("Lsfq;"),
+            "Persistent list factory must produce the feed content list type");
+        requireMethod(all, "Lue40;", "<init>", "(Ljava/lang/String;Ljava/lang/String;ZLxg40;Lsfq;)V");
+        requireField(all, "Lue40;", "i", "Lsfq;");
+        requireMethod(all, "Lve40;", "<init>", "(Lue40;)V");
+        requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "a", "Ljava/lang/String;");
+        requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "b", "Lsfq;");
+        requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "c", "Ljava/lang/String;");
+        requireField(all, RedditContentFilterPatch.FEED_POST_SECTION, "d", "Lxg40;");
+        require(all.get("Lnuj;") != null, "Native feed title section is missing");
+        requireField(all, "Lylj;", "b", "Ljava/lang/String;");
+        requireField(all, "Lp150;", "h", "Lxg40;");
+        requireField(all, "Lp150;", "p", "Lue40;");
+        requireField(all, "Lp150;", "E", "Lsfq;");
+        for (String child : Arrays.asList("j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x"))
+            require(field(all, "Lp150;", child) != null, "PostPreviewFeedElement child " + child + " is missing");
+        requireField(all, RedditContentFilterPatch.CLASSIC_POST, "e", "Ljava/lang/String;");
+        requireField(all, RedditContentFilterPatch.CLASSIC_POST, "k", "Ljava/lang/String;");
+        requireField(all, RedditContentFilterPatch.CLASSIC_POST, "q", "Ljava/lang/String;");
+        requireField(all, RedditContentFilterPatch.CLASSIC_POST, "t", "Lue40;");
+        requireField(all, "Lcom/reddit/frontpage/presentation/subreddit/header/SubredditHeaderPresentationModel;",
+            "b", "Ljava/lang/String;");
+        requireMethod(all, "Lcom/reddit/screens/listing/compose/SubredditFeedScreen;", "n5", "()Ljava/lang/String;");
+        System.out.println("PASS: Reddit " + RedditContentFilterPatch.VERSION
+            + " source registration, flair UI, feed filtering and runtime reflection contracts");
+    }
+
+    private static com.android.tools.smali.dexlib2.iface.Field field(Map<String, ClassDef> all, String owner, String name) {
+        ClassDef type = all.get(owner);
+        if (type == null) return null;
+        for (com.android.tools.smali.dexlib2.iface.Field field : type.getFields())
+            if (name.equals(field.getName())) return field;
+        return null;
+    }
+
+    private static void requireField(Map<String, ClassDef> all, String owner, String name, String type) {
+        com.android.tools.smali.dexlib2.iface.Field field = field(all, owner, name);
+        require(field != null && type.equals(field.getType()), "Missing field " + owner + "->" + name + ":" + type);
+    }
+
+    private static void requireMethod(Map<String, ClassDef> all, String owner, String name, String descriptor) {
+        ClassDef type = all.get(owner);
+        if (type != null) for (com.android.tools.smali.dexlib2.iface.Method method : type.getMethods())
+            if (name.equals(method.getName())
+                && descriptor.equals("(" + String.join("", method.getParameterTypes()) + ")" + method.getReturnType()))
+                return;
+        throw new AssertionError("Missing method " + owner + "->" + name + descriptor);
     }
 }

@@ -716,7 +716,8 @@ tasks {
         dependsOn("testClasses")
         classpath = sourceSets["test"].runtimeClasspath
         mainClass.set("santodan.patches.VerifyRedditContentFilter")
-        args(fileTree("../../Skills/inspection-evidence/.inspect-reddit") { include("classes*.dex") }.files.sorted().map { it.absolutePath })
+        // Content filters and home flairs target 2026.45.0; guest mode keeps the 2026.37.0 fixtures.
+        args(fileTree("../../Skills/inspection-evidence/reddit-2026.45.0") { include("classes*.dex") }.files.sorted().map { it.absolutePath })
     }
 
     register<JavaExec>("verifyRedditGuestMode") {

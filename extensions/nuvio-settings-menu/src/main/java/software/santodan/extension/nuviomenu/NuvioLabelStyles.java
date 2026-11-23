@@ -17,6 +17,18 @@ public final class NuvioLabelStyles {
     private static final Map<String,long[]> COLORS = new ConcurrentHashMap<>();
     private static final Map<String,String> SAMPLES = new ConcurrentHashMap<>();
     private static final LinkedHashMap<String,String> LABELS = new LinkedHashMap<>();
+    static final int MAX_LABELS = 128;
+    private static final int MAX_IDENTIFIED = 256;
+    private static final Object NONE = new Object();
+    // Render-path memo: badge text -> label id (or NONE), so matching and hashing run once per text.
+    private static final LinkedHashMap<String,Object> IDENTIFIED = new LinkedHashMap<>(64,0.75f,true);
+    private static Object recalled(String memo) { synchronized(IDENTIFIED) { return IDENTIFIED.get(memo); } }
+    private static void remember(String memo,Object id) {
+        synchronized(IDENTIFIED) {
+            IDENTIFIED.put(memo,id);
+            if(IDENTIFIED.size()>MAX_IDENTIFIED) { Iterator<String> eldest=IDENTIFIED.keySet().iterator(); eldest.next(); eldest.remove(); }
+        }
+    }
     private static volatile Map<String,String> aliases = Collections.emptyMap();
     private static volatile List<Map.Entry<Pattern,String>> templates = Collections.emptyList();
     private static volatile String language = "";
@@ -49,13 +61,13 @@ public final class NuvioLabelStyles {
         }
         values=Collections.unmodifiableMap(values); SAVED.put(id,values); return values;
     }
-    static synchronized Map<String,String> labels() throws Exception {
+    static synchronized Map<String,String> labels() throws Exception { ensureLabels(); return new LinkedHashMap<>(LABELS); }
+    private static synchronized void ensureLabels() throws Exception {
         if(LABELS.isEmpty()) {
             for(int i=0;i<LabelCustomization.IDS.length;i++)LABELS.put(LabelCustomization.IDS[i],LabelCustomization.NAMES[i]);
-            for(var entry:prefs().getAll().entrySet())if(entry.getKey().matches("name_[a-z][a-z0-9_]{0,95}")&&entry.getValue() instanceof String&&LABELS.size()<128)
+            for(var entry:prefs().getAll().entrySet())if(entry.getKey().matches("name_[a-z][a-z0-9_]{0,95}")&&entry.getValue() instanceof String&&LABELS.size()<MAX_LABELS)
                 LABELS.put(entry.getKey().substring(5),(String)entry.getValue());
         }
-        return new LinkedHashMap<>(LABELS);
     }
     private static String normalized(String text) { return text==null?"":text.trim().toUpperCase(Locale.ROOT); }
     private static synchronized void aliases() throws Exception {
@@ -70,7 +82,7 @@ public final class NuvioLabelStyles {
         for(int resource:new int[]{0x7f0f0001,0x7f0f0002})for(int quantity:new int[]{0,1,2,3,5,11})
             addAlias(normalized(app.getResources().getQuantityString(resource,quantity)),"airs_days",names,patterns);
 
-        aliases=names; templates=patterns; language=locale;
+        aliases=names; templates=patterns; language=locale; synchronized(IDENTIFIED){IDENTIFIED.clear();}
     }
     private static void addAlias(String text,String id,Map<String,String> names,List<Map.Entry<Pattern,String>> patterns) {
         if(!text.contains("%")){names.putIfAbsent(text,id);return;}
@@ -81,7 +93,17 @@ public final class NuvioLabelStyles {
         patterns.add(new AbstractMap.SimpleImmutableEntry<>(Pattern.compile(regex.toString()),id));
     }
     private static String identify(String text,boolean metadata) throws Exception {
-        aliases();String value=normalized(text),id=aliases.get(value);if(id!=null)return id;
+        aliases();String memo=(metadata?"m:":"b:")+text;Object known=recalled(memo);
+        if(known==NONE)return null;
+        // A discovered id may have been evicted from the registry; classify again so it is re-registered.
+        if(known instanceof String&&registered((String)known))return (String)known;
+        String id=classify(text,metadata);
+        if(id!=null)remember(memo,id);else if(text==null||text.trim().isEmpty()||text.length()>100)remember(memo,NONE);
+        return id;
+    }
+    private static synchronized boolean registered(String id) throws Exception { labels(); return LABELS.containsKey(id); }
+    private static String classify(String text,boolean metadata) throws Exception {
+        String value=normalized(text),id=aliases.get(value);if(id!=null)return id;
         for(var candidate:templates)if(candidate.getKey().matcher(value).matches())return candidate.getValue();
         if(metadata&&value.matches("(?:19|20)[0-9]{2}"))return observe("metadata_year","Year",text);
         if(metadata&&value.matches("[0-9]+(?:H|M| MIN| MINUTES).*"))return observe("metadata_runtime","Runtime",text);
@@ -92,11 +114,29 @@ public final class NuvioLabelStyles {
         return observe(key.toString(),(metadata?"Metadata: ":"Badge: ")+text,text);
     }
     private static synchronized String observe(String id,String title,String sample) throws Exception {
-        labels();if(!LABELS.containsKey(id)) {
-            if(LABELS.size()>=128)return null;
-            LABELS.put(id,title);prefs().edit().putString("name_"+id,title).apply();
+        ensureLabels();if(!LABELS.containsKey(id)) {
+            SharedPreferences p=prefs();SharedPreferences.Editor editor=p.edit();
+            if(LABELS.size()>=MAX_LABELS&&!evictDiscovered(p,editor))return null;
+            LABELS.put(id,title);
+            // While the feature is disabled, discovery stays in memory; nothing is written from composition.
+            if(p.getBoolean("enabled",false))editor.putString("name_"+id,title);
+            editor.apply();
         }
         if(sample!=null)SAMPLES.put(id,sample);return id;
+    }
+    /** Frees one slot by dropping the oldest discovered label that has no saved override. Built-ins and customized labels stay. */
+    private static boolean evictDiscovered(SharedPreferences p,SharedPreferences.Editor editor) {
+        Set<String> builtIn=new HashSet<>(Arrays.asList(LabelCustomization.IDS));
+        for(String candidate:LABELS.keySet()) {
+            if(builtIn.contains(candidate)||customized(p,candidate))continue;
+            LABELS.remove(candidate);SAMPLES.remove(candidate);COLORS.remove(candidate);editor.remove("name_"+candidate);
+            return true;
+        }
+        return false;
+    }
+    private static boolean customized(SharedPreferences p,String id) {
+        for(String field:LabelCustomization.FIELDS)if(p.contains(LabelCustomization.key(id,field)))return true;
+        return false;
     }
     private static void begin(String text,boolean metadata) {
         FRAME.remove(); if(!available())return;
@@ -219,8 +259,11 @@ public final class NuvioLabelStyles {
         return new LabelCustomization.Draft(id,values,background,foreground,SAMPLES.getOrDefault(id,id.equals("date_label")?"15-Nov":id.equals("remaining_count")?"8":labels.getOrDefault(id,id)));
     }
     static void save(Collection<LabelCustomization.Draft> drafts) throws Exception {
-        SharedPreferences.Editor editor=prefs().edit();
+        SharedPreferences.Editor editor=prefs().edit();Map<String,String> names=labels();
+        Set<String> builtIn=new HashSet<>(Arrays.asList(LabelCustomization.IDS));
         for(var draft:drafts)if(draft.dirty) {
+            // Labels discovered while the feature was disabled are only in memory; keep the name of any label being customized.
+            if(!builtIn.contains(draft.id)&&!draft.values().isEmpty()&&names.containsKey(draft.id))editor.putString("name_"+draft.id,names.get(draft.id));
             if(draft.id.equals("date_label")&&draft.values().isEmpty())NuvioDateLabelStyle.resetLegacyDate();
             for(String field:LabelCustomization.FIELDS)editor.remove(LabelCustomization.key(draft.id,field));
             for(var value:draft.values().entrySet()) {

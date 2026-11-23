@@ -31,8 +31,13 @@ dismissing the editor discards the session, including copy and reset changes.
 
 The initial list includes New Season, New Episode, Next Up, Upcoming, Resume,
 watched progress, remaining time, air dates and file size. Metadata/rating and
-technical text badges are added when Nuvio renders them; their names persist so
-they remain selectable. Rating numbers stay live when their provider caption is
+technical text badges are added when Nuvio renders them. With the feature enabled,
+their names persist so they remain selectable. While it is disabled, discovery
+stays in memory and writes nothing; a discovered label's name is saved when it is
+customized. The registry holds at most 128 labels. When full, the oldest
+discovered label without saved overrides is dropped (built-in and customized
+labels are never dropped), so new badges stay customizable. Badge text is
+classified once per text and memoized, not on every recomposition. Rating numbers stay live when their provider caption is
 changed. Badges baked into images, ordinary app buttons and screen headings are
 outside this text-badge patch. Santodan date labels and the Continue Watching
 remaining count also have entries in this editor. The separate Date label appearance settings row is removed.

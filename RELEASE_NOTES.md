@@ -1,5 +1,7 @@
 ## Pending changes since v0.20.0
 
+- **nuviotv:** Keep Customize labels usable when many different badges appear. Discovered labels are capped at 128; when full, the oldest discovered label without saved settings is dropped instead of refusing new badges. Built-in and customized labels are kept. Badge text is classified once instead of on every redraw, and nothing is written while the feature is disabled. Runtime and standalone/combined bundle checks passed; TV confirmation remains pending.
+
 - **nuviotv:** Add date-label and Continue Watching remaining-count entries to the shared label editor, remove the separate date appearance entry, and make Customize labels a required dependency of count/date patches. Preserve live values and existing date styles.
 
 - **nuviotv:** Add optional **Customize labels** for 1.1.1. Edit each badge's caption, colors, opacity, size and position; copy Text, Label or All from another badge, or reset the selected label. Keep drafts until Apply and include saved settings in export/import. The fixed header places Text/Label beside the dropdown, customization scrolls below it, and the enlarged preview fills the right panel while preserving aspect ratio. Size the dialog from the active landscape screen. Native/runtime, backup, standalone/combined bundle and unsigned-APK checks passed; final TV layout, keyboard and focus confirmation remain pending.

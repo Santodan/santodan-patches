@@ -130,6 +130,26 @@ public final class VerifyNuvioLabelsRuntime {
             check(migrated.getClass().getMethod("size",boolean.class).invoke(migrated,true).equals(120),"Existing date size lost");
             migrated.getClass().getMethod("reset").invoke(migrated);call(styles,"save",List.of(migrated));
             check(!legacy.containsKey("date_label_background_color")&&legacy.get("unmanaged").equals(42),"Date reset failed to clear legacy overrides or removed unrelated settings");
+            // Discovered badge registry: no writes while disabled, bounded, and evicts only uncustomized discoveries.
+            java.util.function.Supplier<Long> names=()->prefs.keySet().stream().filter(k->k.startsWith("name_")).count();
+            java.util.function.Function<String,String> idOf=title->{try{return ((Map<String,String>)call(styles,"labels")).entrySet().stream().filter(e->e.getValue().equals(title)).map(Map.Entry::getKey).findFirst().orElse(null);}catch(Exception e){throw new RuntimeException(e);}};
+            prefs.put("enabled",false);long before=names.get();
+            call(styles,"beginMetadata","Quiet tag");call(styles,"end");call(styles,"beginMetadata","Quiet tag");call(styles,"end");
+            check(names.get()==before,"Disabled label discovery wrote preferences");check(idOf.apply("Metadata: Quiet tag")!=null,"Disabled discovery not listed for the editor");
+            prefs.put("enabled",true);
+            call(styles,"beginMetadata","Kept tag");call(styles,"end");String kept=idOf.apply("Metadata: Kept tag");
+            check(kept!=null&&prefs.containsKey("name_"+kept),"Enabled discovery not persisted");
+            prefs.put("label_"+kept+":text","KT");call(styles,"invalidate");
+            var maxField=styles.getDeclaredField("MAX_LABELS");maxField.setAccessible(true);int max=maxField.getInt(null);
+            for(int i=0;i<max+40;i++){call(styles,"beginMetadata","Stream tag "+i);call(styles,"end");}
+            Map<String,String> registry=(Map<String,String>)call(styles,"labels");
+            check(registry.size()<=max&&names.get()<=max,"Label registry exceeded its bound");
+            check(registry.containsKey(kept)&&prefs.containsKey("name_"+kept),"Customized discovered label was evicted");
+            check(registry.containsKey("new_season")&&registry.containsKey("date_label"),"Built-in label evicted");
+            check(idOf.apply("Metadata: Stream tag "+(max+39))!=null,"Full registry refused a new badge instead of evicting");
+            check(idOf.apply("Metadata: Stream tag 0")==null&&!prefs.containsKey("name_"+idOf.apply("Metadata: Stream tag 0")),"Oldest uncustomized discovery not evicted");
+            call(styles,"beginMetadata","Kept tag");check(call(styles,"text","Kept tag").equals("KT"),"Customized discovered label lost its override");call(styles,"end");
+            prefs.remove("label_"+kept+":text");call(styles,"invalidate");
             // Localised aliases rebuild without changing stable per-label settings.
             Object appObject=child.loadClass("android.app.ActivityThread").getField("APP").get(null);Object resources=appObject.getClass().getMethod("getResources").invoke(appObject);Object config=resources.getClass().getMethod("getConfiguration").invoke(resources);config.getClass().getField("locale").set(config,Locale.FRENCH);
             call(styles,"begin","Nouvelle saison");check(call(styles,"foreground",0xff01020300000000L).equals(0xff01020300000000L),"Reset did not restore translated native style");call(styles,"end");

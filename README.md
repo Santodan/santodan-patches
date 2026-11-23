@@ -14,7 +14,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.20.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.20.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;40 patches total
+> **[v0.21.0](https://github.com/Santodan/santodan-patches/releases/tag/v0.21.0)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;41 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -105,7 +105,7 @@ Startup app selection and **After standby** are cumulative: enabling both is int
 <summary>📦 NuvioTV&nbsp;&nbsp;•&nbsp;&nbsp;18 patches</summary>
 <br>
 
-These eighteen patches target NuvioTV **1.1.1 (1081)** only. See [1.1.1 verification](docs/Nuvio111.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
+These seventeen patches target NuvioTV **1.1.0 (1077)** only. See [1.1.0 verification](docs/Nuvio110.md). For future app updates, see the [shared contracts and maintenance workflow](docs/NuvioMaintenance.md).
 
 - **GitHub APK updates**: Optional patch that checks APK releases from `Santodan/santodan-patches`, shares background download progress with the native banner, and opens Android's normal APK installer for foreground installation progress. The installed release version defaults to the bundle version. Includes installer fixes for patched APKs and side-by-side installations. See [GitHub release publishing instructions](docs/NuvioApkUpdates.md).
 
@@ -113,17 +113,7 @@ These eighteen patches target NuvioTV **1.1.1 (1081)** only. See [1.1.1 verifica
 
 - **Metadata add-on selection**: Choose an enabled metadata add-on per profile under **Settings > Layout > Santodan-Patches**. Separate, disabled-by-default switches apply its metadata/artwork to **Continue Watching** and its poster artwork to the **library**. Existing artwork remains the fallback when the selected provider has no replacement. The picker checks declared `meta` support; catalog/stream add-ons can also provide metadata. Restart after changing these settings. See [usage, capability filtering and verification](docs/NuvioMetadataAddon.md).
 
-### Badge labels
-
-[Customize labels](docs/NuvioLabelCustomization.md) adds a label dropdown and Text/Label editor for native text badges such as New Season, Next Up and New Episode. Text/Label buttons sit beside the dropdown in a fixed header, with scrollable customization below and an enlarged preview on the right. Edit captions, colors, opacity, size and position; copy Text, Label or All from another label, or reset only the selected label. Apply saves all drafts.
-
-### Date labels
-
-[Date labels](docs/NuvioDateLabelEditor.md) and the Continue Watching remaining count are edited through **Label customization**. Select their dropdown entry, then Text or Label. Controls scroll below the fixed header, with a large preview on the right. Date/count patches automatically include **Customize labels**; existing date appearance settings are retained.
-
 ### Continue Watching
-
-Continue Watching follows local playback saves while the player is open. Completion resolves the next episode in the background without waiting for tracker sync. Home retains the local result when returning from playback. Runtime, bundle and rebuilt-APK checks passed; Mi Box timing and performance still need device confirmation. See [local playback updates](docs/NuvioMergedProgress.md).
 
 - **Merge tracking progress**: Combines Nuvio Sync and connected tracking-provider progress and watched-show history, with a choice between highest progress and the most recent update. Library and collection Watched labels follow the selected provider for each show. Quick startup sync reuses validated saved history and applies local playback changes; Sync now refreshes remote services. Nuvio's native update-download banner shows sync stages, progress and errors. Cached Continue Watching entries remain visible until a complete, ready snapshot replaces them. Library contents and refreshing remain controlled by Nuvio's native Tracking settings.
 
@@ -191,7 +181,7 @@ Metadata selection and the independent Continue Watching/library artwork switche
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [NuvioTV - Android TV launcher channels](#nuviotv-android-tv-launcher-channels) | Choose individual catalogs and tracking lists, Library, and Upcoming to publish as Android TV launcher channels. |  |
-| [NuvioTV - Customize labels](docs/NuvioLabelCustomization.md) | Customize individual text badges, edit captions, copy Text/Label/All and reset a selected label. |  |
+| [NuvioTV - Customize labels](#nuviotv-customize-labels) | Customize Nuvio's text badges individually, including New Season, Next Up and New Episode. Edit captions, copy Text/Label/All, and reset one label. |  |
 | [NuvioTV - Customize playback buttons](docs/NuvioPlaybackButtons.md) | Adds optional playback button visibility, ordering and placement in the main row or More actions, with saved settings and reset. |  |
 | [NuvioTV - Finale dates in library and collections](#nuviotv-finale-dates-in-library-and-collections) | Adds separate disabled-by-default settings to show the latest scheduled episode date in library and collection posters. |  |
 | [NuvioTV - Fix startup track reselection](docs/NuvioPlayerStability.md) | Prevents a startup ExoPlayer crash when track reselection requests a seek before a playing media period exists. |  |
@@ -269,10 +259,8 @@ The premium patch also prevents subscription refreshes from resetting the notifi
 
 **🎯 Supported versions:**
 
-| 2026.45.0 | 2026.37.0 |
-| :---: | :---: |
-
-Content filters and Show flairs in home feed target 2026.45.0; Start as guest targets 2026.37.0.
+| 2026.45.0 |
+| :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|

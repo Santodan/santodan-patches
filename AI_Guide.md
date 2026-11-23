@@ -126,7 +126,9 @@ Beta.13 notes below describe the preceding target; its historical fixtures remai
 
 ## Start here: creating or modifying a patch
 
-Shared local skills are in `E:\Morphe\Skills\morphe-*\SKILL.md`. Load the relevant
+Shared local skills are in `E:\Morphe\Skills\morphe-*\SKILL.md`; those folders are
+junctions to the tracked copies in this repository's `Skills/`, so edit and commit
+them here. Evidence under `E:\Morphe\Skills\inspection-evidence` is never committed. Load the relevant
 inspection, implementation, runtime, or verification workflow from there. Retained
 app evidence is in `E:\Morphe\Skills\inspection-evidence`; use those paths directly.
 OpenCode and Kilo discover the Skills directory through their user configuration.
@@ -294,9 +296,11 @@ Paths below are relative to `E:\Morphe\santodan-patches` unless stated otherwise
 | `../backups/workspaces/` | Historical backup/staging workspaces; use the main repository for active work |
 | `../Apps/` | Patched app outputs; do not use as original patch inputs |
 
-At this guide update, relevant original inputs include NuvioTV `1.1.0-beta.13`,
-Pillo `0.6.27`, Reddit `2026.37.0`, MEO Android TV `5.7.0`, and Peafowl
-`GMS_27.5.1`. These are discovery hints, not a permanent version allowlist.
+As of 2026-11-23 the latest local originals are NuvioTV `1.1.1`, Monet `1.1.1`,
+Pillo `0.6.27`, Car Scanner `2.2.42`, TFD Companion `1.1.6`, Fylo `2.6` and Reddit
+`2026.45.0`. This repo's Reddit patches still target `2026.37.0`; the 2026.45.0
+work lives in `E:\Morphe\morphe-patches-santodan`. These are discovery hints, not
+a permanent version allowlist.
 Rescan inputs for each task. Apps without existing patches need their own inspection.
 
 ### Implementation workflow
@@ -381,10 +385,13 @@ the user requests it. Report missing dependencies, fixtures, or device access pl
 For Kilo Code in VS Code, see [Kilo setup](docs/KiloCode.md). The configured
 workspace agent loads these same skills; their contents are shared across hosts.
 
-See [LM Studio setup](docs/LMStudio.md) and
-[system prompt](lmstudio/SYSTEM_PROMPT.md). Skills live under `lmstudio/skills/`:
+See [LM Studio setup](docs/LMStudio.md). The repository no longer carries an
+`lmstudio/` skill copy; the maintained skills are the shared
+`E:\Morphe\Skills\morphe-*` folders:
 
-- `morphe-inspect-app`: discover the latest original and prove native hook contracts.
+- `morphe-inspection-evidence`: locate retained evidence for the target version.
+- `morphe-inspect-app`: discover the latest original and prove native hook contracts
+  (includes the read-only `scripts/DexQuery.java`).
 - `morphe-create-patch`: implement bytecode/resource patches with current repo APIs.
 - `morphe-runtime-extension`: add runtime behavior and shared settings dependencies.
 - `morphe-verify-patch`: verify the compiled bundle, native behavior, and output scope.

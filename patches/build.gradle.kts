@@ -40,8 +40,19 @@ tasks.register<JavaExec>("verifyMonet") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyMonet")
+    args(file("../../OriginalApps/monet-1.1.2.apk").absolutePath,
+        layout.buildDirectory.file("verification/monet/evaluator.dex").get().asFile.absolutePath,
+        "La/dz5;->a()Z", "La/n70;", "b")
+}
+
+// Retained 1.1.1 premium coverage for the shared matcher; the regular patch still accepts 1.1.1.
+tasks.register<JavaExec>("verifyMonet111") {
+    dependsOn("testClasses")
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("santodan.patches.VerifyMonet")
     args(file("../../OriginalApps/monet-1.1.1.apk").absolutePath,
-        layout.buildDirectory.file("verification/monet/evaluator.dex").get().asFile.absolutePath)
+        layout.buildDirectory.file("verification/monet/evaluator-111.dex").get().asFile.absolutePath,
+        "La/ov5;->a()Z", "La/u60;", "b")
 }
 
 tasks.register<JavaExec>("verifyMonetBundle") {
@@ -49,7 +60,7 @@ tasks.register<JavaExec>("verifyMonetBundle") {
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyMonetBundleKt")
     maxHeapSize = "3g"
-    args(file("../../OriginalApps/monet-1.1.1.apk").absolutePath,
+    args(file("../../OriginalApps/monet-1.1.2.apk").absolutePath,
         layout.buildDirectory.file("libs/patches-${project.version}.mpp").get().asFile.absolutePath,
         layout.buildDirectory.dir("verification/monet/bundle").get().asFile.absolutePath)
 }
@@ -58,8 +69,8 @@ tasks.register<JavaExec>("verifyMonetApk") {
     dependsOn("testClasses")
     classpath = sourceSets["test"].runtimeClasspath
     mainClass.set("santodan.patches.VerifyMonetApk")
-    args(file("../../OriginalApps/monet-1.1.1.apk").absolutePath,
-        file(providers.gradleProperty("monetApk").getOrElse("../../Apps/Monet/monet-1.1.1-premium-experimental-unsigned.apk")).absolutePath)
+    args(file("../../OriginalApps/monet-1.1.2.apk").absolutePath,
+        file(providers.gradleProperty("monetApk").getOrElse("../../Apps/Monet/monet-1.1.2-premium-experimental-unsigned.apk")).absolutePath)
 }
 
 val patchVersionSource = layout.buildDirectory.dir("generated/sources/patchVersion")

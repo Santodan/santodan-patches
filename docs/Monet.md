@@ -1,8 +1,8 @@
 # Monet premium
 
-Latest premium input: **Monet 1.1.2** (136), retaining existing 1.1.1/1.1.0/1.0.97
-support. See [the 1.1.2 contract and future-compatibility hardening](Monet112.md). Cards and
-catalog rows still target 1.1.1; see [the 1.1.1 contracts and startup investigation](Monet111.md).
+Latest supported input: **Monet 1.1.2** (136) for premium, displayed cards and catalog rows,
+retaining existing 1.1.1/1.1.0/1.0.97 support. See [the 1.1.2 contracts, premium hardening and
+port notes](Monet112.md) and [the 1.1.1 contracts and startup investigation](Monet111.md).
 Unversioned verification tasks select 1.1.1. The version-specific sections below
 record historical evidence.
 

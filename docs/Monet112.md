@@ -1,4 +1,4 @@
-# Monet 1.1.2 (premium)
+# Monet 1.1.2
 
 ## Target and scope
 
@@ -11,9 +11,9 @@ SHA-256: `bce58185ad51864a92c356650c35453fd12b506b18b45427eba2f5ea32686ffc`
 - **Monet - Unlock premium (Experimental, any version)** keeps every layout it
   accepted before and is now verified on 1.1.2. Its matcher was also widened to
   tolerate more of the drift kinds R8 can introduce (see below).
-- **Unlimited displayed cards** and **Individual Nuvio catalog rows** are unchanged
-  and still target 1.1.1 at the latest. Their exact native UI contracts were not
-  ported to 1.1.2. Select only one premium alternative.
+- **Unlimited displayed cards** and **Individual Nuvio catalog rows** now also accept
+  1.1.2 through separate reviewed `MonetDisplayedCards112` / `MonetCatalogChannels112`
+  contracts (see below), retaining 1.1.1 / 1.1.0 / 1.0.97. Select only one premium alternative.
 
 ## Native contract (unchanged semantics)
 
@@ -63,6 +63,53 @@ all derive from it. A future release therefore needs one map entry and `LATEST`,
 while the native contract keeps this shape. It still fails closed if Monet changes its
 entitlement logic, inlines the evaluator, or moves the billing keys or refresh.
 
+## Displayed cards 1.1.2
+
+1.1.2 is not a rename-only build. Of the 44 cards/catalog contracts, the clamp, text,
+reader, programs, sources, native filter and a few ABI methods are identical apart from
+renames. The rest changed literals, registers or structure. Every hook was re-derived from
+the original 1.1.2 DEX with conservative liveness and reaching-definition analysis
+(`../Skills/inspection-evidence/.inspect-monet-1.1.2/`, `notes.md`).
+
+- Clamp `m73.j` (2), schema `r77.w` (2, v13/v1), Apply renderer `w33.E0` (52, v5/v14),
+  text `gx8.a` (77) keep their indexes and registers; button `w33.F0` is a contract.
+- Picker `w33.v0` has 72 registers (params v62..v71): min/max are **v64/v65**. Sites are
+  button 368 (state v38), number 375 (v1), button 490 and footer `E0` 587 (state v12, copied
+  from v38 at 451 on both paths). The state chain was traced to the `cm5` cast at 106.
+  **v42/v43/v44 are live in 1.1.2**, so the 1.1.1 v42-v55 scratch block is invalid; the
+  adapters now use v44-v57, dead at all four sites.
+- Visible-cards summaries are `hx3.f` 256, `xx3.f` 248 and `w33.x0` 543. These are the only
+  `media_action_visible_cards` + `String.valueOf(int)` sites; the verifier enforces that set.
+- Card callers: `su2.f` (second call) and both merged `mg.f` calls pass 4..20 with the
+  decorative preview disabled; `bb`/`pa1` pickers have dynamic bounds and stay native.
+- Runtime selects `NativeLayout.v112`; classes map to `ty1, qf8, bs0, as1, fx1, w33, gs1,
+  hx1, cm5, ek5`, method names match 1.1.1.
+
+## Catalog rows 1.1.2
+
+- State reducer `gf4.g` (now with a trailing `Map` parameter): selection 539 (row v0),
+  row items 694 (v1/v7), owner match 706/707 and channel match 710 (item v13, selection v7,
+  filter v11 = `sx0.E`), hidden 721 (v1/row v0), sources 1049/1059.
+- **Device crash fixed (row items):** at 694 `v1` may also be Kotlin's shared empty list
+  (`rg1.k`, from 574), not an `ArrayList`. The reused 1.1.1 `rowItems(ArrayList, Object)`
+  callback made ART reject `gf4` (`VerifyError ... register v1 has type a.rg1 but expected
+  java.util.ArrayList`) and Monet crashed at startup. 1.1.2 uses `rowItems112(List, Object)`.
+  `MonetHookTypes` now checks every injected extension call's class-typed arguments against
+  their reaching definitions in the native, bundle and APK verifiers (with a regression case).
+- Row model `sx0`: the custom hidden list moved from `A` to **`D`** (`A` is now a boolean),
+  filter `E`; item key moved from `n` to **`iv0.o`** (`n` is a new `ry4`).
+- Native 1.1.2 returns no selection for the new **Seerr** media rows; the runtime keeps that.
+- Filter `gf4.Q` 113 (`disabled(v2, item v11)`), owner `sx0.h` return at 10, view-model
+  `bf4.<init>` array store 247 (Recommendations copy from 103, wrapped into dead v15).
+- Shared header `xx3.f`: 1.1.2 added native custom row labels. `contentLabel` is inserted at
+  152, after the default section label (`ea4.y4` + `i43.s0` -> v14), so custom names win.
+- Content picker `ea4.Y` 427 calls generic `ea4.H1`, which **dropped the predicate argument**
+  (17 arguments). The new `contentPicker112` adapter shares the 1.1.0/1.1.1 body.
+- Actions: `onSetCustomRowMediaChannel` is `l53.H` and `onSetCustomRowPackages` is
+  `l53.P` (now `sr4`), proven from the data-class `toString()` labels.
+- Runtime names: reader `n86.m`, converter `n86.n`, sources `gf4.z`, flow `td5.a`,
+  `s39.z`, revision `jl7.j`, native filter `ke3.D`; `NativeLayout.v112` selects them.
+
 ## Verification
 
 Run with `build-local.ps1 ... --offline`:
@@ -74,5 +121,21 @@ Run with `build-local.ps1 ... --offline`:
 - `:patches:verifyMonetBundle` (1.1.2, both alternatives from the built MPP).
 - The 1.1.1 combined checks `verifyMonetDisplayedCards111(Bundle)` and
   `verifyMonetCatalog111(Bundle)` exercise the widened matcher with cards/catalog.
+- `:patches:verifyMonetDisplayedCards112` (+`Runtime`/`Bundle`/`Apk`) and
+  `:patches:verifyMonetCatalog112` (+`Runtime`/`Bundle`/`Apk`); the unversioned
+  `verifyMonetDisplayedCards*` / `verifyMonetCatalog*` tasks now run these. The 1.1.1
+  native/bundle tasks remain and still pass.
 - `:patches:buildAndroid`, `:patches:generatePatchesList`,
   `:patches:verifyMorpheDesktopImport`, `:patches:verifyAndroidBundle`.
+- `:patches:verifyMonetCatalog112Apk -PmonetCatalog112Apk=<apk> -PmonetCatalog112Cards=true
+  -PmonetCatalog112Premium=true` audits an actual combined rebuild.
+
+Earlier unsigned combined verification build (**crashes on device; superseded**) (catalog rows + displayed cards + regular premium,
+Desktop 2.3.0 `patch --unsigned`, bundle 0.21.1):
+`../Apps/Monet/Monet-1.1.2-patches-0.21.1-unsigned.apk`
+(SHA-256 `bf3f9107ba849a95c98271178375d3b90d44008515172eac6a79c67454f1e70e`). It passed the
+combined APK audit (ten catalog hooks, eight card hooks, premium, 9,734 native classes, 32
+extension classes, 675 unchanged non-DEX entries including the manifest). It is not signed,
+installed or device-tested.
+The fixed rebuild is `../Apps/Monet/Monet-1.1.2-patches-0.21.1-rowitems-fix-unsigned.apk`; it
+passed the same combined audit including argument type checks. Device confirmation is pending.

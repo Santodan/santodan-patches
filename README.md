@@ -14,7 +14,7 @@ https://github.com/Santodan/santodan-patches
 ## Patches
 
 <!-- PATCHES_START -->
-> **[v0.21.1](https://github.com/Santodan/santodan-patches/releases/tag/v0.21.1)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;41 patches total
+> **[v0.21.2](https://github.com/Santodan/santodan-patches/releases/tag/v0.21.2)**&nbsp;&nbsp;•&nbsp;&nbsp;`main`&nbsp;&nbsp;•&nbsp;&nbsp;41 patches total
 <details>
 <summary>📦 Car Scanner ELM OBD2&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
@@ -79,25 +79,25 @@ MEO 5.7.0 patches provide a separately installable clone and compatibility handl
 <summary>📦 Monet&nbsp;&nbsp;•&nbsp;&nbsp;4 patches</summary>
 <br>
 
-The original premium unlock is from [Doom's Patches](https://github.com/rushiranpise/morphe-patches), updated here for Monet Launcher **1.1.2**, retaining existing **1.1.1 / 1.1.0 / 1.0.97** support. A separate experimental variant has no version restriction and validates billing ownership and all 16 evaluator input states, independent of obfuscated names, flags, field order and branch layout. Future compatibility is not guaranteed; unsupported layouts fail safely. Select **only one** premium alternative; both are disabled by default. The user reports the experimental patch works on 1.1.1. Both alternatives passed original-DEX and packaged-bundle checks. See [the latest contracts and verification](docs/Monet112.md).
+The original premium unlock is from [Doom's Patches](https://github.com/rushiranpise/morphe-patches), updated here for Monet Launcher **1.1.1**, retaining existing **1.1.0 / 1.0.97** support. A separate experimental variant has no version restriction and validates billing ownership and all 16 evaluator input states. Future compatibility is not guaranteed; unsupported layouts fail safely. Select **only one** premium alternative; both are disabled by default. The user reports the experimental patch works on 1.1.1. Both alternatives passed original-DEX and packaged-bundle checks. See [the latest contracts and verification](docs/Monet111.md).
 
-The optional **Monet - Individual Nuvio catalog rows** patch adds published catalogs inside **NuVioTV > Content**, with NuVio's installed icon and refresh independent of Recommendations. It supports **1.1.2**, retaining existing **1.1.1 / 1.1.0 / 1.0.97** support and saved selections. Native channel/filter choices and 1.1.2 custom row names are preserved without duplicate catalogs. Native/runtime checks and all six bundle combinations passed on 1.1.2; **1.1.2 device testing remains necessary**. See [setup and verification details](docs/MonetCatalogChannels.md).
+The optional **Monet - Individual Nuvio catalog rows** patch adds published catalogs inside **NuVioTV > Content**, with NuVio's installed icon and refresh independent of Recommendations. It supports **1.1.1**, retaining existing **1.1.0 / 1.0.97** support and saved selections. Native channel/filter choices are preserved without duplicate catalogs. Native/runtime checks, all six bundle combinations and rebuilt unsigned-APK audits passed; **1.1.1 device testing remains necessary**. See [setup and verification details](docs/MonetCatalogChannels.md).
 
-The optional **Monet - Unlimited displayed cards** patch removes the 20-card display cap and adds -10/+10 and Max to the original themed picker. It supports **1.1.2**, retaining existing **1.1.1 / 1.1.0 / 1.0.97** support. The port preserves native Apply rendering, scoped summaries and Max labels across redraws. Original-DEX, runtime, standalone/premium/catalog bundle checks and APK audits passed; device testing remains necessary. See [usage and verification details](docs/MonetDisplayedCards.md).
+The optional **Monet - Unlimited displayed cards** patch removes the 20-card display cap and adds -10/+10 and Max to the original themed picker. It supports **1.1.1**, retaining existing **1.1.0 / 1.0.97** support. The port preserves native Apply rendering, scoped summaries and Max labels across redraws. Original-DEX, runtime, standalone/premium/catalog bundle checks and APK audits passed; device testing remains necessary. See [usage and verification details](docs/MonetDisplayedCards.md).
 
 Startup app selection and **After standby** are cumulative: enabling both is intended to launch the selected app after a full Android boot and after standby. The reported power-on failure remains under investigation; the latest captured test with standby disabled shows a suspend/wake cycle, not a new Android boot. No startup behavior is changed by these patches. See [the log findings](docs/Monet111.md#startup-app-cold-boot-versus-standby).
 
 **🎯 Supported versions:**
 
-| 1.0.97 | 1.1.0 | 1.1.1 |
-| :---: | :---: | :---: |
+| 1.0.97 | 1.1.0 | 1.1.1 | 1.1.2 |
+| :---: | :---: | :---: | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
 | [Monet - Individual Nuvio catalog rows](docs/MonetCatalogChannels.md) | Select individual NuvioTV catalogs in the app's content picker, with Nuvio icons and refresh independent of Recommendations. |  |
 | [Monet - Unlimited displayed cards](docs/MonetDisplayedCards.md) | Remove the 20-card limit from Displayed Cards. Add -10, +10 and Max to the original themed picker, preserving its layout and single-card steps. |  |
-| [Monet - Unlock premium](docs/Monet.md) | Original premium unlock from Doom's Patches, updated here for Monet 1.1.1. Unlock local premium features. Select only one Monet premium patch. |  |
-| [Monet - Unlock premium (Experimental, any version)](docs/Monet.md) | Original premium unlock from Doom's Patches, verified on Monet 1.1.1. No version restriction; validates billing ownership and evaluator semantics, not obfuscated names or final flags. Future layouts may still be unsupported. Select only one Monet premium patch. |  |
+| [Monet - Unlock premium](docs/Monet.md) | Original premium unlock from Doom's Patches, updated here for Monet 1.1.2. Unlock local premium features. Select only one Monet premium patch. |  |
+| [Monet - Unlock premium (Experimental, any version)](docs/Monet.md) | Original premium unlock from Doom's Patches, verified on Monet 1.1.2. No version restriction; validates billing ownership and evaluator semantics, not obfuscated names, flags, field order or branch layout. Future layouts may still be unsupported. Select only one Monet premium patch. |  |
 
 </details>
 

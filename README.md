@@ -43,19 +43,19 @@ For 2.2.21, the user reported successful device operation including ECU connecti
 <summary>📦 Fylo — File Manager&nbsp;&nbsp;•&nbsp;&nbsp;2 patches</summary>
 <br>
 
-**Fylo - Enable Pro** supports Fylo File Manager **2.6 (code 19)**. A separate **Experimental, any version** alternative removes the version restriction while requiring the reviewed bytecode structure. Select **only one** alternative; both are disabled by default. The implementation preserves local Pro access at startup and after billing refresh, and skips the Pairip launch license check for rebuilt APKs. It does not create a purchase or write a fabricated entitlement.
+**Fylo - Enable Pro** supports Fylo File Manager **2.9 (code 22)**. A separate **Experimental, any version** alternative removes the version restriction while requiring the reviewed bytecode structure; because the matcher is structural, it also covers the earlier 2.6 layout and future releases that keep the billing contract. Select **only one** alternative; both are disabled by default. The implementation preserves local Pro access at startup and after billing refresh, and skips the Pairip launch license check for rebuilt APKs. It does not create a purchase or write a fabricated entitlement.
 
-The upstream 1.9 patch is from [Morning Entree's Patches](https://github.com/Entree3k/Morning-Entree-Patches); its debug-unlock class is absent in 2.6. Both new alternatives passed original-DEX, packaged-bundle and rebuilt unsigned-APK checks. Device testing and future-version compatibility remain unverified. See [inputs, behavior and verification](docs/Fylo26.md).
+The upstream 1.9 patch is from [Morning Entree's Patches](https://github.com/Entree3k/Morning-Entree-Patches); its debug-unlock class is absent. Both alternatives passed original-DEX, packaged-bundle and rebuilt unsigned-APK checks on 2.9. Device testing and future-version compatibility remain unverified. See [inputs, behavior and verification](docs/Fylo29.md).
 
 **🎯 Supported versions:**
 
-| 2.6 |
+| 2.9 |
 | :---: |
 
 | 💊&nbsp;Patch | 📜&nbsp;Description | ⚙️&nbsp;Options |
 |----------|----------------|-----------|
-| [Fylo - Enable Pro](docs/Fylo26.md) | Enable local Pro features at startup and after billing refresh. Updated from Morning Entree's Fylo 1.9 approach for 2.6. Disables the Pairip launch license check for rebuilt APKs. Select only one Fylo Pro patch. Verified bytecode target: Fylo 2.6. |  |
-| [Fylo - Enable Pro (Experimental, any version)](docs/Fylo26.md) | Enable local Pro features at startup and after billing refresh. Updated from Morning Entree's Fylo 1.9 approach for 2.6. Disables the Pairip launch license check for rebuilt APKs. Select only one Fylo Pro patch. No version restriction; unsupported bytecode layouts are rejected. |  |
+| [Fylo - Enable Pro](docs/Fylo29.md) | Enable local Pro features at startup and after billing refresh. Updated from Morning Entree's Fylo 1.9 approach. Disables the Pairip launch license check for rebuilt APKs. Select only one Fylo Pro patch. Verified bytecode target: Fylo 2.9. |  |
+| [Fylo - Enable Pro (Experimental, any version)](docs/Fylo29.md) | Enable local Pro features at startup and after billing refresh. Updated from Morning Entree's Fylo 1.9 approach. Disables the Pairip launch license check for rebuilt APKs. Select only one Fylo Pro patch. No version restriction; the shared billing contract also covers earlier releases, and unsupported bytecode layouts are rejected. |  |
 
 </details>
 

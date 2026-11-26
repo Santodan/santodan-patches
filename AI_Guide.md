@@ -53,16 +53,20 @@ still need review. Historical implementations remain unchanged. Run
 `verifyCarScanner242`, `verifyCarScanner242Bundle`, `verifyAndroidBundle` and
 `verifyMorpheDesktopImport` with the current Desktop JAR.
 
-## Fylo File Manager 2.6
+## Fylo File Manager 2.9
 
-For `com.aeroloom.fylofilemanager` **2.6 / 19**, see [Fylo26.md](docs/Fylo26.md).
+For `com.aeroloom.fylofilemanager` **2.9 / 22**, see [Fylo29.md](docs/Fylo29.md).
 The exact-version and unrestricted experimental **Fylo - Enable Pro** patches are
 alternatives. Both preserve the local Pro boolean at startup and billing refresh;
 they do not write purchase records or replace the entitlement vault. The original
-1.9 upstream debug-unlock class is absent in 2.6. Both patches also skip the Pairip
-launch license-check entry for rebuilt APKs. Run `verifyFylo`, `verifyFyloBundle`,
-and `verifyFyloApk`; retain all original Play configuration splits. Future versions
-must satisfy the structural matcher. Device behavior remains unverified.
+1.9 upstream debug-unlock class is absent. Both patches also skip the Pairip launch
+license-check entry for rebuilt APKs. The structural matcher is version-agnostic:
+it locates the `pro = (entitlement != NONE)` StateFlow diamond by its backbone, so
+the experimental alternative also covers the earlier 2.6 layout; the exact patch
+additionally pins the reviewed 2.9 descriptors (`Ljm1;` seed, `Ljm1;->p` refresh).
+The 2.6 base is no longer in the workspace, so only 2.9 is verified. Run
+`verifyFylo`, `verifyFyloBundle`, and `verifyFyloApk`; retain all original Play
+configuration splits. Device behavior remains unverified.
 
 ## NuvioTV badge labels
 

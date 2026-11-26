@@ -42,7 +42,7 @@ after a fix.
   2.2.52 output byte for byte and fail safe on malformed input). Retained 2.2.42:
   `verifyCarScanner242`, `verifyCarScanner242Bundle`. `verifyCarScanner221Bundle` needs
   `Car_Scanner-2.2.21.apk`, which is not in the workspace.
-- Fylo 2.6: `verifyFylo`, `verifyFyloBundle`, `verifyFyloApk`. TFD: `verifyFirstDescendant*`.
+- Fylo 2.9: `verifyFylo`, `verifyFyloBundle`, `verifyFyloApk`. TFD: `verifyFirstDescendant*`.
 - Release: `verifyAndroidBundle`. `verifyMorpheDesktopImport` uses the newest
   `E:\Morphe\morphe-desktop-*-all.jar` (logged as `Morphe Desktop JAR: ...`);
   `-PmorpheDesktopJar=<jar>` overrides it. Report the Desktop version used.

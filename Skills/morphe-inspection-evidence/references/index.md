@@ -28,7 +28,7 @@ are discovery hints. Recheck `E:\Morphe\OriginalApps` before choosing a target.
 | `.inspect-first-descendant-1.1.5`, `-1.1.5-repro` | 1.1.5 extraction, native libs, reproducible output (diagnostics patch is 1.1.5-only). |
 | `.inspect-first-descendant-native-complete` | Canonical native assembly and lifecycle analysis. `-native-trace`/`-native-verified` are reports only. |
 | `.inspect-first-descendant-runtime` | Runtime reports, logs, screenshots, installed APK evidence. |
-| **`.inspect-fylo-2.6`** | Fylo 2.6 original DEX, billing evidence, stable/experimental APK audits. |
+| **`.inspect-fylo-2.9`** | Fylo 2.9 original DEX, billing evidence, exact/experimental APK audits. |
 | `.inspect-reddit` | Reddit 2026.37.0 DEX fixtures used by `verifyRedditGuestMode` (guest patch target). |
 | `reddit-2026.47.0` | Reddit 2026.47.0 (2647001) base APK and DEX from `OriginalApps`, used by `verifyRedditContentFilter` for content filters and home flairs (current target). |
 | `reddit-2026.45.0`, `reddit-2026.46.0` | Previous Reddit 2026.45.0 target DEX and the `E:\Morphe\morphe-patches-santodan` port/PR evidence. |
@@ -40,5 +40,5 @@ are discovery hints. Recheck `E:\Morphe\OriginalApps` before choosing a target.
 
 App behavior and reviewed contracts live in `santodan-patches/docs` (for example
 `Nuvio111.md`, `NuvioLabelCustomization.md`, `Monet111.md`, `Pillo627.md`,
-`CarScanner252.md`, `Fylo26.md`, `FirstDescendantCompanion.md`). Originals remain
+`CarScanner252.md`, `Fylo29.md`, `FirstDescendantCompanion.md`). Originals remain
 in `E:\Morphe\OriginalApps`.

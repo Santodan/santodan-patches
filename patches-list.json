@@ -4,7 +4,7 @@
   "patches": [
     {
       "name": "Car Scanner - Premium status",
-      "description": "Enables premium status in Car Scanner 2.1.50, 2.2.21 and 2.2.42 (arm64 and x86_64); preserves settings, profiles and ECU initialization. Select only one Car Scanner premium patch.",
+      "description": "Enables premium status in Car Scanner 2.1.50, 2.2.21, 2.2.42 and 2.2.52 (arm64; 2.2.42 also x86_64); preserves settings, profiles and ECU initialization. Select only one Car Scanner premium patch.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [
@@ -37,6 +37,13 @@
               "isExperimental": false,
               "minSdk": 23,
               "description": null
+            },
+            {
+              "version": "2.2.52",
+              "versionCodes": null,
+              "isExperimental": false,
+              "minSdk": 23,
+              "description": null
             }
           ]
         }
@@ -45,7 +52,7 @@
     },
     {
       "name": "Car Scanner - Premium status (Experimental)",
-      "description": "No version restriction. Retains the reviewed legacy and new managed/native methods; rejects unknown or modified images. Future builds may need an update. Select only one Car Scanner premium patch.",
+      "description": "No version restriction. Reuses the reviewed exact methods for known builds and, for unknown builds, locates the targets structurally (metadata identity, AOT method-address table) and fails safe if any cannot be found. Future builds may still need an update. Select only one Car Scanner premium patch.",
       "default": false,
       "dependencies": [],
       "compatiblePackages": [

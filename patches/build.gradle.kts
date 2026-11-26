@@ -462,6 +462,29 @@ tasks {
             file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
             file("${layout.buildDirectory.get()}/verification/carscanner-242-bundle").absolutePath)
     }
+    register<JavaExec>("verifyCarScanner252") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyCarScanner252")
+        maxHeapSize = "1g"
+        args(file("../../OriginalApps/Car_Scanner-2.2.52.apk").absolutePath)
+    }
+    register<JavaExec>("verifyCarScanner252Bundle") {
+        dependsOn("testClasses", "buildAndroid")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyCarScanner252BundleKt")
+        maxHeapSize = "2g"
+        args(file("../../OriginalApps/Car_Scanner-2.2.52.apk").absolutePath,
+            file("${layout.buildDirectory.get()}/libs/patches-${project.version}.mpp").absolutePath,
+            file("${layout.buildDirectory.get()}/verification/carscanner-252-bundle").absolutePath)
+    }
+    register<JavaExec>("verifyCarScannerGeneric") {
+        dependsOn("testClasses")
+        classpath = sourceSets["test"].runtimeClasspath
+        mainClass.set("santodan.patches.VerifyCarScannerGeneric")
+        maxHeapSize = "1g"
+        args(file("../../OriginalApps/Car_Scanner-2.2.52.apk").absolutePath)
+    }
     register<JavaExec>("verifyNuvioLauncherUi") {
         dependsOn("testClasses", ":extensions:nuvio-launcher-channels:compileReleaseKotlin", ":extensions:nuvio-launcher-channels:compileReleaseJavaWithJavac")
         classpath = sourceSets["test"].runtimeClasspath + files(

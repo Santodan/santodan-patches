@@ -4,6 +4,32 @@ Never commit, push, or run a publishing workflow without an explicit user reques
 for that action on the current changes. Authorization for an earlier release
 does not authorize a follow-up fix or another commit.
 
+## Car Scanner 2.2.52
+
+Latest target: **2.2.52 / arm64-v8a only**, `com.ovz.carscanner`. Original
+`../OriginalApps/Car_Scanner-2.2.52.apk`. Read [CarScanner252.md](docs/CarScanner252.md);
+evidence and `provenance.json` are in
+`E:/Morphe/Skills/inspection-evidence/.inspect-carscanner-2.2.52`. `CarScanner252`
+adds the reviewed implementation; the dispatcher selects it by assembly-store hash
+before 2.2.42/2.2.21, and 2.1.50 keeps its separate blob path. Guard
+(`libusbtransport.so`) and decoder (`libvndctx.so`) are byte-identical to
+2.2.21/2.2.42, so the exit scheduler (`0x2abf0`) and decoder seeds
+(`0x25d68`, `0x23fcc`) are unchanged; only store, `CarScannerMaui.dll` and the AOT
+image differ. The block starts four-byte aligned (`9818840`), so the generic
+`(-start) & 3` leading padding is zero. Both premium alternatives use `CarScanner252`
+for 2.2.52. The **experimental** alternative now also handles unknown future arm64
+builds via `CarScannerGeneric`: it finds the premium getter and ECU predicate by
+metadata identity (name + signature), resolves the compiled AOT bodies through the
+`mono_aot_file_info` method-address table (format 187), rebuilds the store
+generically, verifies the guard/decoder at their known words, and throws (fails
+safe) if anything cannot be located — it is best effort, not an automatic port.
+Run `verifyCarScanner252`, `verifyCarScanner252Bundle`, `verifyCarScannerGeneric`
+(proves generic == exact on 2.2.52 and fails safe), `verifyAndroidBundle` and
+`verifyMorpheDesktopImport` with the current Desktop JAR. `verifyCarScanner221Bundle`
+needs `Car_Scanner-2.2.21.apk`, which is absent from the workspace; 2.2.21 is
+unchanged. Do not manually bump versions; do not commit, push or install without an
+explicit request.
+
 ## Car Scanner 2.2.42
 
 Arm64 plain-PE placement must be four-byte aligned. Its original XALZ block starts

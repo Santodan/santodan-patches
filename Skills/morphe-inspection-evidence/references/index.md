@@ -19,7 +19,8 @@ are discovery hints. Recheck `E:\Morphe\OriginalApps` before choosing a target.
 | **`.inspect-pillo-627-play`** | Authoritative Pillo 0.6.27 Google Play base and DEX fixtures. |
 | `.inspect-pillo-627` | APKPure-era Pillo notes and comparison tools; dumps archived. |
 | `.inspect-pillo-620` | Historical Pillo fixtures used by existing Gradle tasks. |
-| **`.inspect-carscanner-2.2.42-arm64`** | Car Scanner 2.2.42 arm64 (current original) AOT/assembly audits and CLI outputs. |
+| **`.inspect-carscanner-2.2.52`** | Car Scanner 2.2.52 arm64 (current original): extracted store/AOT/guard/decoder libs, decoded `CarScannerMaui.dll`, and `provenance.json` with every hash, token, RVA and AOT slot used by `CarScanner252`. Start there for the next port. |
+| `.inspect-carscanner-2.2.42-arm64` | Car Scanner 2.2.42 arm64 AOT/assembly audits and CLI outputs. |
 | `.inspect-carscanner-2.2.42` | 2.2.42 x86_64 layout: managed DLLs, audits, stable/experimental CLI runs. |
 | `.inspect-carscanner-2.2.42-model-wait` | Arm64 PE-alignment/model-wait hang investigation (device dumps, aligned APKs). |
 | `.inspect-carscanner-2.2.21` | Historical Car Scanner managed/native readers and profile resources. |
@@ -39,5 +40,5 @@ are discovery hints. Recheck `E:\Morphe\OriginalApps` before choosing a target.
 
 App behavior and reviewed contracts live in `santodan-patches/docs` (for example
 `Nuvio111.md`, `NuvioLabelCustomization.md`, `Monet111.md`, `Pillo627.md`,
-`CarScanner242.md`, `Fylo26.md`, `FirstDescendantCompanion.md`). Originals remain
+`CarScanner252.md`, `Fylo26.md`, `FirstDescendantCompanion.md`). Originals remain
 in `E:\Morphe\OriginalApps`.
